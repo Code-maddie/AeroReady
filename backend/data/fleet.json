@@ -1,6 +1,6 @@
 {
   "synthetic": true,
-  "data_notice": "SYNTHETIC fleet data for demonstration. Engine sensor trajectories from NASA C-MAPSS.",
+  "data_notice": "Simulated fleet scenario. Engine sensor trajectories from NASA C-MAPSS.",
   "seed": 26249,
   "start_date": "2026-10-05",
   "horizon_days": 30,

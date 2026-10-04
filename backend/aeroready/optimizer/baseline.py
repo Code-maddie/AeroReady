@@ -14,7 +14,9 @@ from aeroready.optimizer.evaluate import Assignment, Plan
 from aeroready.optimizer.problem import Job, Problem
 
 
-def reactive_plan(p: Problem) -> Plan:
+def reactive_plan(p: Problem, log: dict | None = None) -> Plan:
+    """If `log` is given it is filled with job id -> request day, day the part
+    became available to the job, and start day (for the shortage timeline)."""
     H = p.H
     plan: Plan = {j.id: Assignment() for j in p.jobs}
     bay_use = {b: [0] * H for b in p.bays}
@@ -37,9 +39,10 @@ def reactive_plan(p: Problem) -> Plan:
         queue += [r for r in requests if r[0] == d]
         started = []
         for req in queue:
-            _, j, own_arrival = req
-            if busy[j.aircraft_id][d]:
-                continue
+            req_day, j, own_arrival = req
+            if log is not None:
+                log.setdefault(j.id, {"request_day": req_day, "part_ready_day": None if j.parts else req_day,
+                                      "start": None})
             use_pool = False
             if j.parts:
                 part = j.parts[0]
@@ -49,6 +52,10 @@ def reactive_plan(p: Problem) -> Plan:
                     use_pool = True
                 elif d < own_arrival:
                     continue
+                if log is not None and log[j.id]["part_ready_day"] is None:
+                    log[j.id]["part_ready_day"] = d
+            if busy[j.aircraft_id][d]:
+                continue
             days = range(d, min(H, d + j.duration))
             if any(bay_use[j.base_id][x] + 1 > p.bays[j.base_id][x] or
                    hour_use[j.base_id][x] + j.hours > p.hours[j.base_id][x] for x in days):
@@ -60,6 +67,8 @@ def reactive_plan(p: Problem) -> Plan:
             if use_pool:
                 pool_used[j.parts[0]] += 1
             plan[j.id] = Assignment(start=d)
+            if log is not None:
+                log[j.id]["start"] = d
             started.append(req)
         queue = [r for r in queue if r not in started]
     return plan

@@ -1,4 +1,5 @@
 {
+  "trained_at": "2026-10-04T15:44:11+00:00",
   "datasets": {
     "FD001": {
       "n_test_engines": 100,
@@ -36,5 +37,202 @@
     "s21"
   ],
   "rul_cap_cycles": 125,
-  "num_rounds": 900
+  "num_rounds": 900,
+  "train": {
+    "datasets": [
+      "FD001",
+      "FD003"
+    ],
+    "engines": 200,
+    "rows": 45351
+  },
+  "method": {
+    "model": "LightGBM gradient-boosted trees, one model per quantile (alpha 0.1, 0.5, 0.9)",
+    "split": "Official C-MAPSS split: models fit on the train files; metrics on the test files at each engine's last observed cycle against the published true RUL",
+    "preprocessing": "Near-constant sensors dropped; per-sensor raw value plus 10-cycle rolling mean and standard deviation within each engine",
+    "target": "Remaining cycles to failure, capped at 125 (piecewise-linear RUL)",
+    "quantiles": "Quantile predictions sorted per engine so P10 <= P50 <= P90"
+  },
+  "feature_importance": [
+    {
+      "feature": "cycle",
+      "gain_share": 0.3305
+    },
+    {
+      "feature": "s11_mean10",
+      "gain_share": 0.226
+    },
+    {
+      "feature": "s4_mean10",
+      "gain_share": 0.0501
+    },
+    {
+      "feature": "s3_mean10",
+      "gain_share": 0.0463
+    },
+    {
+      "feature": "s7_mean10",
+      "gain_share": 0.044
+    },
+    {
+      "feature": "s14_mean10",
+      "gain_share": 0.0337
+    },
+    {
+      "feature": "s17_mean10",
+      "gain_share": 0.033
+    },
+    {
+      "feature": "s9_mean10",
+      "gain_share": 0.0322
+    },
+    {
+      "feature": "s6_mean10",
+      "gain_share": 0.0299
+    },
+    {
+      "feature": "s12_mean10",
+      "gain_share": 0.0287
+    },
+    {
+      "feature": "s15_mean10",
+      "gain_share": 0.0205
+    },
+    {
+      "feature": "s2_mean10",
+      "gain_share": 0.0106
+    },
+    {
+      "feature": "s12_std10",
+      "gain_share": 0.0096
+    },
+    {
+      "feature": "s6_std10",
+      "gain_share": 0.0085
+    },
+    {
+      "feature": "s7_std10",
+      "gain_share": 0.0084
+    },
+    {
+      "feature": "s20_mean10",
+      "gain_share": 0.0075
+    },
+    {
+      "feature": "s21_mean10",
+      "gain_share": 0.0064
+    },
+    {
+      "feature": "s9",
+      "gain_share": 0.0057
+    },
+    {
+      "feature": "s6",
+      "gain_share": 0.0054
+    },
+    {
+      "feature": "s11",
+      "gain_share": 0.0054
+    },
+    {
+      "feature": "s14_std10",
+      "gain_share": 0.0047
+    },
+    {
+      "feature": "s2_std10",
+      "gain_share": 0.0044
+    },
+    {
+      "feature": "s9_std10",
+      "gain_share": 0.0044
+    },
+    {
+      "feature": "s14",
+      "gain_share": 0.0042
+    },
+    {
+      "feature": "s17_std10",
+      "gain_share": 0.0042
+    },
+    {
+      "feature": "s20_std10",
+      "gain_share": 0.0041
+    },
+    {
+      "feature": "s3_std10",
+      "gain_share": 0.004
+    },
+    {
+      "feature": "s12",
+      "gain_share": 0.0039
+    },
+    {
+      "feature": "s11_std10",
+      "gain_share": 0.0036
+    },
+    {
+      "feature": "s15_std10",
+      "gain_share": 0.0036
+    },
+    {
+      "feature": "s4_std10",
+      "gain_share": 0.0035
+    },
+    {
+      "feature": "s21_std10",
+      "gain_share": 0.003
+    },
+    {
+      "feature": "s7",
+      "gain_share": 0.0025
+    },
+    {
+      "feature": "s4",
+      "gain_share": 0.0022
+    },
+    {
+      "feature": "s2",
+      "gain_share": 0.0012
+    },
+    {
+      "feature": "s15",
+      "gain_share": 0.001
+    },
+    {
+      "feature": "s3",
+      "gain_share": 0.0009
+    },
+    {
+      "feature": "s20",
+      "gain_share": 0.0009
+    },
+    {
+      "feature": "s21",
+      "gain_share": 0.0007
+    },
+    {
+      "feature": "s10_std10",
+      "gain_share": 0.0003
+    },
+    {
+      "feature": "s17",
+      "gain_share": 0.0003
+    },
+    {
+      "feature": "s10_mean10",
+      "gain_share": 0.0001
+    },
+    {
+      "feature": "s10",
+      "gain_share": 0.0
+    }
+  ],
+  "test": {
+    "FD001": {
+      "engines": 100
+    },
+    "FD003": {
+      "engines": 100
+    }
+  }
 }

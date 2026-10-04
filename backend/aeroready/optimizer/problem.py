@@ -46,11 +46,19 @@ class Surge(BaseModel):
     min_available: int = Field(ge=0)
 
 
+class SortieRate(BaseModel):
+    """Set sorties (engine cycles) per day for one base or one aircraft."""
+    scope: Literal["base", "aircraft"]
+    id: str
+    sorties_per_day: float = Field(gt=0, le=6)
+
+
 class Scenario(BaseModel):
     part_delays: list[PartDelay] = []
     bay_closures: list[BayClosure] = []
     surge: Optional[Surge] = None
     sortie_rate_multiplier: float = Field(default=1.0, gt=0.2, le=3.0)
+    sortie_rates: list[SortieRate] = []
 
 
 # ---------------------------------------------------------------- problem --
@@ -105,6 +113,15 @@ class Problem:
 
     def job(self, job_id: str) -> Job:
         return next(j for j in self.jobs if j.id == job_id)
+
+
+def sortie_rate_for(ac_id: str, base_id: str, default: float, sc: Scenario) -> float:
+    """Aircraft override beats base override beats the fleet-wide multiplier."""
+    for scope, key in (("aircraft", ac_id), ("base", base_id)):
+        hit = next((o for o in sc.sortie_rates if o.scope == scope and o.id == key), None)
+        if hit:
+            return hit.sorties_per_day
+    return default * sc.sortie_rate_multiplier
 
 
 def build_problem(fleet: Fleet, rul: dict, scenario: Scenario | None = None,
@@ -167,7 +184,7 @@ def build_problem(fleet: Fleet, rul: dict, scenario: Scenario | None = None,
         ac = acs[e.aircraft_id]
         if grounded_all_horizon(ac.id):
             continue
-        rate = ac.sortie_rate * sc.sortie_rate_multiplier
+        rate = sortie_rate_for(ac.id, ac.base_id, ac.sortie_rate, sc)
         p10_d = f["rul_cycles"]["p10"] / rate
         p50_d = f["rul_cycles"]["p50"] / rate
         forecasts[e.id] = {"p10_days": round(p10_d, 1), "p50_days": round(p50_d, 1),

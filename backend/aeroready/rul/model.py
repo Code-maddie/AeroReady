@@ -2,12 +2,13 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 
 import lightgbm as lgb
 import numpy as np
 import pandas as pd
 
-from aeroready.config import MODEL_DIR, RUL_CAP_CYCLES, RUL_METRICS_PATH, SEED
+from aeroready.config import MODEL_DIR, RUL_CAP_CYCLES, RUL_METRICS_PATH, RUL_TEST_PREDICTIONS_PATH, SEED
 from aeroready.rul.cmapss import load_split, load_test_rul
 from aeroready.rul.features import (
     add_train_target, build_features, feature_columns, informative_sensors,
@@ -57,8 +58,26 @@ def train() -> dict:
         boosters[name] = b
     (MODEL_DIR / "rul_meta.json").write_text(json.dumps({"sensors": sensors, "features": cols}, indent=2))
 
-    metrics = {"datasets": {}, "sensors_used": sensors, "rul_cap_cycles": RUL_CAP_CYCLES,
-               "num_rounds": NUM_ROUNDS}
+    metrics = {
+        "trained_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "datasets": {}, "sensors_used": sensors, "rul_cap_cycles": RUL_CAP_CYCLES,
+        "num_rounds": NUM_ROUNDS,
+        "train": {"datasets": list(DATASETS), "engines": int(raw["unit"].nunique()), "rows": int(len(raw))},
+        "method": {
+            "model": "LightGBM gradient-boosted trees, one model per quantile (alpha 0.1, 0.5, 0.9)",
+            "split": "Official C-MAPSS split: models fit on the train files; metrics on the test files at each "
+                     "engine's last observed cycle against the published true RUL",
+            "preprocessing": "Near-constant sensors dropped; per-sensor raw value plus 10-cycle rolling mean "
+                             "and standard deviation within each engine",
+            "target": f"Remaining cycles to failure, capped at {RUL_CAP_CYCLES} (piecewise-linear RUL)",
+            "quantiles": "Quantile predictions sorted per engine so P10 <= P50 <= P90",
+        },
+    }
+    gain = boosters["p50"].feature_importance("gain")
+    metrics["feature_importance"] = sorted(
+        [{"feature": f, "gain_share": round(float(g) / float(gain.sum()), 4)} for f, g in zip(cols, gain)],
+        key=lambda r: -r["gain_share"])
+    test_preds = {}
     for ds in DATASETS:
         test = load_split(ds, "test")
         tf = build_features(test, sensors)
@@ -67,6 +86,10 @@ def train() -> dict:
         preds = {n: b.predict(last[cols]) for n, b in boosters.items()}
         p = np.sort(np.vstack([preds["p10"], preds["p50"], preds["p90"]]), axis=0)
         true_capped = np.minimum(true, RUL_CAP_CYCLES)
+        test_preds[ds] = [
+            {"unit": int(u), "true_rul": float(t), "true_rul_capped": float(tc),
+             "p10": round(float(a), 2), "p50": round(float(b), 2), "p90": round(float(c), 2)}
+            for u, t, tc, a, b, c in zip(last["unit"].values, true, true_capped, p[0], p[1], p[2])]
         metrics["datasets"][ds] = {
             "n_test_engines": int(len(true)),
             "rmse_p50": round(float(np.sqrt(np.mean((p[1] - true_capped) ** 2))), 2),
@@ -76,7 +99,9 @@ def train() -> dict:
             "mean_interval_width": round(float(np.mean(p[2] - p[0])), 1),
             "frac_true_below_p10": round(float(np.mean(true_capped < p[0])), 3),
         }
+    metrics["test"] = {ds: {"engines": r["n_test_engines"]} for ds, r in metrics["datasets"].items()}
     RUL_METRICS_PATH.write_text(json.dumps(metrics, indent=2))
+    RUL_TEST_PREDICTIONS_PATH.write_text(json.dumps(test_preds))
     return metrics
 
 

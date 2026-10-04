@@ -1,221 +1,286 @@
 """AeroReady API.
 
 Run from backend/:  .venv/Scripts/python -m uvicorn aeroready.api.main:app --port 8000
+All routes live under /api. When frontend/dist exists the UI is served too.
 """
 from __future__ import annotations
 
 import json
-import threading
-from collections import OrderedDict
 from contextlib import asynccontextmanager
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
+from pydantic import BaseModel
 
-from aeroready.config import BACKEND_DIR, RUL_METRICS_PATH
-from aeroready.optimizer.plan import load_inputs, run_plan
+from aeroready import datastore, scenarios, service
+from aeroready.config import BACKEND_DIR, RUL_METRICS_PATH, RUL_PATH, RUL_TEST_PREDICTIONS_PATH
+from aeroready.fleet.generator import load_scenario_config
 from aeroready.optimizer.problem import Scenario
-
-_cache: OrderedDict[str, dict] = OrderedDict()
-_lock = threading.Lock()
-CACHE_SIZE = 16
-
-
-def get_plan(sc: Scenario | None = None) -> dict:
-    sc = sc or Scenario()
-    key = sc.model_dump_json()
-    with _lock:
-        if key in _cache:
-            _cache.move_to_end(key)
-            return _cache[key]
-    result = run_plan(sc)
-    with _lock:
-        _cache[key] = result
-        while len(_cache) > CACHE_SIZE:
-            _cache.popitem(last=False)
-    return result
+from aeroready.rul.cmapss import SENSOR_NAMES
+from aeroready.rul.features import sensor_of
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    get_plan()          # warm the default plan so the dashboard loads instantly
+    service.plan_for()      # warm the baseline plan so the console loads instantly
     yield
 
 
-app = FastAPI(title="AeroReady API", version="0.1.0", lifespan=lifespan,
-              description="Availability-first predictive maintenance (SIH 26249). SYNTHETIC fleet data.")
+app = FastAPI(title="AeroReady API", version="0.2.0", lifespan=lifespan,
+              description="Availability-first predictive maintenance (SIH 26249). Simulated fleet scenario "
+                          "on NASA C-MAPSS engine data.")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-
-# --------------------------------------------------------------- helpers --
-def _forecasts_by_engine() -> dict[str, dict]:
-    _, rul = load_inputs()
-    return {e["engine_id"]: e for e in rul["engines"]}
+ScenarioQ = Query(None, description="Saved scenario id; omit for the baseline scenario")
+BaseQ = Query(None, description="Base id filter; omit for all bases")
 
 
-def _aircraft_status(ac, plan: dict, fc: dict[str, dict]) -> tuple[str, str]:
-    """green / amber / red from grounding, RUL forecast and the optimised plan."""
-    if ac.grounding and ac.grounding.since_day <= 0 < ac.grounding.until_day:
-        return "red", ac.grounding.reason
-    days = [plan["forecasts_days"].get(e) for e in ac.engine_ids]
-    days = [d for d in days if d]
-    worst = min(days, key=lambda d: d["p10_days"]) if days else None
-    if worst and worst["p10_days"] <= 7:
-        return "red", f"Engine RUL P10 {worst['p10_days']} d"
-    if worst and worst["p10_days"] < plan["horizon_days"]:
-        return "amber", f"Engine RUL P10 {worst['p10_days']} d (inside 30-day horizon)"
-    soon = [j for j in plan["jobs"] if j["aircraft_id"] == ac.id and j["kind"] == "scheduled"
-            and j["due"] is not None and j["due"] <= 7]
-    if soon:
-        return "amber", f"{soon[0]['name']} due Day {soon[0]['due']}"
-    return "green", "Serviceable; no forecast risk in horizon"
+def _plan(scenario: str | None) -> dict:
+    try:
+        return service.plan_for(scenario)
+    except KeyError:
+        raise HTTPException(404, f"Unknown scenario '{scenario}'")
 
 
-def _next_task(ac_id: str, plan: dict) -> dict | None:
-    row = next(r for r in plan["optimized"]["gantt"] if r["aircraft_id"] == ac_id)
-    work = [b for b in row["blocks"] if b["kind"] in ("scheduled", "preventive", "corrective")]
-    return min(work, key=lambda b: b["start"]) if work else None
+def _check_base(base: str | None) -> str | None:
+    if base:
+        fleet, _ = datastore.active_inputs()
+        if base not in {b.id for b in fleet.bases}:
+            raise HTTPException(404, f"Unknown base '{base}'")
+    return base
 
 
-# ---------------------------------------------------------------- routes --
+def _validate_scenario(sc: Scenario) -> None:
+    fleet, _ = datastore.active_inputs()
+    parts = {p.id for p in fleet.parts}
+    bases = {b.id for b in fleet.bases}
+    tails = {a.id for a in fleet.aircraft}
+    for d in sc.part_delays:
+        if d.part_id not in parts:
+            raise HTTPException(422, f"Unknown part '{d.part_id}'")
+    for c in sc.bay_closures:
+        if c.base_id not in bases:
+            raise HTTPException(422, f"Unknown base '{c.base_id}'")
+        if c.end_day < c.start_day:
+            raise HTTPException(422, "Bay closure end day is before its start day")
+    if sc.surge and sc.surge.end_day < sc.surge.start_day:
+        raise HTTPException(422, "Surge end day is before its start day")
+    for o in sc.sortie_rates:
+        if (o.scope == "base" and o.id not in bases) or (o.scope == "aircraft" and o.id not in tails):
+            raise HTTPException(422, f"Unknown {o.scope} '{o.id}'")
+
+
+# ------------------------------------------------------------------ core --
 @app.get("/api/health")
 def health() -> dict:
-    return {"ok": True}
+    return {"ok": True, "data_version": datastore.data_version()}
 
 
 @app.get("/api/meta")
 def meta() -> dict:
-    fleet, _ = load_inputs()
-    metrics = json.loads(RUL_METRICS_PATH.read_text()) if RUL_METRICS_PATH.exists() else None
+    fleet, _ = datastore.active_inputs()
     return {
-        "synthetic": fleet.synthetic, "data_notice": fleet.data_notice,
         "start_date": fleet.start_date, "horizon_days": fleet.horizon_days,
+        "data_origin": "uploaded" if datastore.uploaded_sources() else "simulated",
+        "uploaded_sources": datastore.uploaded_sources(),
         "bases": [{**b.model_dump(), **{k: v for k, v in ag.model_dump().items() if k != "base_id"}}
                   for b in fleet.bases for ag in fleet.agencies if ag.base_id == b.id],
         "parts": [p.model_dump() for p in fleet.parts],
-        "planted_tensions": fleet.planted_tensions,
-        "rul_metrics": metrics,
+        "aircraft": [{"id": a.id, "base_id": a.base_id, "sortie_rate": a.sortie_rate} for a in fleet.aircraft],
     }
+
+
+@app.get("/api/summary")
+def summary(scenario: Optional[str] = ScenarioQ, base: Optional[str] = BaseQ) -> dict:
+    p = _plan(scenario)
+    return {**service.summary(p, _check_base(base)), "scenario_id": p["scenario_id"], "scenario_name": p["scenario_name"]}
 
 
 @app.get("/api/fleet")
-def fleet_view() -> dict:
-    fleet, _ = load_inputs()
-    plan = get_plan()
-    fc = _forecasts_by_engine()
-    out = []
-    for ac in fleet.aircraft:
-        status, reason = _aircraft_status(ac, plan, fc)
-        engines = []
-        for eid in ac.engine_ids:
-            d = plan["forecasts_days"].get(eid) or {
-                k: round(v / ac.sortie_rate, 1) for k, v in
-                (("p10_days", fc[eid]["rul_cycles"]["p10"]), ("p50_days", fc[eid]["rul_cycles"]["p50"]),
-                 ("p90_days", fc[eid]["rul_cycles"]["p90"]))}
-            engines.append({"engine_id": eid, **d})
-        worst = min(engines, key=lambda e: e["p50_days"])
-        row_b = next(r for r in plan["baseline"]["gantt"] if r["aircraft_id"] == ac.id)
-        row_o = next(r for r in plan["optimized"]["gantt"] if r["aircraft_id"] == ac.id)
-        out.append({
-            "id": ac.id, "type": ac.type, "base_id": ac.base_id, "sortie_rate": ac.sortie_rate,
-            "status": status, "status_reason": reason, "engines": engines, "worst_engine": worst,
-            "next_task": _next_task(ac.id, plan),
-            "available_today": not any(b["start"] <= 0 <= b["end"] for b in row_o["blocks"]
-                                       if b["kind"] != "cannibalization"),
-            "available_days": {"baseline": row_b["available_days"], "optimized": row_o["available_days"]},
-        })
-    return {"synthetic": True, "aircraft": out}
+def fleet(scenario: Optional[str] = ScenarioQ, base: Optional[str] = BaseQ) -> dict:
+    p = _plan(scenario)
+    return {"horizon_days": p["horizon_days"], "start_date": p["start_date"],
+            "aircraft": service.fleet_rows(p, _check_base(base))}
 
 
-@app.get("/api/aircraft/{ac_id}")
-def aircraft_detail(ac_id: str) -> dict:
-    fleet, _ = load_inputs()
-    acs = fleet.aircraft_by_id()
-    if ac_id not in acs:
-        raise HTTPException(404, f"Unknown aircraft {ac_id}")
-    ac = acs[ac_id]
-    plan = get_plan()
-    fc = _forecasts_by_engine()
-    status, reason = _aircraft_status(ac, plan, fc)
-    engines = []
-    for eid in ac.engine_ids:
-        e = fleet.engine_by_id()[eid]
-        engines.append({**e.model_dump(), **fc[eid], "plan_days": plan["forecasts_days"].get(eid)})
-    return {
-        "synthetic": True,
-        "aircraft": ac.model_dump(),
-        "base": next(b.model_dump() for b in fleet.bases if b.id == ac.base_id),
-        "status": status, "status_reason": reason,
-        "engines": engines,
-        "log": [x.model_dump() for x in fleet.log if x.aircraft_id == ac_id],
-        "tasks": [j for j in plan["jobs"] if j["aircraft_id"] == ac_id],
-        "timeline": {
-            "baseline": next(r for r in plan["baseline"]["gantt"] if r["aircraft_id"] == ac_id),
-            "optimized": next(r for r in plan["optimized"]["gantt"] if r["aircraft_id"] == ac_id),
-        },
-        "recommendations": [r for r in plan["recommendations"] if r["aircraft_id"] == ac_id],
-    }
+@app.get("/api/aircraft/{tail}")
+def aircraft(tail: str, scenario: Optional[str] = ScenarioQ) -> dict:
+    try:
+        return service.aircraft_detail(_plan(scenario), tail)
+    except KeyError:
+        raise HTTPException(404, f"Unknown aircraft '{tail}'")
 
 
 @app.get("/api/plan")
-def plan_default() -> dict:
-    return get_plan()
+def plan_get(scenario: Optional[str] = ScenarioQ) -> dict:
+    return service.public(_plan(scenario))
 
 
 @app.post("/api/plan")
-def plan_scenario(scenario: Scenario) -> dict:
-    fleet, _ = load_inputs()
-    parts = fleet.part_by_id()
-    bases = {b.id for b in fleet.bases}
-    for d in scenario.part_delays:
-        if d.part_id not in parts:
-            raise HTTPException(422, f"Unknown part {d.part_id}")
-    for c in scenario.bay_closures:
-        if c.base_id not in bases:
-            raise HTTPException(422, f"Unknown base {c.base_id}")
-        if c.end_day < c.start_day:
-            raise HTTPException(422, "Bay closure end_day is before start_day")
-    if scenario.surge and scenario.surge.end_day < scenario.surge.start_day:
-        raise HTTPException(422, "Surge end_day is before start_day")
-    return get_plan(scenario)
+def plan_post(sc: Scenario) -> dict:
+    """Run an unsaved scenario."""
+    _validate_scenario(sc)
+    return service.public(service.plan_for(scenario=sc))
+
+
+@app.post("/api/plan/rerun")
+def plan_rerun(scenario: Optional[str] = ScenarioQ) -> dict:
+    try:
+        p = service.plan_for(scenario, force=True)
+    except KeyError:
+        raise HTTPException(404, f"Unknown scenario '{scenario}'")
+    return {"computed_at": p["computed_at"], "solver": p["optimized"]["solver"], "scenario_id": p["scenario_id"]}
+
+
+@app.get("/api/recommendations")
+def recommendations(scenario: Optional[str] = ScenarioQ, base: Optional[str] = BaseQ,
+                    type: Optional[str] = Query(None)) -> dict:
+    p = _plan(scenario)
+    return {"recommendations": service.recommendations(p, _check_base(base), type)}
+
+
+@app.get("/api/capacity")
+def capacity(scenario: Optional[str] = ScenarioQ) -> dict:
+    return service.capacity(_plan(scenario))
 
 
 @app.get("/api/spares")
-def spares() -> dict:
-    fleet, _ = load_inputs()
-    plan = get_plan()
-    jobs = {j["id"]: j for j in plan["jobs"]}
-    parts = fleet.part_by_id()
-    out = []
-    for s in fleet.stock:
-        part = parts[s.part_id]
-        demand = {}
-        for name in ("baseline", "optimized"):
-            uses = []
-            for jid, (start, donor) in plan[name]["starts"].items():
-                if start is not None and s.part_id in jobs[jid]["parts"]:
-                    uses.append({"job_id": jid, "aircraft_id": jobs[jid]["aircraft_id"], "day": start,
-                                 "kind": jobs[jid]["kind"], "source": "cannibalised" if donor else "stores"})
-            demand[name] = sorted(uses, key=lambda u: u["day"])
-        shelf = s.on_hand + sum(a.qty for a in s.inbound)
-        from_stores = [u for u in demand["optimized"] if u["source"] == "stores"]
-        order = next((o for o in plan["part_orders"] if o["part_id"] == s.part_id), None)
-        out.append({
-            **part.model_dump(), "on_hand": s.on_hand,
-            "inbound": [a.model_dump() for a in s.inbound],
-            "demand": demand,
-            "shortage_qty": max(0, len(from_stores) - shelf),
-            "day0_order": order,
-            "status": "short" if order else ("low" if shelf - len(from_stores) <= 0 and from_stores else "ok"),
-        })
-    return {"synthetic": True, "parts": out,
-            "cannibalizations": plan["optimized"]["cannibalizations"],
-            "part_orders": plan["part_orders"]}
+def spares(scenario: Optional[str] = ScenarioQ) -> dict:
+    return service.spares(_plan(scenario))
+
+
+# ------------------------------------------------------------- scenarios --
+class SaveScenario(BaseModel):
+    name: str
+    scenario: Scenario
+
+
+@app.get("/api/scenarios")
+def scenarios_list() -> dict:
+    return {"scenarios": scenarios.list_scenarios()}
+
+
+@app.post("/api/scenarios", status_code=201)
+def scenarios_save(body: SaveScenario) -> dict:
+    _validate_scenario(body.scenario)
+    try:
+        return scenarios.save(body.name, body.scenario)
+    except ValueError as e:
+        raise HTTPException(409, str(e))
+
+
+@app.delete("/api/scenarios/{scenario_id}", status_code=204)
+def scenarios_delete(scenario_id: str) -> None:
+    try:
+        scenarios.delete(scenario_id)
+    except KeyError:
+        raise HTTPException(404, f"Unknown scenario '{scenario_id}'")
+
+
+# ------------------------------------------------------------------ data --
+@app.get("/api/data/sources")
+def data_sources() -> dict:
+    return {"sources": datastore.sources_info(),
+            "data_origin": "uploaded" if datastore.uploaded_sources() else "simulated"}
+
+
+@app.get("/api/data/assumptions")
+def data_assumptions() -> dict:
+    cfg = load_scenario_config()
+    leads = [p["lead_time_days"] for p in cfg["parts"]]
+    fleet_cfg = cfg["fleet"]
+    rate_lo, rate_hi = fleet_cfg["sortie_rate_range_cycles_per_day"]
+    statements = [
+        f"Fleet of {fleet_cfg['aircraft_count']} aircraft across {len(cfg['bases'])} bases; "
+        f"{len(fleet_cfg['single_engine_tails'])} single-engine, the rest twin-engine.",
+        f"Planning horizon {cfg['horizon_days']} days at daily granularity, starting {cfg['start_date']}.",
+        f"Sortie rate per aircraft drawn between {rate_lo} and {rate_hi} engine cycles per day (seed {cfg['seed']}).",
+        fleet_cfg["cycle_to_day_rule"],
+        f"Each engine follows one NASA C-MAPSS test trajectory from {', '.join(cfg['engines']['cmapss_datasets'])}.",
+        f"{len(cfg['parts'])} part types with supplier lead times from {min(leads)} to {max(leads)} days.",
+        "Hangar bays and technician hours per day by base: " + "; ".join(
+            f"{a['base_id']} {a['bays']} bays, {a['tech_hours_per_day']} h" for a in cfg["agencies"]) + ".",
+        f"Engine work: preventive {cfg['engine_task']['preventive_duration_days']} days, "
+        f"unplanned failure repair {cfg['engine_task']['corrective_duration_days']} days.",
+        cfg["failure_rule"], cfg["parts_rule"],
+        f"{len(cfg['planted']['at_risk_engines'])} engines are deliberately chosen to degrade inside the horizon, "
+        f"and {cfg['planted']['donor']['tail']} is grounded all horizon holding donor parts, so the planner has "
+        "real trade-offs to resolve.",
+    ]
+    return {"statements": statements, "config": cfg, "config_file": "backend/aeroready/fleet/scenario_config.json"}
+
+
+@app.get("/api/data/template/{source}")
+def data_template(source: str) -> PlainTextResponse:
+    if source not in datastore.SOURCES:
+        raise HTTPException(404, f"Unknown source '{source}'")
+    return PlainTextResponse(datastore.template_csv(source), media_type="text/csv",
+                             headers={"Content-Disposition": f'attachment; filename="{source}.csv"'})
+
+
+@app.post("/api/data/upload/{source}")
+async def data_upload(source: str, request: Request, filename: str = Query("upload.csv")) -> dict:
+    """Body: raw CSV text. Validated against the source schema; a rejected file changes nothing."""
+    if source not in datastore.SOURCES:
+        raise HTTPException(404, f"Unknown source '{source}'")
+    raw = await request.body()
+    if len(raw) > 2_000_000:
+        raise HTTPException(413, "File is larger than 2 MB")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        raise HTTPException(422, "File is not UTF-8 text")
+    rows, errors = datastore.validate(source, text)
+    if errors:
+        return {"ok": False, "errors": errors, "rows_read": len(rows)}
+    datastore.store_upload(source, rows, filename)
+    service.clear_cache()
+    p = service.plan_for()
+    return {"ok": True, "rows": len(rows), "computed_at": p["computed_at"], "solver": p["optimized"]["solver"]}
+
+
+@app.post("/api/data/reset")
+def data_reset() -> dict:
+    datastore.reset()
+    service.clear_cache()
+    p = service.plan_for()
+    return {"ok": True, "computed_at": p["computed_at"]}
+
+
+# ----------------------------------------------------------------- model --
+@app.get("/api/model/metrics")
+def model_metrics() -> dict:
+    if not RUL_METRICS_PATH.exists():
+        raise HTTPException(404, "No saved training run. Run scripts/train_rul.py.")
+    m = json.loads(RUL_METRICS_PATH.read_text())
+    m.pop("feature_importance", None)
+    return m
+
+
+@app.get("/api/model/predictions")
+def model_predictions() -> dict:
+    if not RUL_TEST_PREDICTIONS_PATH.exists():
+        raise HTTPException(404, "No saved test predictions. Run scripts/train_rul.py.")
+    return {"datasets": json.loads(RUL_TEST_PREDICTIONS_PATH.read_text())}
+
+
+@app.get("/api/model/importance")
+def model_importance() -> dict:
+    if not RUL_METRICS_PATH.exists():
+        raise HTTPException(404, "No saved training run. Run scripts/train_rul.py.")
+    feats = json.loads(RUL_METRICS_PATH.read_text()).get("feature_importance", [])
+    by_sensor: dict[str, float] = {}
+    for f in feats:
+        s = sensor_of(f["feature"]) or "cycle"
+        by_sensor[s] = by_sensor.get(s, 0.0) + f["gain_share"]
+    sensors = [{"sensor": s, "name": SENSOR_NAMES.get(s, "Cycle count (engine age)"), "gain_share": round(v, 4)}
+               for s, v in sorted(by_sensor.items(), key=lambda kv: -kv[1])]
+    return {"features": feats, "sensors": sensors, "note": json.loads(RUL_PATH.read_text()).get("note")}
 
 
 # ------------------------------------------------- built frontend (optional) --
-# After `npm run build`, the whole prototype is served from this one process.
 FRONTEND_DIST = BACKEND_DIR.parent / "frontend" / "dist"
 
 if FRONTEND_DIST.exists():

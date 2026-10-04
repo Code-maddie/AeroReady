@@ -14,3 +14,7 @@ frontend/dist/
 # Misc
 .DS_Store
 *.log
+
+# Runtime data written by the API
+backend/data/uploads/
+backend/data/scenarios.json

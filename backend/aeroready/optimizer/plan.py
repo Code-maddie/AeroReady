@@ -1,13 +1,11 @@
 """Run reactive baseline + CP-SAT for a scenario and package the result."""
 from __future__ import annotations
 
-import json
 import time
-from functools import lru_cache
+from datetime import datetime, timezone
 
-from aeroready.config import RUL_PATH
+from aeroready.datastore import active_inputs
 from aeroready.fleet.models import Fleet
-from aeroready.fleet.store import load_fleet
 from aeroready.optimizer.baseline import reactive_plan
 from aeroready.optimizer.cpsat import solve
 from aeroready.optimizer.evaluate import evaluate
@@ -15,9 +13,9 @@ from aeroready.optimizer.problem import Problem, Scenario, build_problem
 from aeroready.optimizer.recommend import recommendations
 
 
-@lru_cache(maxsize=1)
 def load_inputs() -> tuple[Fleet, dict]:
-    return load_fleet(), json.loads(RUL_PATH.read_text())
+    """Active inputs: simulated scenario plus any uploaded sources."""
+    return active_inputs()
 
 
 def _summary(p: Problem, plan, ev: dict) -> dict:
@@ -48,7 +46,8 @@ def run_plan(scenario: Scenario | None = None) -> dict:
     sc = scenario or Scenario()
     p = build_problem(fleet, rul, sc)
     t0 = time.perf_counter()
-    base = reactive_plan(p)
+    reactive_log: dict = {}
+    base = reactive_plan(p, reactive_log)
     eb = evaluate(p, base)
     opt, stats = solve(p)
     eo = evaluate(p, opt)
@@ -76,5 +75,7 @@ def run_plan(scenario: Scenario | None = None) -> dict:
         "capacity": {"bays": p.bays, "tech_hours": p.hours},
         "jobs": jobs,
         "forecasts_days": p.forecasts,
+        "reactive_log": reactive_log,
+        "computed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "elapsed_s": round(time.perf_counter() - t0, 2),
     }

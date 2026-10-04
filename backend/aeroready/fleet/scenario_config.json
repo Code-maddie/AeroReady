@@ -1,0 +1,110 @@
+{
+  "_about": "Assumptions behind the simulated fleet scenario. generator.py reads this file; the Data sources page displays it. Engine trajectories come from NASA C-MAPSS; everything else here is simulated.",
+  "seed": 26249,
+  "horizon_days": 30,
+  "start_date": "2026-10-05",
+  "fleet": {
+    "aircraft_count": 24,
+    "tail_prefix": "A-",
+    "base_assignment": [
+      {"base_id": "BN", "first_tail": 1, "last_tail": 8},
+      {"base_id": "BC", "first_tail": 9, "last_tail": 16},
+      {"base_id": "BS", "first_tail": 17, "last_tail": 24}
+    ],
+    "types": {
+      "twin": "TMR-2 twin-engine multirole",
+      "single": "SLT-1 single-engine lead-in trainer"
+    },
+    "single_engine_tails": ["A-06", "A-07", "A-08", "A-14", "A-15", "A-16", "A-23", "A-24"],
+    "sortie_rate_range_cycles_per_day": [1.0, 2.0],
+    "cycle_to_day_rule": "One engine cycle per sortie. RUL in days = RUL in cycles / sorties per day for that aircraft."
+  },
+  "engines": {
+    "cmapss_datasets": ["FD001", "FD003"],
+    "healthy_min_true_rul_cycles": 100,
+    "healthy_min_observed_cycles": 60,
+    "degrading_min_observed_cycles": 120,
+    "healthy_repair_parts": ["P02", "P03", "P04"]
+  },
+  "bases": [
+    {"id": "BN", "name": "North Sector Air Base", "region": "North"},
+    {"id": "BC", "name": "Central Sector Air Base", "region": "Central"},
+    {"id": "BS", "name": "Southern Sector Air Base", "region": "South"}
+  ],
+  "agencies": [
+    {"agency_id": "SF-BN", "base_id": "BN", "name": "BN Servicing Flight", "bays": 4, "tech_hours_per_day": 64},
+    {"agency_id": "SF-BC", "base_id": "BC", "name": "BC Servicing Flight", "bays": 3, "tech_hours_per_day": 48},
+    {"agency_id": "SF-BS", "base_id": "BS", "name": "BS Servicing Flight", "bays": 2, "tech_hours_per_day": 32}
+  ],
+  "parts": [
+    {"id": "P01", "name": "HPC module", "category": "engine", "lead_time_days": 21},
+    {"id": "P02", "name": "Fuel nozzle kit", "category": "engine", "lead_time_days": 7},
+    {"id": "P03", "name": "HPC seal kit", "category": "engine", "lead_time_days": 10},
+    {"id": "P04", "name": "Main bearing assembly", "category": "engine", "lead_time_days": 14},
+    {"id": "P05", "name": "Hydraulic pump", "category": "airframe", "lead_time_days": 6},
+    {"id": "P06", "name": "Landing-gear actuator", "category": "airframe", "lead_time_days": 12},
+    {"id": "P07", "name": "Brake unit", "category": "airframe", "lead_time_days": 4},
+    {"id": "P08", "name": "Radar T/R module", "category": "avionics", "lead_time_days": 18},
+    {"id": "P09", "name": "Inspection consumables kit", "category": "consumable", "lead_time_days": 3},
+    {"id": "P10", "name": "Borescope consumables kit", "category": "consumable", "lead_time_days": 3},
+    {"id": "P11", "name": "Hydraulic filter kit", "category": "consumable", "lead_time_days": 3}
+  ],
+  "stock": [
+    {"part_id": "P01", "on_hand": 0, "inbound": []},
+    {"part_id": "P02", "on_hand": 2, "inbound": [{"day": 12, "qty": 2}]},
+    {"part_id": "P03", "on_hand": 1, "inbound": []},
+    {"part_id": "P04", "on_hand": 0, "inbound": []},
+    {"part_id": "P05", "on_hand": 2, "inbound": []},
+    {"part_id": "P06", "on_hand": 1, "inbound": []},
+    {"part_id": "P07", "on_hand": 3, "inbound": [{"day": 5, "qty": 2}]},
+    {"part_id": "P08", "on_hand": 0, "inbound": [{"day": 9, "qty": 1}]},
+    {"part_id": "P09", "on_hand": 8, "inbound": []},
+    {"part_id": "P10", "on_hand": 4, "inbound": []},
+    {"part_id": "P11", "on_hand": 5, "inbound": []}
+  ],
+  "inspection_types": {
+    "PHASE": {"name": "Phase inspection (150 FH)", "duration_days": 3, "tech_hours_per_day": 12, "window_days": 10, "defer_max_days": 3, "parts": ["P09"]},
+    "LG": {"name": "Landing-gear inspection", "duration_days": 2, "tech_hours_per_day": 8, "window_days": 10, "defer_max_days": 0, "parts": ["P07"]},
+    "CAL": {"name": "Calendar inspection (90-day)", "duration_days": 4, "tech_hours_per_day": 16, "window_days": 14, "defer_max_days": 5, "parts": ["P09"]},
+    "AVX": {"name": "Avionics functional check", "duration_days": 1, "tech_hours_per_day": 6, "window_days": 7, "defer_max_days": 0, "parts": []},
+    "HYD": {"name": "Hydraulic system servicing", "duration_days": 1, "tech_hours_per_day": 8, "window_days": 7, "defer_max_days": 2, "parts": ["P11"]}
+  },
+  "random_inspections": {"per_aircraft_min": 1, "per_aircraft_max": 2, "due_day_min": 4, "due_day_max": 44},
+  "engine_task": {
+    "preventive_duration_days": 3, "preventive_tech_hours_per_day": 12,
+    "corrective_duration_days": 6, "corrective_tech_hours_per_day": 12
+  },
+  "failure_rule": "An engine is assumed to fail on the day of its P50 forecast unless preventive work starts before then. Flying past the P10 day counts as risk.",
+  "parts_rule": "Stock on hand and inbound deliveries are pooled across the fleet. Anything ordered on Day 0 arrives after the part's lead time. Cannibalised parts arrive from Day 1.",
+  "planted": {
+    "at_risk_engines": [
+      {"tail": "A-20", "target_true_rul_days": 7, "sortie_rate": 1.6, "repair_part": "P01", "note": "Needs the HPC module: 0 in stock, 21-day lead time"},
+      {"tail": "A-05", "target_true_rul_days": 10, "sortie_rate": 1.5, "repair_part": "P03", "note": "Competes with A-18 for the single HPC seal kit"},
+      {"tail": "A-03", "target_true_rul_days": 12, "sortie_rate": 1.4, "repair_part": "P02", "note": ""},
+      {"tail": "A-18", "target_true_rul_days": 15, "sortie_rate": 1.5, "repair_part": "P03", "note": ""},
+      {"tail": "A-10", "target_true_rul_days": 19, "sortie_rate": 1.3, "repair_part": "P04", "note": "Bearing: 0 in stock, 14-day lead time"},
+      {"tail": "A-14", "target_true_rul_days": 23, "sortie_rate": 1.2, "repair_part": "P02", "note": ""},
+      {"tail": "A-23", "target_true_rul_days": 26, "sortie_rate": 1.2, "repair_part": "P02", "note": ""}
+    ],
+    "inspections": [
+      {"tail": "A-20", "type": "PHASE", "due_day": 12},
+      {"tail": "A-20", "type": "LG", "due_day": 13},
+      {"tail": "A-17", "type": "CAL", "due_day": 13},
+      {"tail": "A-18", "type": "PHASE", "due_day": 12},
+      {"tail": "A-19", "type": "LG", "due_day": 13},
+      {"tail": "A-21", "type": "PHASE", "due_day": 14},
+      {"tail": "A-22", "type": "AVX", "due_day": 12},
+      {"tail": "A-24", "type": "CAL", "due_day": 15}
+    ],
+    "donor": {
+      "tail": "A-12",
+      "reason": "AOG - awaiting depot structural repair (wing attach fitting crack)",
+      "since_day": -40, "until_day": 75, "occupies_bay": false,
+      "donor_parts": {"P01": 1, "P08": 1}
+    },
+    "deferred_defect": {
+      "tail": "A-15", "name": "Radar T/R module replacement (deferred defect)",
+      "due_day": 6, "defer_max_days": 0, "duration_days": 1, "tech_hours_per_day": 10, "parts": ["P08"]
+    }
+  }
+}

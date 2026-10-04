@@ -10,7 +10,7 @@ from aeroready.fleet.generator import generate_fleet
 def test_fleet_is_deterministic_and_consistent():
     a, b = generate_fleet(), generate_fleet()
     assert a.model_dump() == b.model_dump()
-    assert a.synthetic and "SYNTHETIC" in a.data_notice
+    assert a.synthetic and "Simulated fleet scenario" in a.data_notice
     assert len(a.aircraft) == 24 and {x.base_id for x in a.aircraft} == {"BN", "BC", "BS"}
     engines = a.engine_by_id()
     for ac in a.aircraft:
