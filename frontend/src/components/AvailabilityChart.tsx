@@ -1,5 +1,5 @@
 import {
-  CartesianGrid, Line, LineChart, ReferenceArea, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  CartesianGrid, Line, LineChart, ReferenceArea, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
 import { dayDate, type Surge } from '../api'
 
@@ -59,9 +59,8 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
               axisLine={false} tickLine={false} width={44} />
             {surge && (
               <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1, surge.end_day)} y1={surge.min_available} y2={maxY}
-                fill="#F5A524" fillOpacity={0.08} stroke="#F5A524" strokeOpacity={0.35} strokeDasharray="4 3" />
+                fill="rgba(245,165,36,0.16)" fillOpacity={1} stroke="rgba(245,165,36,0.45)" strokeDasharray="4 3" ifOverflow="hidden" />
             )}
-            {surge && <ReferenceLine y={surge.min_available} stroke="#F5A524" strokeOpacity={0.5} strokeDasharray="4 3" />}
             <Tooltip
               cursor={{ stroke: '#9aa7b6', strokeWidth: 1, strokeDasharray: '3 3' }}
               content={({ active, payload, label }) => {

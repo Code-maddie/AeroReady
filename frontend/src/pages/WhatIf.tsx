@@ -184,7 +184,7 @@ export default function WhatIf() {
         <div className="grid grid-cols-4 gap-3">
           <div className="panel p-3">
             <div className="label-caps !text-[11px]">Optimised aircraft-days</div>
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="display num text-4xl font-semibold text-accent">{current.optimized.aircraft_days}</span>
               {delta !== null && (
                 <span key={runs} className={`chip-in num whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold ${delta >= 0 ? 'bg-ok/15 text-ok' : 'bg-bad/15 text-bad'}`}>
