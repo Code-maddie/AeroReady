@@ -20,6 +20,7 @@ from aeroready.fleet.generator import load_scenario_config
 from aeroready.optimizer.problem import Scenario
 from aeroready.rul.cmapss import SENSOR_NAMES
 from aeroready.rul.features import sensor_of
+from aeroready.rul.model import QUANTILES
 
 
 @asynccontextmanager
@@ -256,6 +257,7 @@ def model_metrics() -> dict:
         raise HTTPException(404, "No saved training run. Run scripts/train_rul.py.")
     m = json.loads(RUL_METRICS_PATH.read_text())
     m.pop("feature_importance", None)
+    m["quantiles"] = QUANTILES          # alpha of each quantile model, for nominal-coverage targets
     return m
 
 

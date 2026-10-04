@@ -1,57 +1,46 @@
 # AeroReady: 3-minute demo script
 
-**Setup (before the judges arrive)**
-1. `cd backend && .venv/Scripts/python -m uvicorn aeroready.api.main:app --port 8000`
-2. Or simply run `.\start.ps1` from the project root, which builds the UI and serves everything at http://localhost:8000. Open it full-screen (≥ 1280 px wide).
-3. Set the base selector to **All bases**. Optional: run `scripts/run_demo_check.py` once so the numbers below are fresh in your head.
-
-All numbers below come from the deterministic default scenario (seed 26249).
+**Setup:** run `.\start.ps1` from the project root and open http://localhost:8000 full-screen (1280 px or wider).
+Figures below are from the deterministic default scenario; the screen always shows the live values.
 
 ---
 
-### 0:00–0:35 · The question and the headline (landing page, then Readiness)
-Start on the landing page (the Typhoon photo with the AeroReady wordmark). The asterisk is the footnote: fleet data is synthetic and engine data is NASA C-MAPSS. Click **Open fleet readiness**.
-> "Commanders don't ask for a remaining-useful-life number. They ask *how many aircraft can I fly each day for the next month, and what do I change to fly more?* That's what AeroReady answers."
+### 0:00–0:30 · The question (landing page)
+> "Commanders don't ask for a remaining-life number. They ask how many aircraft they can fly each day this month, and what to change to fly more."
 
-- Point at the headline: **+58 aircraft-days gained** over 30 days, with the same 24 aircraft, the same hangars and the same spares.
-- The chart: grey dashed is **reactive maintenance as done today**; amber is **our optimised plan**. The reactive curve sags to 16 aircraft around Day 13 because six engines fail and the Southern base's two bays jam up. The optimised plan never drops below 20.
-- Note honestly that on Day 0 we fly *fewer* aircraft (21 vs 23): we deliberately take A-05 and A-20 in early. From Day 9 onwards the optimised plan flies more aircraft than reactive every single day.
-- Tiles: average 21.2 vs 19.2 aircraft per day, 3 critical aircraft, and 6 unplanned failures avoided.
+- Read the headline. Point at the live chart on the right: grey dashed is reactive maintenance, amber is the optimised plan, and the figure above it is the aircraft-days difference.
+- Scroll once through **The problem** (it cites SIH problem statement 26249) and **How it works** (four steps).
+- Click **Open console**.
 
-### 0:35–1:20 · One recommendation, one cannibalisation (Plan page)
-Click **Open the plan**.
-- Read the top recommendation: *"Cannibalise HPC module from A-12 to restore A-20."*
-  - A-20's engine is forecast to fail around **Day 5** (P10 3.6 d, P50 5.5 d).
-  - The HPC module has **0 in stock and a 21-day lead time**.
-  - A-12 is grounded all month for structural repair and holds a serviceable module. The plan takes it on Day 1 and raises a linked removal record.
-- In the Gantt, find **A-20**: three blocks stacked on Days 2–4 (engine repair, phase inspection and landing-gear inspection) **bundled into one grounding**. Hover a block to show its window, parts and forecast failure day.
-- Toggle **Reactive** at the top right. A-20 is now a long red hatched bar: failed on Day 5 and still waiting for the part at the end of the month. **A-20 alone: 27 vs 5 mission-ready days.**
-- Toggle back to **Optimised**. The metric strip shows the summary: failures 6 → 0, engine risk-days 55 → 5.
+### 0:30–1:00 · Overview (/app/overview)
+- Tiles: mission-ready today, 30-day average (optimised vs reactive), aircraft-days gained, aircraft at risk.
+- Hover the chart around Day 13 to show the reactive dip and the per-day difference.
+- Note that Day 0 is lower in the optimised plan, because aircraft are taken in early. That investment pays back for the rest of the month.
+- Risk watchlist: engines whose P10 falls inside the horizon, and what each plan does about them.
 
-### 1:20–1:50 · Why we trust the forecast (Aircraft page, A-20)
-Click **A-20** (any tail link).
-- RUL band chart: the P10–P90 band narrows as the engine approaches failure. It is trained on **NASA C-MAPSS**, and this engine *is* a real C-MAPSS test trajectory.
-- **Truth (validation) tile:** the real remaining life was 11 cycles; we predicted 9. That is shown for validation only, and the planner never sees the truth.
-- **Contributing sensors:** HPC outlet static pressure and bleed enthalpy pull the forecast down (tree-SHAP). Sensor trends sit next to it.
-- One line on metrics: test RMSE 17.7 / 17.3 cycles on FD001 / FD003. Our intervals are a bit narrow, and we say so in the README.
+### 1:00–1:40 · Plan (/app/plan)
+- Switch the Gantt to **Compare**. A-20 shows engine work bundled with two inspections on Days 2–4 in the optimised row; in the reactive row it fails on Day 5 and waits for a part.
+- Click A-20's predictive block. The side panel shows the part source: cannibalised from A-12, which is grounded all horizon. Stock is zero and the lead time is 21 days.
+- Scroll to the **capacity heatmap**. The Southern base bays are the bottleneck.
+- Filter recommendations to **Cannibalise**.
 
-### 1:50–2:25 · What-if 1: a spares delay (What-if page)
-Click **What-if**, then the **Spares delay** quick scenario (main bearing supplier slips 10 days). Or open `/what-if?preset=spares`.
-- The amber curve re-optimises and animates; the faint dotted line is the previous plan.
-- Delta chip: **−7 aircraft-days**. The red **Consequence** callout explains it: *A-10-E1 can no longer be repaired before its forecast failure on Day 20, because the bearing now arrives Day 24.*
-- Point out that the optimised plan is still +51 over reactive. The system tells you what a supplier delay costs, before it happens.
+### 1:40–2:00 · Why trust the forecast (/app/fleet/A-20)
+- RUL band from the NASA C-MAPSS trajectory; true RUL shown for validation only. Contributing sensors (SHAP) and sensor trends.
+- Planned work table: what the optimised plan does and what the reactive baseline would have done.
 
-### 2:25–2:50 · What-if 2: surge
-Click **Surge** (≥ 21 mission-ready aircraft, Days 10–16).
-- The shaded band appears. **Reactive misses the target by 26 aircraft-days; the optimised plan meets it exactly (shortfall 0)** by shifting inspections out of the surge window. Total availability is unchanged at 635.
-- If there's time, show **Bay closure** too: one Southern-base bay lost for a week costs reactive 5 aircraft-days and the optimised plan **zero**.
+### 2:00–2:35 · What-if (/app/scenarios)
+- **Delay a part:** P04 main bearing, 10 days. Select **Run scenario**.
+- Read the result: aircraft-days change against the baseline scenario, one unplanned failure, and the recommendations that were added, removed or moved. The A-10 engine repair can no longer happen in time.
+- Save it as "Bearing slip". It appears in the top-bar scenario switcher.
+- Add a **Surge requirement** (for example at least 21 aircraft, Days 10 to 16) and run again. The Surge tile says whether the target is met and on which days it is not.
 
-### 2:50–3:00 · Close (Spares page)
-Click **Spares**: Day-0 orders (seal kits, bearing), the two cannibalisation actions, and supply strips per part.
-> "Health data, technical records, spares and hangar capacity in one model, and an optimiser that turns them into more aircraft in the air. Everything here is synthetic except the C-MAPSS engine data; the next step is real HUMS and MIS feeds and validation with maintenance engineers."
+### 2:35–3:00 · Spares and data (/app/spares, /app/data)
+- Spares: the shortage timeline shows A-20 waiting in the reactive baseline, and the cannibalisation table shows the aircraft-days each action gains.
+- Data sources: four integrated sources, which data is real (C-MAPSS) and which is simulated, CSV templates and uploads, and the assumptions list read from the generator's config file.
+> "Health data, records, spares and hangar capacity in one model, and an optimiser that turns them into more aircraft available. Next: real system integration and validation with maintenance engineers."
 
 ---
 
 **If something goes wrong**
-- *Red "Backend offline" banner:* the API isn't running; start it (setup step 1) and click **Retry**.
-- *Re-plan slow:* scenarios solve in about 0.3–1 s; the first request after start-up can take a few seconds.
+- *"Cannot reach the AeroReady service":* the backend is not running; run `.\start.ps1` again, then select **Retry**.
+- *An upload was rejected:* the table lists each row and column at fault; nothing was changed. **Reset to simulated scenario** restores the default data.

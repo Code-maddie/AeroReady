@@ -1,141 +1,121 @@
+import { Download } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import type { Spares as SparesData, SparesPart } from '../api'
-import { PageHead } from '../components/Layout'
-import { Empty, ErrorState, Loading } from '../components/States'
-import { useApi } from '../hooks'
+import { Button, EmptyState, Panel, QueryView, Skeleton, SortTable, type Column } from '../components/ui'
+import type { SparesResponse } from '../lib/api'
+import { downloadCsv, signed } from '../lib/format'
+import { useConsoleParams } from '../lib/params'
+import { useSpares } from '../lib/queries'
 
-const H = 30
-
-/** 30-day strip: supply arrivals (▲), Day-0-order lead time (|), demand starts (●). */
-function SupplyStrip({ p }: { p: SparesPart }) {
-  const pos = (d: number) => `${((Math.min(d, H - 0.5) + 0.5) / H) * 100}%`
-  return (
-    <div className="relative h-6 w-full" aria-hidden>
-      <div className="absolute inset-x-0 top-3 h-px bg-line2" />
-      {p.lead_time_days < H && (
-        <div className="absolute top-0.5 h-5 border-l border-dashed border-accent/70" style={{ left: pos(p.lead_time_days) }}
-          title={`Day-0 order arrives Day ${p.lead_time_days}`} />
-      )}
-      {p.inbound.map((a, i) => (
-        <span key={i} className="absolute top-0 -translate-x-1/2 text-[10px] text-ok" style={{ left: pos(a.day) }} title={`Inbound ×${a.qty} Day ${a.day}`}>▲</span>
-      ))}
-      {p.demand.optimized.map((u, i) => (
-        <span key={i} title={`${u.aircraft_id} ${u.kind} Day ${u.day} (${u.source})`}
-          className={`absolute top-[8px] h-2.5 w-2.5 -translate-x-1/2 rounded-full ring-2 ring-panel ${u.source === 'cannibalised' ? 'bg-k-cannibal' : u.kind === 'scheduled' ? 'bg-k-scheduled' : 'bg-k-predictive'}`}
-          style={{ left: pos(u.day) }} />
-      ))}
-    </div>
-  )
-}
+type Inv = SparesResponse['inventory'][number]
 
 export default function Spares() {
-  const sp = useApi<SparesData>('/api/spares')
-  if (sp.error) return <ErrorState message={sp.error} onRetry={sp.reload} />
-  if (!sp.data) return <Loading label="Loading spares" />
-  const { parts, cannibalizations, part_orders } = sp.data
-  const short = parts.filter((p) => p.status === 'short')
+  const { scenario, link } = useConsoleParams()
+  const q = useSpares(scenario)
+
+  const cols: Column<Inv>[] = [
+    { key: 'part', label: 'Part', value: (r) => r.part_id, render: (r) => <span><span className="text-dim">{r.part_id}</span> <span className="text-ink">{r.name}</span><div className="text-[11px] text-dim">{r.category}</div></span> },
+    { key: 'stock', label: 'On hand', value: (r) => r.on_hand, align: 'right' },
+    { key: 'inbound', label: 'Inbound', value: (r) => r.inbound_qty, align: 'right',
+      render: (r) => r.inbound.length ? r.inbound.map((a) => `${a.qty} on Day ${a.day}`).join(', ') : 'None' },
+    { key: 'lead', label: 'Lead time (days)', value: (r) => r.lead_time_days, align: 'right' },
+    { key: 'demand', label: 'Demand in horizon', value: (r) => r.demand, align: 'right',
+      render: (r) => <span>{r.demand}{r.demand_cannibalised > 0 && <span className="text-xs text-k-cannibal"> ({r.demand_cannibalised} cannibalised)</span>}</span> },
+    { key: 'short', label: 'Shortfall', value: (r) => r.shortfall, align: 'right',
+      render: (r) => <span className={r.shortfall ? 'font-semibold text-bad' : 'text-dim'}>{r.shortfall}</span> },
+    { key: 'order', label: 'Day 0 order', value: (r) => r.day0_order?.qty ?? null,
+      render: (r) => r.day0_order ? <span className="text-xs">{r.day0_order.qty} {r.day0_order.qty === 1 ? "unit" : "units"}, arrives Day {r.day0_order.arrives_day}</span> : <span className="text-dim">None</span> },
+  ]
+
+  const exportCsv = (d: SparesResponse) => downloadCsv('aeroready-spares.csv',
+    ['part_id', 'name', 'category', 'on_hand', 'inbound_qty', 'inbound_days', 'lead_time_days', 'demand', 'demand_cannibalised', 'shortfall', 'day0_order_qty', 'day0_order_arrives'],
+    d.inventory.map((r) => [r.part_id, r.name, r.category, r.on_hand, r.inbound_qty, r.inbound.map((a) => a.day).join(' '), r.lead_time_days,
+      r.demand, r.demand_cannibalised, r.shortfall, r.day0_order?.qty, r.day0_order?.arrives_day]))
 
   return (
-    <div className="mx-auto max-w-[1500px] space-y-4">
-      <PageHead title="Spares and supply." sub="What the plan needs and what to order today." />
+    <QueryView q={q} skeleton={<div className="space-y-4"><Skeleton h={360} /><Skeleton h={240} /></div>}>
+      {(d) => (
+        <div className="space-y-4">
+          <Panel title="Inventory" actions={<Button onClick={() => exportCsv(d)} icon={<Download className="h-3.5 w-3.5" />}>Export CSV</Button>}>
+            <SortTable rows={d.inventory} columns={cols} rowKey={(r) => r.part_id} initialSort={{ key: 'short', dir: 'desc' }} highlight={(r) => r.shortfall > 0} />
+            <p className="mt-2 text-xs text-dim">Demand counts parts consumed by work started in the optimised plan. Shortfall is demand from stores beyond stock on hand plus inbound deliveries.</p>
+          </Panel>
 
-      <div className="grid grid-cols-3 gap-4">
-        <section className="panel p-4">
-          <h2 className="display text-lg font-semibold">Day-0 orders</h2>
-          <p className="mb-2 text-xs text-dim">Demand the plan creates beyond stock and inbound. Ordering now beats ordering on failure.</p>
-          {part_orders.length === 0 && <Empty text="No orders needed." />}
-          <ul className="space-y-1.5">
-            {part_orders.map((o) => (
-              <li key={o.part_id} className="flex items-baseline justify-between gap-2 rounded border border-accent/30 bg-accent/[0.05] px-2.5 py-1.5 text-sm">
-                <span><span className="num text-dim">{o.part_id}</span> {o.part_name}</span>
-                <span className="num shrink-0 text-xs text-muted">×{o.qty} · arrives D{o.arrives_day} · needed D{o.needed_from_day}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section className="panel p-4">
-          <h2 className="display text-lg font-semibold">Cannibalisation actions</h2>
-          <p className="mb-2 text-xs text-dim">Serviceable parts taken from aircraft that are grounded for the whole horizon.</p>
-          {cannibalizations.length === 0 && <Empty text="None in this plan." />}
-          <ul className="space-y-1.5">
-            {cannibalizations.map((c) => (
-              <li key={c.job_id} className="rounded border border-k-cannibal/40 bg-k-cannibal/[0.06] px-2.5 py-1.5 text-sm">
-                <div className="flex items-center gap-2">
-                  <Link to={`/aircraft/${c.donor}`} className="display num font-semibold hover:text-accent">{c.donor}</Link>
-                  <span className="text-k-cannibal">→</span>
-                  <Link to={`/aircraft/${c.aircraft_id}`} className="display num font-semibold hover:text-accent">{c.aircraft_id}</Link>
-                  <span className="text-ink">{c.part_name}</span>
-                </div>
-                <div className="num text-xs text-muted">Remove D{Math.max(0, c.day - 1)} · fit D{c.day} · linked removal record on {c.donor}</div>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section className="panel p-4">
-          <h2 className="display text-lg font-semibold">Shortages</h2>
-          <p className="mb-2 text-xs text-dim">Parts whose planned demand exceeds stock on hand plus inbound.</p>
-          {short.length === 0 && <Empty text="No shortages." />}
-          <ul className="space-y-1.5">
-            {short.map((p) => (
-              <li key={p.id} className="flex items-baseline justify-between rounded border border-bad/40 bg-bad/[0.06] px-2.5 py-1.5 text-sm">
-                <span><span className="num text-dim">{p.id}</span> {p.name}</span>
-                <span className="num text-right text-xs"><span className="text-bad">short {p.shortage_qty}</span>
-                  <span className="text-dim"> · {p.day0_order ? `covered by Day-0 order (D${p.day0_order.arrives_day})` : `lead ${p.lead_time_days} d`}</span></span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </div>
+          <Panel title="Shortage timeline">
+            {d.shortage_timeline.length === 0 ? <EmptyState title="No part shortages" detail="Every part the plan needs is on hand or inbound in time." /> : (
+              <div className="space-y-4">
+                {d.shortage_timeline.map((t) => (
+                  <div key={t.part_id} className="rounded border border-line p-3">
+                    <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                      <div className="text-sm"><span className="text-dim">{t.part_id}</span> <span className="font-medium text-ink">{t.name}</span></div>
+                      <span className={`text-xs ${t.shortfall ? 'text-bad' : 'text-muted'}`}>Shortfall in optimised plan: {t.shortfall}</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                      <div>
+                        <div className="label-caps mb-1">Optimised plan</div>
+                        {t.optimized.length === 0 ? <p className="text-xs text-dim">No stores demand for this part.</p> : (
+                          <table className="w-full text-xs"><thead><tr className="text-left text-dim">
+                            <th className="py-1 font-normal">Aircraft</th><th className="font-normal">Needed from</th><th className="font-normal">Part ready</th><th className="font-normal">Planned start</th><th className="text-right font-normal">Days waiting on part</th>
+                          </tr></thead><tbody>
+                            {t.optimized.map((x) => (
+                              <tr key={x.job_id} className="border-t border-line/60">
+                                <td className="py-1"><Link to={link(`/app/fleet/${x.aircraft_id}`)} className="text-ink hover:text-accent">{x.aircraft_id}</Link></td>
+                                <td className="num">Day {x.need_from}</td><td className="num">Day {x.part_ready_day}</td><td className="num">Day {x.start}</td>
+                                <td className={`num text-right ${x.part_wait_days ? 'text-warn' : 'text-dim'}`}>{x.part_wait_days}</td>
+                              </tr>
+                            ))}
+                          </tbody></table>
+                        )}
+                      </div>
+                      <div>
+                        <div className="label-caps mb-1">Reactive baseline</div>
+                        {t.reactive.length === 0 ? <p className="text-xs text-dim">No aircraft waits for this part.</p> : (
+                          <table className="w-full text-xs"><thead><tr className="text-left text-dim">
+                            <th className="py-1 font-normal">Aircraft</th><th className="font-normal">Requested</th><th className="font-normal">Part ready</th><th className="font-normal">Start</th><th className="text-right font-normal">Days waiting on part</th>
+                          </tr></thead><tbody>
+                            {t.reactive.map((x) => (
+                              <tr key={x.job_id} className="border-t border-line/60">
+                                <td className="py-1"><Link to={link(`/app/fleet/${x.aircraft_id}`)} className="text-ink hover:text-accent">{x.aircraft_id}</Link></td>
+                                <td className="num">Day {x.request_day}</td>
+                                <td className="num">{x.part_ready_day != null ? `Day ${x.part_ready_day}` : 'After horizon'}</td>
+                                <td className="num">{x.start != null ? `Day ${x.start}` : 'After horizon'}</td>
+                                <td className="num text-right text-bad">{x.part_wait_days}</td>
+                              </tr>
+                            ))}
+                          </tbody></table>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
 
-      <section className="panel p-4">
-        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="display text-lg font-semibold">Stock &amp; demand · optimised plan</h2>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
-            <span><span className="text-ok">▲</span> inbound</span>
-            <span><span className="mr-1 inline-block h-3 border-l border-dashed border-accent" />Day-0 order arrives</span>
-            <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-k-scheduled align-middle" />inspection</span>
-            <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-k-predictive align-middle" />engine work</span>
-            <span><span className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-k-cannibal align-middle" />cannibalised</span>
-          </div>
+          <Panel title="Cannibalisation actions">
+            {d.cannibalizations.length === 0 ? <EmptyState title="No cannibalisation in this plan" /> : (
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-line text-left">
+                  {['Donor', 'Receiver', 'Part', 'Removal', 'Fitted', 'Aircraft-days gained', 'Depends on'].map((h) => <th key={h} className="label-caps py-2 pr-3 font-normal">{h}</th>)}
+                </tr></thead>
+                <tbody>
+                  {d.cannibalizations.map((c) => (
+                    <tr key={c.job_id} className="border-b border-line/60 align-top">
+                      <td className="py-2 pr-3"><Link to={link(`/app/fleet/${c.donor}`)} className="display text-[15px] font-semibold hover:text-accent">{c.donor}</Link></td>
+                      <td className="py-2 pr-3"><Link to={link(`/app/fleet/${c.aircraft_id}`)} className="display text-[15px] font-semibold hover:text-accent">{c.aircraft_id}</Link></td>
+                      <td className="py-2 pr-3"><span className="text-dim">{c.part_id}</span> {c.part_name}</td>
+                      <td className="num py-2 pr-3">Day {c.removal_day}</td>
+                      <td className="num py-2 pr-3">Day {c.day}</td>
+                      <td className="num py-2 pr-3 text-accent">{signed(c.aircraft_days_gained)}</td>
+                      <td className="py-2 pr-3 text-xs text-muted">{c.condition}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <p className="mt-2 text-xs text-dim">Aircraft-days gained: the optimised plan's total minus the total when the optimiser is re-run without this donor part.</p>
+          </Panel>
         </div>
-        <table className="w-full table-fixed text-sm">
-          <thead>
-            <tr className="label-caps border-b border-line text-left !text-[11px]">
-              <th className="w-[230px] py-2">Part</th>
-              <th className="w-16 text-right">On hand</th>
-              <th className="w-28 pl-4">Inbound</th>
-              <th className="w-16 text-right">Lead</th>
-              <th className="w-16 text-right">Demand</th>
-              <th className="pl-6">Day 0 → 29</th>
-              <th className="w-20 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {parts.map((p) => (
-              <tr key={p.id} className="border-b border-line/60">
-                <td className="py-2"><span className="num text-dim">{p.id}</span> <span className="text-ink">{p.name}</span>
-                  <div className="text-[10px] text-dim">{p.category}</div></td>
-                <td className={`num text-right ${p.on_hand === 0 ? 'text-bad' : 'text-ink'}`}>{p.on_hand}</td>
-                <td className="num pl-4 text-xs text-muted">{p.inbound.map((a) => `×${a.qty} D${a.day}`).join(', ') || '—'}</td>
-                <td className="num text-right text-muted">{p.lead_time_days} d</td>
-                <td className="num text-right">{p.demand.optimized.length}</td>
-                <td className="pl-6 pr-2"><SupplyStrip p={p} /></td>
-                <td className="text-right">
-                  {p.on_hand === 0 && p.demand.optimized.length > 0 && p.demand.optimized.every((u) => u.source === 'cannibalised') ? (
-                    <span className="rounded border border-k-cannibal/50 px-1.5 py-0.5 text-[10px] font-semibold text-k-cannibal"
-                      title="No stock; demand met by cannibalisation from a grounded aircraft">◆ Donor</span>
-                  ) : (
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
-                      p.status === 'short' ? 'border-bad/50 text-bad' : p.status === 'low' ? 'border-warn/50 text-warn' : 'border-ok/40 text-ok'}`}>
-                      {p.status === 'short' ? '■ Order' : p.status === 'low' ? '▲ Low' : '● OK'}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-    </div>
+      )}
+    </QueryView>
   )
 }

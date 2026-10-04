@@ -1,37 +1,50 @@
-import { StrictMode, useState } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import Layout from './components/Layout'
-import { BaseContext, loadBase, saveBase, type BaseFilter } from './hooks'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import Shell from './console/Shell'
 import './index.css'
-import Aircraft from './pages/Aircraft'
-import Home from './pages/Home'
+import AircraftDetail from './pages/AircraftDetail'
+import DataSources from './pages/DataSources'
+import Fleet from './pages/Fleet'
+import Landing from './pages/Landing'
+import Model from './pages/Model'
+import Overview from './pages/Overview'
 import Plan from './pages/Plan'
-import Readiness from './pages/Readiness'
+import Scenarios from './pages/Scenarios'
 import Spares from './pages/Spares'
-import WhatIf from './pages/WhatIf'
 
-function App() {
-  const [base, setBaseState] = useState<BaseFilter>(loadBase)
-  const setBase = (b: BaseFilter) => { setBaseState(b); saveBase(b) }
-  return (
-    <BaseContext.Provider value={{ base, setBase }}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route element={<Layout />}>
-            <Route path="readiness" element={<Readiness />} />
-            <Route path="plan" element={<Plan />} />
-            <Route path="aircraft" element={<Aircraft />} />
-            <Route path="aircraft/:id" element={<Aircraft />} />
-            <Route path="what-if" element={<WhatIf />} />
-            <Route path="spares" element={<Spares />} />
-          </Route>
-          <Route path="*" element={<Home />} />
-        </Routes>
-      </BrowserRouter>
-    </BaseContext.Provider>
-  )
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 60_000, retry: 1, refetchOnWindowFocus: false } },
+})
+
+/** /app -> /app/overview, keeping any base/scenario query string. */
+function ToOverview() {
+  const { search } = useLocation()
+  return <Navigate to={`/app/overview${search}`} replace />
 }
 
-createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/app" element={<Shell />}>
+            <Route index element={<ToOverview />} />
+            <Route path="overview" element={<Overview />} />
+            <Route path="fleet" element={<Fleet />} />
+            <Route path="fleet/:tail" element={<AircraftDetail />} />
+            <Route path="plan" element={<Plan />} />
+            <Route path="scenarios" element={<Scenarios />} />
+            <Route path="spares" element={<Spares />} />
+            <Route path="data" element={<DataSources />} />
+            <Route path="model" element={<Model />} />
+            <Route path="*" element={<ToOverview />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </StrictMode>,
+)
