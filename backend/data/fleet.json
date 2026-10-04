@@ -1,0 +1,2275 @@
+{
+  "synthetic": true,
+  "data_notice": "SYNTHETIC fleet data for demonstration. Engine sensor trajectories from NASA C-MAPSS.",
+  "seed": 26249,
+  "start_date": "2026-10-05",
+  "horizon_days": 30,
+  "bases": [
+    {
+      "id": "BN",
+      "name": "North Sector Air Base",
+      "region": "North"
+    },
+    {
+      "id": "BC",
+      "name": "Central Sector Air Base",
+      "region": "Central"
+    },
+    {
+      "id": "BS",
+      "name": "Southern Sector Air Base",
+      "region": "South"
+    }
+  ],
+  "agencies": [
+    {
+      "agency_id": "SF-BN",
+      "base_id": "BN",
+      "name": "BN Servicing Flight",
+      "bays": 4,
+      "tech_hours_per_day": 64
+    },
+    {
+      "agency_id": "SF-BC",
+      "base_id": "BC",
+      "name": "BC Servicing Flight",
+      "bays": 3,
+      "tech_hours_per_day": 48
+    },
+    {
+      "agency_id": "SF-BS",
+      "base_id": "BS",
+      "name": "BS Servicing Flight",
+      "bays": 2,
+      "tech_hours_per_day": 32
+    }
+  ],
+  "aircraft": [
+    {
+      "id": "A-01",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BN",
+      "sortie_rate": 1.8,
+      "engine_ids": [
+        "A-01-E1",
+        "A-01-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-02",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BN",
+      "sortie_rate": 1.6,
+      "engine_ids": [
+        "A-02-E1",
+        "A-02-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-03",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BN",
+      "sortie_rate": 1.4,
+      "engine_ids": [
+        "A-03-E1",
+        "A-03-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-04",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BN",
+      "sortie_rate": 1.9,
+      "engine_ids": [
+        "A-04-E1",
+        "A-04-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-05",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BN",
+      "sortie_rate": 1.5,
+      "engine_ids": [
+        "A-05-E1",
+        "A-05-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-06",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BN",
+      "sortie_rate": 2.0,
+      "engine_ids": [
+        "A-06-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-07",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BN",
+      "sortie_rate": 1.6,
+      "engine_ids": [
+        "A-07-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-08",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BN",
+      "sortie_rate": 1.1,
+      "engine_ids": [
+        "A-08-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-09",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BC",
+      "sortie_rate": 1.7,
+      "engine_ids": [
+        "A-09-E1",
+        "A-09-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-10",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BC",
+      "sortie_rate": 1.3,
+      "engine_ids": [
+        "A-10-E1",
+        "A-10-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-11",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BC",
+      "sortie_rate": 1.6,
+      "engine_ids": [
+        "A-11-E1",
+        "A-11-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-12",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BC",
+      "sortie_rate": 1.2,
+      "engine_ids": [
+        "A-12-E1",
+        "A-12-E2"
+      ],
+      "grounding": {
+        "reason": "AOG - awaiting depot structural repair (wing attach fitting crack)",
+        "since_day": -40,
+        "until_day": 75,
+        "occupies_bay": false,
+        "donor_parts": {
+          "P01": 1,
+          "P08": 1
+        }
+      }
+    },
+    {
+      "id": "A-13",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BC",
+      "sortie_rate": 1.3,
+      "engine_ids": [
+        "A-13-E1",
+        "A-13-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-14",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BC",
+      "sortie_rate": 1.2,
+      "engine_ids": [
+        "A-14-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-15",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BC",
+      "sortie_rate": 1.1,
+      "engine_ids": [
+        "A-15-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-16",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BC",
+      "sortie_rate": 1.6,
+      "engine_ids": [
+        "A-16-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-17",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BS",
+      "sortie_rate": 1.3,
+      "engine_ids": [
+        "A-17-E1",
+        "A-17-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-18",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BS",
+      "sortie_rate": 1.5,
+      "engine_ids": [
+        "A-18-E1",
+        "A-18-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-19",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BS",
+      "sortie_rate": 2.0,
+      "engine_ids": [
+        "A-19-E1",
+        "A-19-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-20",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BS",
+      "sortie_rate": 1.6,
+      "engine_ids": [
+        "A-20-E1",
+        "A-20-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-21",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BS",
+      "sortie_rate": 1.7,
+      "engine_ids": [
+        "A-21-E1",
+        "A-21-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-22",
+      "type": "TMR-2 twin-engine multirole",
+      "base_id": "BS",
+      "sortie_rate": 1.1,
+      "engine_ids": [
+        "A-22-E1",
+        "A-22-E2"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-23",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BS",
+      "sortie_rate": 1.2,
+      "engine_ids": [
+        "A-23-E1"
+      ],
+      "grounding": null
+    },
+    {
+      "id": "A-24",
+      "type": "SLT-1 single-engine lead-in trainer",
+      "base_id": "BS",
+      "sortie_rate": 1.4,
+      "engine_ids": [
+        "A-24-E1"
+      ],
+      "grounding": null
+    }
+  ],
+  "engines": [
+    {
+      "id": "A-01-E1",
+      "aircraft_id": "A-01",
+      "position": 1,
+      "serial": "ESN-54660",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 99,
+      "cycles_observed": 97,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-01-E2",
+      "aircraft_id": "A-01",
+      "position": 2,
+      "serial": "ESN-89842",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 45,
+      "cycles_observed": 152,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-02-E1",
+      "aircraft_id": "A-02",
+      "position": 1,
+      "serial": "ESN-55335",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 45,
+      "cycles_observed": 88,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-02-E2",
+      "aircraft_id": "A-02",
+      "position": 2,
+      "serial": "ESN-19158",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 55,
+      "cycles_observed": 113,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-03-E1",
+      "aircraft_id": "A-03",
+      "position": 1,
+      "serial": "ESN-86662",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 98,
+      "cycles_observed": 182,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-03-E2",
+      "aircraft_id": "A-03",
+      "position": 2,
+      "serial": "ESN-26237",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 71,
+      "cycles_observed": 68,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-04-E1",
+      "aircraft_id": "A-04",
+      "position": 1,
+      "serial": "ESN-40591",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 47,
+      "cycles_observed": 73,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-04-E2",
+      "aircraft_id": "A-04",
+      "position": 2,
+      "serial": "ESN-58609",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 57,
+      "cycles_observed": 160,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-05-E1",
+      "aircraft_id": "A-05",
+      "position": 1,
+      "serial": "ESN-59861",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 56,
+      "cycles_observed": 136,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-05-E2",
+      "aircraft_id": "A-05",
+      "position": 2,
+      "serial": "ESN-58028",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 74,
+      "cycles_observed": 137,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-06-E1",
+      "aircraft_id": "A-06",
+      "position": 1,
+      "serial": "ESN-94330",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 12,
+      "cycles_observed": 217,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-07-E1",
+      "aircraft_id": "A-07",
+      "position": 1,
+      "serial": "ESN-74145",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 49,
+      "cycles_observed": 211,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-08-E1",
+      "aircraft_id": "A-08",
+      "position": 1,
+      "serial": "ESN-59928",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 96,
+      "cycles_observed": 358,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-09-E1",
+      "aircraft_id": "A-09",
+      "position": 1,
+      "serial": "ESN-40006",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 42,
+      "cycles_observed": 87,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-09-E2",
+      "aircraft_id": "A-09",
+      "position": 2,
+      "serial": "ESN-52711",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 15,
+      "cycles_observed": 112,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-10-E1",
+      "aircraft_id": "A-10",
+      "position": 1,
+      "serial": "ESN-86162",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 86,
+      "cycles_observed": 174,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-10-E2",
+      "aircraft_id": "A-10",
+      "position": 2,
+      "serial": "ESN-29731",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 30,
+      "cycles_observed": 143,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-11-E1",
+      "aircraft_id": "A-11",
+      "position": 1,
+      "serial": "ESN-55718",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 36,
+      "cycles_observed": 90,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-11-E2",
+      "aircraft_id": "A-11",
+      "position": 2,
+      "serial": "ESN-88386",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 12,
+      "cycles_observed": 146,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-12-E1",
+      "aircraft_id": "A-12",
+      "position": 1,
+      "serial": "ESN-52658",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 22,
+      "cycles_observed": 119,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-12-E2",
+      "aircraft_id": "A-12",
+      "position": 2,
+      "serial": "ESN-81022",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 95,
+      "cycles_observed": 89,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-13-E1",
+      "aircraft_id": "A-13",
+      "position": 1,
+      "serial": "ESN-61903",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 68,
+      "cycles_observed": 188,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-13-E2",
+      "aircraft_id": "A-13",
+      "position": 2,
+      "serial": "ESN-88509",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 74,
+      "cycles_observed": 68,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-14-E1",
+      "aircraft_id": "A-14",
+      "position": 1,
+      "serial": "ESN-40347",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 18,
+      "cycles_observed": 133,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-15-E1",
+      "aircraft_id": "A-15",
+      "position": 1,
+      "serial": "ESN-88234",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 17,
+      "cycles_observed": 230,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-16-E1",
+      "aircraft_id": "A-16",
+      "position": 1,
+      "serial": "ESN-20658",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 4,
+      "cycles_observed": 68,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-17-E1",
+      "aircraft_id": "A-17",
+      "position": 1,
+      "serial": "ESN-61539",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 43,
+      "cycles_observed": 133,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-17-E2",
+      "aircraft_id": "A-17",
+      "position": 2,
+      "serial": "ESN-84914",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 83,
+      "cycles_observed": 168,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-18-E1",
+      "aircraft_id": "A-18",
+      "position": 1,
+      "serial": "ESN-23189",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 38,
+      "cycles_observed": 133,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-18-E2",
+      "aircraft_id": "A-18",
+      "position": 2,
+      "serial": "ESN-42979",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 69,
+      "cycles_observed": 105,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-19-E1",
+      "aircraft_id": "A-19",
+      "position": 1,
+      "serial": "ESN-51042",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 26,
+      "cycles_observed": 76,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-19-E2",
+      "aircraft_id": "A-19",
+      "position": 2,
+      "serial": "ESN-31156",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 84,
+      "cycles_observed": 76,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-20-E1",
+      "aircraft_id": "A-20",
+      "position": 1,
+      "serial": "ESN-26608",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 35,
+      "cycles_observed": 198,
+      "repair_part_id": "P01"
+    },
+    {
+      "id": "A-20-E2",
+      "aircraft_id": "A-20",
+      "position": 2,
+      "serial": "ESN-31832",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 23,
+      "cycles_observed": 130,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-21-E1",
+      "aircraft_id": "A-21",
+      "position": 1,
+      "serial": "ESN-61182",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 29,
+      "cycles_observed": 89,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-21-E2",
+      "aircraft_id": "A-21",
+      "position": 2,
+      "serial": "ESN-70478",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 88,
+      "cycles_observed": 68,
+      "repair_part_id": "P04"
+    },
+    {
+      "id": "A-22-E1",
+      "aircraft_id": "A-22",
+      "position": 1,
+      "serial": "ESN-79767",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 97,
+      "cycles_observed": 95,
+      "repair_part_id": "P03"
+    },
+    {
+      "id": "A-22-E2",
+      "aircraft_id": "A-22",
+      "position": 2,
+      "serial": "ESN-78178",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 78,
+      "cycles_observed": 72,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-23-E1",
+      "aircraft_id": "A-23",
+      "position": 1,
+      "serial": "ESN-61760",
+      "cmapss_dataset": "FD003",
+      "cmapss_unit": 14,
+      "cycles_observed": 169,
+      "repair_part_id": "P02"
+    },
+    {
+      "id": "A-24-E1",
+      "aircraft_id": "A-24",
+      "position": 1,
+      "serial": "ESN-68799",
+      "cmapss_dataset": "FD001",
+      "cmapss_unit": 83,
+      "cycles_observed": 73,
+      "repair_part_id": "P02"
+    }
+  ],
+  "parts": [
+    {
+      "id": "P01",
+      "name": "HPC module",
+      "category": "engine",
+      "lead_time_days": 21
+    },
+    {
+      "id": "P02",
+      "name": "Fuel nozzle kit",
+      "category": "engine",
+      "lead_time_days": 7
+    },
+    {
+      "id": "P03",
+      "name": "HPC seal kit",
+      "category": "engine",
+      "lead_time_days": 10
+    },
+    {
+      "id": "P04",
+      "name": "Main bearing assembly",
+      "category": "engine",
+      "lead_time_days": 14
+    },
+    {
+      "id": "P05",
+      "name": "Hydraulic pump",
+      "category": "airframe",
+      "lead_time_days": 6
+    },
+    {
+      "id": "P06",
+      "name": "Landing-gear actuator",
+      "category": "airframe",
+      "lead_time_days": 12
+    },
+    {
+      "id": "P07",
+      "name": "Brake unit",
+      "category": "airframe",
+      "lead_time_days": 4
+    },
+    {
+      "id": "P08",
+      "name": "Radar T/R module",
+      "category": "avionics",
+      "lead_time_days": 18
+    },
+    {
+      "id": "P09",
+      "name": "Inspection consumables kit",
+      "category": "consumable",
+      "lead_time_days": 3
+    },
+    {
+      "id": "P10",
+      "name": "Borescope consumables kit",
+      "category": "consumable",
+      "lead_time_days": 3
+    },
+    {
+      "id": "P11",
+      "name": "Hydraulic filter kit",
+      "category": "consumable",
+      "lead_time_days": 3
+    }
+  ],
+  "stock": [
+    {
+      "part_id": "P01",
+      "on_hand": 0,
+      "inbound": []
+    },
+    {
+      "part_id": "P02",
+      "on_hand": 2,
+      "inbound": [
+        {
+          "day": 12,
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "part_id": "P03",
+      "on_hand": 1,
+      "inbound": []
+    },
+    {
+      "part_id": "P04",
+      "on_hand": 0,
+      "inbound": []
+    },
+    {
+      "part_id": "P05",
+      "on_hand": 2,
+      "inbound": []
+    },
+    {
+      "part_id": "P06",
+      "on_hand": 1,
+      "inbound": []
+    },
+    {
+      "part_id": "P07",
+      "on_hand": 3,
+      "inbound": [
+        {
+          "day": 5,
+          "qty": 2
+        }
+      ]
+    },
+    {
+      "part_id": "P08",
+      "on_hand": 0,
+      "inbound": [
+        {
+          "day": 9,
+          "qty": 1
+        }
+      ]
+    },
+    {
+      "part_id": "P09",
+      "on_hand": 8,
+      "inbound": []
+    },
+    {
+      "part_id": "P10",
+      "on_hand": 4,
+      "inbound": []
+    },
+    {
+      "part_id": "P11",
+      "on_hand": 5,
+      "inbound": []
+    }
+  ],
+  "tasks": [
+    {
+      "id": "A-20-T1",
+      "aircraft_id": "A-20",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Phase inspection (150 FH)",
+      "window_open": 2,
+      "due_day": 12,
+      "defer_max_days": 3,
+      "duration_days": 3,
+      "tech_hours_per_day": 12,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-20-T2",
+      "aircraft_id": "A-20",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Landing-gear inspection",
+      "window_open": 3,
+      "due_day": 13,
+      "defer_max_days": 0,
+      "duration_days": 2,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P07"
+      ]
+    },
+    {
+      "id": "A-17-T1",
+      "aircraft_id": "A-17",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Calendar inspection (90-day)",
+      "window_open": 0,
+      "due_day": 13,
+      "defer_max_days": 5,
+      "duration_days": 4,
+      "tech_hours_per_day": 16,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-18-T1",
+      "aircraft_id": "A-18",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Phase inspection (150 FH)",
+      "window_open": 2,
+      "due_day": 12,
+      "defer_max_days": 3,
+      "duration_days": 3,
+      "tech_hours_per_day": 12,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-19-T1",
+      "aircraft_id": "A-19",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Landing-gear inspection",
+      "window_open": 3,
+      "due_day": 13,
+      "defer_max_days": 0,
+      "duration_days": 2,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P07"
+      ]
+    },
+    {
+      "id": "A-21-T1",
+      "aircraft_id": "A-21",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Phase inspection (150 FH)",
+      "window_open": 4,
+      "due_day": 14,
+      "defer_max_days": 3,
+      "duration_days": 3,
+      "tech_hours_per_day": 12,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-22-T1",
+      "aircraft_id": "A-22",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 5,
+      "due_day": 12,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-24-T1",
+      "aircraft_id": "A-24",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Calendar inspection (90-day)",
+      "window_open": 1,
+      "due_day": 15,
+      "defer_max_days": 5,
+      "duration_days": 4,
+      "tech_hours_per_day": 16,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-15-T1",
+      "aircraft_id": "A-15",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Radar T/R module replacement (deferred defect)",
+      "window_open": 0,
+      "due_day": 6,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 10,
+      "parts": [
+        "P08"
+      ]
+    },
+    {
+      "id": "A-01-T1",
+      "aircraft_id": "A-01",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 8,
+      "due_day": 15,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-01-T2",
+      "aircraft_id": "A-01",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Landing-gear inspection",
+      "window_open": 11,
+      "due_day": 21,
+      "defer_max_days": 0,
+      "duration_days": 2,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P07"
+      ]
+    },
+    {
+      "id": "A-02-T1",
+      "aircraft_id": "A-02",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Calendar inspection (90-day)",
+      "window_open": 9,
+      "due_day": 23,
+      "defer_max_days": 5,
+      "duration_days": 4,
+      "tech_hours_per_day": 16,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-03-T1",
+      "aircraft_id": "A-03",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Hydraulic system servicing",
+      "window_open": 28,
+      "due_day": 35,
+      "defer_max_days": 2,
+      "duration_days": 1,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P11"
+      ]
+    },
+    {
+      "id": "A-03-T2",
+      "aircraft_id": "A-03",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Landing-gear inspection",
+      "window_open": 6,
+      "due_day": 16,
+      "defer_max_days": 0,
+      "duration_days": 2,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P07"
+      ]
+    },
+    {
+      "id": "A-04-T1",
+      "aircraft_id": "A-04",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Phase inspection (150 FH)",
+      "window_open": 2,
+      "due_day": 12,
+      "defer_max_days": 3,
+      "duration_days": 3,
+      "tech_hours_per_day": 12,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-05-T1",
+      "aircraft_id": "A-05",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 24,
+      "due_day": 31,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-06-T1",
+      "aircraft_id": "A-06",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 28,
+      "due_day": 35,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-07-T1",
+      "aircraft_id": "A-07",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Hydraulic system servicing",
+      "window_open": 17,
+      "due_day": 24,
+      "defer_max_days": 2,
+      "duration_days": 1,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P11"
+      ]
+    },
+    {
+      "id": "A-07-T2",
+      "aircraft_id": "A-07",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Landing-gear inspection",
+      "window_open": 0,
+      "due_day": 10,
+      "defer_max_days": 0,
+      "duration_days": 2,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P07"
+      ]
+    },
+    {
+      "id": "A-08-T1",
+      "aircraft_id": "A-08",
+      "base_id": "BN",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 27,
+      "due_day": 34,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-09-T1",
+      "aircraft_id": "A-09",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Phase inspection (150 FH)",
+      "window_open": 25,
+      "due_day": 35,
+      "defer_max_days": 3,
+      "duration_days": 3,
+      "tech_hours_per_day": 12,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-10-T1",
+      "aircraft_id": "A-10",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 29,
+      "due_day": 36,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-11-T1",
+      "aircraft_id": "A-11",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Landing-gear inspection",
+      "window_open": 12,
+      "due_day": 22,
+      "defer_max_days": 0,
+      "duration_days": 2,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P07"
+      ]
+    },
+    {
+      "id": "A-11-T2",
+      "aircraft_id": "A-11",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Phase inspection (150 FH)",
+      "window_open": 0,
+      "due_day": 9,
+      "defer_max_days": 3,
+      "duration_days": 3,
+      "tech_hours_per_day": 12,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-13-T1",
+      "aircraft_id": "A-13",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Hydraulic system servicing",
+      "window_open": 22,
+      "due_day": 29,
+      "defer_max_days": 2,
+      "duration_days": 1,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P11"
+      ]
+    },
+    {
+      "id": "A-14-T1",
+      "aircraft_id": "A-14",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 15,
+      "due_day": 22,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-14-T2",
+      "aircraft_id": "A-14",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Calendar inspection (90-day)",
+      "window_open": 7,
+      "due_day": 21,
+      "defer_max_days": 5,
+      "duration_days": 4,
+      "tech_hours_per_day": 16,
+      "parts": [
+        "P09"
+      ]
+    },
+    {
+      "id": "A-16-T1",
+      "aircraft_id": "A-16",
+      "base_id": "BC",
+      "kind": "scheduled",
+      "name": "Avionics functional check",
+      "window_open": 0,
+      "due_day": 5,
+      "defer_max_days": 0,
+      "duration_days": 1,
+      "tech_hours_per_day": 6,
+      "parts": []
+    },
+    {
+      "id": "A-23-T1",
+      "aircraft_id": "A-23",
+      "base_id": "BS",
+      "kind": "scheduled",
+      "name": "Hydraulic system servicing",
+      "window_open": 22,
+      "due_day": 29,
+      "defer_max_days": 2,
+      "duration_days": 1,
+      "tech_hours_per_day": 8,
+      "parts": [
+        "P11"
+      ]
+    }
+  ],
+  "log": [
+    {
+      "id": "A-01-L1",
+      "aircraft_id": "A-01",
+      "day": -52,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-01-L2",
+      "aircraft_id": "A-01",
+      "day": -19,
+      "category": "inspection",
+      "description": "Pre-phase borescope: nil findings",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-01-L3",
+      "aircraft_id": "A-01",
+      "day": -5,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-02-L4",
+      "aircraft_id": "A-02",
+      "day": -60,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-02-L5",
+      "aircraft_id": "A-02",
+      "day": -59,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-02-L6",
+      "aircraft_id": "A-02",
+      "day": -54,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-02-L7",
+      "aircraft_id": "A-02",
+      "day": -42,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-03-L8",
+      "aircraft_id": "A-03",
+      "day": -56,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-03-L9",
+      "aircraft_id": "A-03",
+      "day": -31,
+      "category": "inspection",
+      "description": "Pre-phase borescope: nil findings",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-03-L10",
+      "aircraft_id": "A-03",
+      "day": -26,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-03-L11",
+      "aircraft_id": "A-03",
+      "day": -15,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-03-L13",
+      "aircraft_id": "A-03",
+      "day": -12,
+      "category": "engine",
+      "description": "A-03-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-03-E1"
+    },
+    {
+      "id": "A-03-L12",
+      "aircraft_id": "A-03",
+      "day": -1,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-04-L14",
+      "aircraft_id": "A-04",
+      "day": -31,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-04-L15",
+      "aircraft_id": "A-04",
+      "day": -18,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-04-L16",
+      "aircraft_id": "A-04",
+      "day": -17,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-04-L17",
+      "aircraft_id": "A-04",
+      "day": -12,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-05-L18",
+      "aircraft_id": "A-05",
+      "day": -59,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-05-L19",
+      "aircraft_id": "A-05",
+      "day": -22,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-05-L21",
+      "aircraft_id": "A-05",
+      "day": -16,
+      "category": "engine",
+      "description": "A-05-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-05-E1"
+    },
+    {
+      "id": "A-05-L20",
+      "aircraft_id": "A-05",
+      "day": -13,
+      "category": "inspection",
+      "description": "Pre-phase borescope: nil findings",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-06-L22",
+      "aircraft_id": "A-06",
+      "day": -58,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-06-L23",
+      "aircraft_id": "A-06",
+      "day": -31,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-06-L24",
+      "aircraft_id": "A-06",
+      "day": -30,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-06-L25",
+      "aircraft_id": "A-06",
+      "day": -14,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-07-L26",
+      "aircraft_id": "A-07",
+      "day": -54,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-07-L27",
+      "aircraft_id": "A-07",
+      "day": -49,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-07-L28",
+      "aircraft_id": "A-07",
+      "day": -33,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-07-L29",
+      "aircraft_id": "A-07",
+      "day": -30,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-07-L30",
+      "aircraft_id": "A-07",
+      "day": -20,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-08-L31",
+      "aircraft_id": "A-08",
+      "day": -41,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-08-L32",
+      "aircraft_id": "A-08",
+      "day": -25,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-08-L33",
+      "aircraft_id": "A-08",
+      "day": -24,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-09-L34",
+      "aircraft_id": "A-09",
+      "day": -46,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-09-L35",
+      "aircraft_id": "A-09",
+      "day": -30,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-09-L36",
+      "aircraft_id": "A-09",
+      "day": -12,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-10-L37",
+      "aircraft_id": "A-10",
+      "day": -58,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-10-L38",
+      "aircraft_id": "A-10",
+      "day": -41,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-10-L39",
+      "aircraft_id": "A-10",
+      "day": -39,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-10-L40",
+      "aircraft_id": "A-10",
+      "day": -37,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-10-L41",
+      "aircraft_id": "A-10",
+      "day": -27,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-10-L43",
+      "aircraft_id": "A-10",
+      "day": -17,
+      "category": "engine",
+      "description": "A-10-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-10-E1"
+    },
+    {
+      "id": "A-10-L42",
+      "aircraft_id": "A-10",
+      "day": -3,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-11-L44",
+      "aircraft_id": "A-11",
+      "day": -55,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-11-L45",
+      "aircraft_id": "A-11",
+      "day": -54,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-11-L46",
+      "aircraft_id": "A-11",
+      "day": -52,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-11-L47",
+      "aircraft_id": "A-11",
+      "day": -33,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-11-L48",
+      "aircraft_id": "A-11",
+      "day": -22,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-11-L49",
+      "aircraft_id": "A-11",
+      "day": -3,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-12-L50",
+      "aircraft_id": "A-12",
+      "day": -54,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-12-L51",
+      "aircraft_id": "A-12",
+      "day": -52,
+      "category": "snag",
+      "description": "Hydraulic seep at nose-gear steering actuator; seal replaced",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-12-L54",
+      "aircraft_id": "A-12",
+      "day": -40,
+      "category": "inspection",
+      "description": "Crack found at wing attach fitting during NDT; aircraft declared AOG, depot team requested",
+      "tech_hours": 14,
+      "engine_id": null
+    },
+    {
+      "id": "A-12-L52",
+      "aircraft_id": "A-12",
+      "day": -39,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-12-L53",
+      "aircraft_id": "A-12",
+      "day": -8,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-13-L55",
+      "aircraft_id": "A-13",
+      "day": -31,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-13-L56",
+      "aircraft_id": "A-13",
+      "day": -26,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-13-L57",
+      "aircraft_id": "A-13",
+      "day": -11,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-14-L58",
+      "aircraft_id": "A-14",
+      "day": -58,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-14-L59",
+      "aircraft_id": "A-14",
+      "day": -32,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-14-L60",
+      "aircraft_id": "A-14",
+      "day": -29,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-14-L62",
+      "aircraft_id": "A-14",
+      "day": -9,
+      "category": "engine",
+      "description": "A-14-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-14-E1"
+    },
+    {
+      "id": "A-14-L61",
+      "aircraft_id": "A-14",
+      "day": -4,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-15-L63",
+      "aircraft_id": "A-15",
+      "day": -60,
+      "category": "inspection",
+      "description": "Pre-phase borescope: nil findings",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-15-L64",
+      "aircraft_id": "A-15",
+      "day": -58,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-15-L65",
+      "aircraft_id": "A-15",
+      "day": -18,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-15-L66",
+      "aircraft_id": "A-15",
+      "day": -13,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-16-L67",
+      "aircraft_id": "A-16",
+      "day": -47,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-16-L68",
+      "aircraft_id": "A-16",
+      "day": -46,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-16-L69",
+      "aircraft_id": "A-16",
+      "day": -33,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-16-L70",
+      "aircraft_id": "A-16",
+      "day": -22,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-17-L71",
+      "aircraft_id": "A-17",
+      "day": -57,
+      "category": "inspection",
+      "description": "Pre-phase borescope: nil findings",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-17-L72",
+      "aircraft_id": "A-17",
+      "day": -39,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-17-L73",
+      "aircraft_id": "A-17",
+      "day": -17,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-17-L74",
+      "aircraft_id": "A-17",
+      "day": -10,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-17-L75",
+      "aircraft_id": "A-17",
+      "day": -8,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-18-L76",
+      "aircraft_id": "A-18",
+      "day": -57,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-18-L77",
+      "aircraft_id": "A-18",
+      "day": -55,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-18-L78",
+      "aircraft_id": "A-18",
+      "day": -28,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-18-L79",
+      "aircraft_id": "A-18",
+      "day": -20,
+      "category": "engine",
+      "description": "A-18-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-18-E1"
+    },
+    {
+      "id": "A-19-L80",
+      "aircraft_id": "A-19",
+      "day": -32,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-19-L81",
+      "aircraft_id": "A-19",
+      "day": -22,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-19-L82",
+      "aircraft_id": "A-19",
+      "day": -18,
+      "category": "snag",
+      "description": "Hydraulic seep at nose-gear steering actuator; seal replaced",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-19-L83",
+      "aircraft_id": "A-19",
+      "day": -10,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-19-L84",
+      "aircraft_id": "A-19",
+      "day": -6,
+      "category": "component_change",
+      "description": "Main wheel tyre changed (wear limit)",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-20-L85",
+      "aircraft_id": "A-20",
+      "day": -60,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-20-L86",
+      "aircraft_id": "A-20",
+      "day": -47,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-20-L87",
+      "aircraft_id": "A-20",
+      "day": -40,
+      "category": "snag",
+      "description": "Pilot report: intermittent UHF radio drop-out; connector reseated",
+      "tech_hours": 3,
+      "engine_id": null
+    },
+    {
+      "id": "A-20-L88",
+      "aircraft_id": "A-20",
+      "day": -17,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-20-L89",
+      "aircraft_id": "A-20",
+      "day": -8,
+      "category": "engine",
+      "description": "A-20-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-20-E1"
+    },
+    {
+      "id": "A-21-L90",
+      "aircraft_id": "A-21",
+      "day": -54,
+      "category": "snag",
+      "description": "Hydraulic seep at nose-gear steering actuator; seal replaced",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-21-L91",
+      "aircraft_id": "A-21",
+      "day": -51,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-21-L92",
+      "aircraft_id": "A-21",
+      "day": -36,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-21-L93",
+      "aircraft_id": "A-21",
+      "day": -20,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-21-L94",
+      "aircraft_id": "A-21",
+      "day": -16,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-22-L95",
+      "aircraft_id": "A-22",
+      "day": -52,
+      "category": "snag",
+      "description": "Hydraulic seep at nose-gear steering actuator; seal replaced",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-22-L96",
+      "aircraft_id": "A-22",
+      "day": -39,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-22-L97",
+      "aircraft_id": "A-22",
+      "day": -30,
+      "category": "snag",
+      "description": "Hydraulic seep at nose-gear steering actuator; seal replaced",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-22-L98",
+      "aircraft_id": "A-22",
+      "day": -16,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-22-L99",
+      "aircraft_id": "A-22",
+      "day": -2,
+      "category": "snag",
+      "description": "Bird strike inspection, no damage found",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-23-L100",
+      "aircraft_id": "A-23",
+      "day": -48,
+      "category": "inspection",
+      "description": "Pre-phase borescope: nil findings",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-23-L101",
+      "aircraft_id": "A-23",
+      "day": -32,
+      "category": "servicing",
+      "description": "Engine compressor wash (both engines)",
+      "tech_hours": 5,
+      "engine_id": null
+    },
+    {
+      "id": "A-23-L102",
+      "aircraft_id": "A-23",
+      "day": -17,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-23-L103",
+      "aircraft_id": "A-23",
+      "day": -10,
+      "category": "engine",
+      "description": "A-23-E1 trend monitoring: rising HPC outlet temperature noted; no limit exceeded",
+      "tech_hours": 2,
+      "engine_id": "A-23-E1"
+    },
+    {
+      "id": "A-24-L104",
+      "aircraft_id": "A-24",
+      "day": -56,
+      "category": "inspection",
+      "description": "Weekly inspection completed, nil defects",
+      "tech_hours": 4,
+      "engine_id": null
+    },
+    {
+      "id": "A-24-L105",
+      "aircraft_id": "A-24",
+      "day": -53,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-24-L106",
+      "aircraft_id": "A-24",
+      "day": -44,
+      "category": "snag",
+      "description": "Cockpit display flicker; MFD reseated, BIT pass",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-24-L107",
+      "aircraft_id": "A-24",
+      "day": -42,
+      "category": "snag",
+      "description": "Hydraulic seep at nose-gear steering actuator; seal replaced",
+      "tech_hours": 6,
+      "engine_id": null
+    },
+    {
+      "id": "A-24-L108",
+      "aircraft_id": "A-24",
+      "day": -38,
+      "category": "servicing",
+      "description": "Oxygen system replenished and leak-checked",
+      "tech_hours": 2,
+      "engine_id": null
+    },
+    {
+      "id": "A-24-L109",
+      "aircraft_id": "A-24",
+      "day": -18,
+      "category": "component_change",
+      "description": "Brake unit replaced (wear pin at limit)",
+      "tech_hours": 6,
+      "engine_id": null
+    }
+  ],
+  "engine_task": {
+    "preventive_duration_days": 3,
+    "preventive_tech_hours_per_day": 12,
+    "corrective_duration_days": 6,
+    "corrective_tech_hours_per_day": 12
+  },
+  "planted_tensions": [
+    "P01 HPC module: 0 on hand, 21-day lead time; A-20 engine E1 forecast to fail around Day 7.",
+    "A-12 is AOG for the whole horizon (structural repair) and holds a serviceable HPC module and radar T/R module.",
+    "A-20 has a phase inspection and a landing-gear inspection with overlapping windows (bundling opportunity).",
+    "Southern base (BS) has only 2 bays; six inspections fall hard-due on Days 12-15.",
+    "A-05 and A-18 both need the single HPC seal kit on the shelf.",
+    "A-10 bearing has 0 stock and a 14-day lead: ordering on failure is too late.",
+    "A-15 radar defect is due Day 6 but the only inbound T/R module arrives Day 9."
+  ]
+}

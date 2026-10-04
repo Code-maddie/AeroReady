@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+.pytest_cache/
+
+# Raw NASA C-MAPSS (re-download with backend/scripts/download_cmapss.py)
+backend/data/cmapss/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Misc
+.DS_Store
+*.log
