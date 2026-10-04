@@ -1,0 +1,40 @@
+{
+  "datasets": {
+    "FD001": {
+      "n_test_engines": 100,
+      "rmse_p50": 17.73,
+      "mae_p50": 12.8,
+      "nasa_score_p50": 596.2,
+      "p10_p90_coverage": 0.77,
+      "mean_interval_width": 36.7,
+      "frac_true_below_p10": 0.16
+    },
+    "FD003": {
+      "n_test_engines": 100,
+      "rmse_p50": 17.27,
+      "mae_p50": 12.07,
+      "nasa_score_p50": 710.9,
+      "p10_p90_coverage": 0.68,
+      "mean_interval_width": 31.2,
+      "frac_true_below_p10": 0.24
+    }
+  },
+  "sensors_used": [
+    "s2",
+    "s3",
+    "s4",
+    "s6",
+    "s7",
+    "s9",
+    "s10",
+    "s11",
+    "s12",
+    "s14",
+    "s15",
+    "s17",
+    "s20",
+    "s21"
+  ],
+  "rul_cap_cycles": 125,
+  "num_rounds": 900
+}
