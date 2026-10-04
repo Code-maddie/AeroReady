@@ -119,7 +119,7 @@ function Builder({ meta, onRun, running }: { meta: Meta; onRun: (s: Scenario) =>
         <Field label="Sorties per day (engine cycles)"><NumberInput value={f.rate} onChange={(v) => set({ rate: v })} min={0.1} max={6} step={0.1} /></Field>
       </Section>
       <div className="flex items-center gap-3">
-        <Button primary onClick={() => onRun(sc)} busy={running} disabled={!can('plan')} title={can('plan') ? undefined : 'Planner role required'}
+        <Button variant="primary" onClick={() => onRun(sc)} busy={running} disabled={!can('plan')} title={can('plan') ? undefined : 'Planner role required'}
           icon={<Play className="h-3.5 w-3.5" />}>Run scenario</Button>
         {!can('plan') && <span className="text-xs text-warn">Planner role required to run scenarios.</span>}
         <span className="text-xs text-dim">{describe(sc)}</span>

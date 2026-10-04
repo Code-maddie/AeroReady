@@ -18,11 +18,13 @@ export default function Toaster() {
     return () => window.removeEventListener('aeroready:toast', on)
   }, [])
   return (
-    <div className="fixed bottom-5 right-5 z-[60] flex w-[380px] max-w-[calc(100vw-2.5rem)] flex-col gap-2" role="status" aria-live="polite">
+    <div className="fixed bottom-6 right-6 z-[60] flex w-[380px] max-w-[calc(100vw-3rem)] flex-col gap-2" role="status" aria-live="polite">
       {items.map((t) => (
-        <div key={t.id} className="flex items-start gap-3 rounded-2xl bg-ink px-4 py-3 text-[13px] text-bg shadow-2xl">
+        <div key={t.id} className="flex items-start gap-3 rounded border border-line2 bg-panel px-3 py-2.5 text-[13px] text-ink shadow-2xl">
           <span className="flex-1">{t.text}</span>
-          <button onClick={() => setItems((xs) => xs.filter((x) => x.id !== t.id))} aria-label="Dismiss"><X className="h-3.5 w-3.5" /></button>
+          <button onClick={() => setItems((xs) => xs.filter((x) => x.id !== t.id))} aria-label="Dismiss" className="text-muted hover:text-ink">
+            <X className="h-3.5 w-3.5" />
+          </button>
         </div>
       ))}
     </div>

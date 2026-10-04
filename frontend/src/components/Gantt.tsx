@@ -4,12 +4,12 @@ import type { Block, BlockKind, GanttRow, Job } from '../lib/api'
 import { dayDate } from '../lib/format'
 
 export const KIND_META: Record<BlockKind, { label: string; cls: string; swatch: string }> = {
-  scheduled: { label: 'Scheduled inspection', cls: 'bg-k-scheduled text-[#06101f]', swatch: 'bg-k-scheduled' },
-  preventive: { label: 'Predictive maintenance', cls: 'bg-k-predictive text-[#03201d]', swatch: 'bg-k-predictive' },
-  corrective: { label: 'Unplanned failure repair', cls: 'bg-bad text-[#2a0705]', swatch: 'bg-bad' },
-  awaiting: { label: 'Grounded, waiting for bay or part', cls: 'hatch-red text-ink', swatch: 'hatch-red' },
-  aog: { label: 'Grounded long-term (fixed)', cls: 'hatch-grey text-muted', swatch: 'hatch-grey' },
-  cannibalization: { label: 'Cannibalisation (part removal)', cls: 'bg-k-cannibal text-[#160829]', swatch: 'bg-k-cannibal' },
+  scheduled: { label: 'Scheduled inspection', cls: 'bg-k-scheduled text-white', swatch: 'bg-k-scheduled' },
+  preventive: { label: 'Predictive maintenance', cls: 'bg-k-predictive text-slate-950', swatch: 'bg-k-predictive' },
+  corrective: { label: 'Unplanned failure repair', cls: 'bg-bad text-white', swatch: 'bg-bad' },
+  awaiting: { label: 'Grounded, waiting for bay or part', cls: 'border border-dashed border-bad bg-bad/20 text-ink', swatch: 'border border-dashed border-bad bg-bad/20' },
+  aog: { label: 'Grounded long-term (fixed)', cls: 'bg-line2 text-muted', swatch: 'bg-line2' },
+  cannibalization: { label: 'Cannibalisation (part removal)', cls: 'bg-k-cannibal text-white', swatch: 'bg-k-cannibal' },
 }
 
 export function GanttLegend() {
@@ -17,11 +17,11 @@ export function GanttLegend() {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted">
       {(Object.keys(KIND_META) as BlockKind[]).map((k) => (
         <span key={k} className="inline-flex items-center gap-1.5">
-          <span className={`inline-block h-3 w-4 rounded-[2px] ${KIND_META[k].swatch}`} />{KIND_META[k].label}
+          <span className={`inline-block h-3 w-4 rounded-sm ${KIND_META[k].swatch}`} />{KIND_META[k].label}
         </span>
       ))}
       <span className="inline-flex items-center gap-1.5">
-        <span className="inline-block h-2.5 w-4 rounded-[2px] bg-k-predictive outline-2 outline-offset-1 outline-k-cannibal" />Uses a cannibalised part
+        <span className="inline-block h-2.5 w-4 rounded-sm bg-k-predictive outline outline-2 outline-offset-1 outline-k-cannibal" />Uses a cannibalised part
       </span>
     </div>
   )
@@ -102,8 +102,8 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
                       onMouseMove={(e) => setHover((hv) => hv && { ...hv, x: e.clientX, y: e.clientY })}
                       onMouseLeave={() => setHover(null)}
                       aria-label={`${line.aircraftId} ${KIND_META[b.kind].label}: ${b.label}, Day ${b.start} to ${b.end}`}
-                      className={`absolute flex items-center overflow-hidden whitespace-nowrap rounded-[3px] px-1 text-left text-[10px] font-semibold leading-none hover:brightness-125 ${KIND_META[b.kind].cls} ${
-                        b.cannibalized_from ? 'outline-2 outline-offset-1 outline-k-cannibal' : ''}`}
+                      className={`absolute flex items-center overflow-hidden whitespace-nowrap rounded-sm px-1 text-left text-[10px] font-semibold leading-none hover:brightness-125 ${KIND_META[b.kind].cls} ${
+                        b.cannibalized_from ? 'outline outline-2 outline-offset-1 outline-k-cannibal' : ''}`}
                       style={{ left: `calc(${left}% + 1px)`, width: `calc(${width}% - 2px)`, top: 4 + b.lane * laneH, height: laneH - 3 }}>
                       {width > 6 && <span className="truncate">{shortLabel(b.label)}</span>}
                     </button>
@@ -119,10 +119,10 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
       </div>
 
       {hover && (
-        <div className="pointer-events-none fixed z-50 w-72 rounded-xl border border-line2 bg-[#141413] p-3 text-xs shadow-2xl"
+        <div className="pointer-events-none fixed z-50 w-72 rounded border border-line2 bg-panel p-3 text-xs shadow-2xl"
           style={{ left: Math.min(hover.x + 14, window.innerWidth - 300), top: Math.min(hover.y + 14, window.innerHeight - 180) }}>
           <div className="mb-1 flex items-center gap-2">
-            <span className={`inline-block h-2.5 w-3 rounded-[2px] ${KIND_META[hover.block.kind].swatch}`} />
+            <span className={`inline-block h-2.5 w-3 rounded-sm ${KIND_META[hover.block.kind].swatch}`} />
             <span className="label-caps">{KIND_META[hover.block.kind].label}</span>
           </div>
           <div className="font-semibold text-ink">{hover.line.aircraftId} · {hover.block.label}</div>

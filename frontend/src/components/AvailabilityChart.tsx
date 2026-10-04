@@ -7,8 +7,8 @@ export interface Series {
   color: string; dashed?: boolean; faint?: boolean
 }
 
-/** Fixed series colours: reactive is muted grey, the active plan is the amber accent. */
-export const SERIES_COLORS = { reactive: '#8c8984', optimized: '#e9a15b', compare: ['#e9a15b', '#6f97e8', '#3fb7a6'] }
+/** Fixed series colours: reactive is dashed slate, the plan is light slate. Amber is kept for attention (surge target). */
+export const SERIES_COLORS = { reactive: '#64748b', optimized: '#e2e8f0', compare: ['#e2e8f0', '#3b82f6', '#14b8a6'] }
 
 function Swatch({ s }: { s: Series }) {
   return (
@@ -41,7 +41,7 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
         {series.map((s) => <span key={s.key} className="inline-flex items-center gap-2"><Swatch s={s} />{s.label}</span>)}
         {surge && (
           <span className="inline-flex items-center gap-2">
-            <span className="inline-block h-3 w-5 border border-dashed border-accent/70 bg-accent/15" />
+            <span className="inline-block h-3 w-5 border border-dashed border-accent bg-accent/10" />
             Surge target: at least {surge.min_available} aircraft, Day {surge.start_day} to {surge.end_day}
           </span>
         )}
@@ -49,22 +49,22 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 16, bottom: 4, left: -12 }}>
-            <CartesianGrid stroke="#262523" vertical={false} />
-            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#6e6b66', fontSize: 11 }}
-              axisLine={{ stroke: '#3a3936' }} tickLine={false} />
-            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#6e6b66', fontSize: 11 }}
+            <CartesianGrid stroke="#1e293b" vertical={false} />
+            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#64748b', fontSize: 11 }}
+              axisLine={{ stroke: '#334155' }} tickLine={false} />
+            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#64748b', fontSize: 11 }}
               axisLine={false} tickLine={false} width={44} />
             {surge && (
               <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1, surge.end_day)} y1={surge.min_available} y2={maxY}
-                fill="rgba(233,161,91,0.13)" fillOpacity={1} stroke="rgba(233,161,91,0.5)" strokeDasharray="4 3" />
+                fill="rgba(245,158,11,0.10)" fillOpacity={1} stroke="rgba(245,158,11,0.6)" strokeDasharray="4 3" />
             )}
             <Tooltip
-              cursor={{ stroke: '#a7a39c', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
               content={({ active, label }) => {
                 if (!active || label == null) return null
                 const d = Number(label)
                 return (
-                  <div className="rounded-xl border border-line2 bg-[#141413] px-3 py-2 text-xs shadow-xl">
+                  <div className="rounded border border-line2 bg-panel px-3 py-2 text-xs shadow-xl">
                     <div className="display num mb-1 text-sm font-semibold text-ink">Day {d} · {dayDate(startDate, d)}</div>
                     {series.map((s) => (
                       <div key={s.key} className="flex items-center justify-between gap-6">
@@ -88,7 +88,7 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
             {series.map((s) => (
               <Line key={s.key} dataKey={s.key} name={s.label} type="linear" stroke={s.color}
                 strokeWidth={s.faint ? 1.5 : 2.25} strokeDasharray={s.dashed ? '6 4' : undefined} strokeOpacity={s.faint ? 0.5 : 1}
-                dot={false} activeDot={s.faint ? false : { r: 4, stroke: '#0e0e0d', strokeWidth: 2 }}
+                dot={false} activeDot={s.faint ? false : { r: 4, stroke: '#020617', strokeWidth: 2 }}
                 isAnimationActive={animate} animationDuration={600} />
             ))}
           </LineChart>
