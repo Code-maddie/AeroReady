@@ -8,10 +8,10 @@ export function Panel({ title, actions, children, className = '', pad = true }: 
   title?: ReactNode; actions?: ReactNode; children: ReactNode; className?: string; pad?: boolean
 }) {
   return (
-    <section className={`panel min-w-0 ${pad ? 'p-4' : ''} ${className}`}>
+    <section className={`panel min-w-0 ${pad ? 'p-5' : ''} ${className}`}>
       {(title || actions) && (
         <div className={`mb-3 flex flex-wrap items-center justify-between gap-3 ${pad ? '' : 'px-4 pt-4'}`}>
-          {title && <h2 className="display text-lg font-semibold uppercase tracking-wider">{title}</h2>}
+          {title && <h2 className="text-[17px] font-medium tracking-[-0.01em]">{title}</h2>}
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </div>
       )}
@@ -34,7 +34,7 @@ export function SkeletonBlock({ lines = 4, h = 18 }: { lines?: number; h?: numbe
 
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded border border-bad/40 bg-bad/10 p-3" role="alert">
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-bad/40 bg-bad/10 p-3" role="alert">
       <div className="flex gap-2.5">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-bad" aria-hidden />
         <div>
@@ -72,8 +72,8 @@ export function Button({ children, onClick, primary = false, disabled = false, i
 }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled || busy} title={title}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        primary ? 'bg-accent text-bg hover:brightness-110' : 'border border-line2 text-ink hover:border-accent hover:text-accent'}`}>
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+        primary ? 'bg-ink text-bg hover:bg-white' : 'bg-panel2 text-ink ring-1 ring-white/10 hover:bg-line'}`}>
       {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : icon}
       {children}
     </button>
@@ -84,10 +84,10 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void; label: string
 }) {
   return (
-    <div className="flex rounded border border-line2 p-0.5" role="radiogroup" aria-label={label}>
+    <div className="flex rounded-full bg-panel2 p-1 ring-1 ring-white/5" role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button key={o.value} role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
-          className={`rounded-sm px-2.5 py-1 text-xs font-medium ${value === o.value ? 'bg-panel2 text-accent' : 'text-muted hover:text-ink'}`}>
+          className={`rounded-full px-3 py-1 text-xs font-medium ${value === o.value ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
           {o.label}
         </button>
       ))}
@@ -100,9 +100,9 @@ export function StatTile({ label, value, sub, tone = 'ink' }: {
 }) {
   const color = { ink: 'text-ink', accent: 'text-accent', bad: 'text-bad', ok: 'text-ok' }[tone]
   return (
-    <div className={`panel flex min-w-0 flex-col p-4 ${tone === 'accent' ? 'border-accent/50' : ''}`}>
+    <div className={`panel flex min-w-0 flex-col p-5 ${tone === 'accent' ? 'ring-1 ring-accent/40' : ''}`}>
       <div className="label-caps">{label}</div>
-      <div className={`display num mt-1 text-[38px] font-semibold leading-none ${color}`}>{value}</div>
+      <div className={`display num mt-2 text-[40px] font-medium leading-none ${color}`}>{value}</div>
       {sub && <div className="mt-2 text-xs text-muted">{sub}</div>}
     </div>
   )
@@ -118,7 +118,7 @@ const STATUS_STYLE: Record<FleetStatus, { cls: string; icon: ReactNode }> = {
 export function StatusBadge({ status }: { status: FleetStatus }) {
   const s = STATUS_STYLE[status]
   return (
-    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded border px-1.5 py-0.5 text-[11px] font-medium ${s.cls}`}>
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-medium ${s.cls}`}>
       {s.icon}{STATUS_LABEL[status]}
     </span>
   )
@@ -127,7 +127,7 @@ export function StatusBadge({ status }: { status: FleetStatus }) {
 export function SimulatedLabel({ origin }: { origin: 'simulated' | 'uploaded' }) {
   const uploaded = origin === 'uploaded'
   return (
-    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-medium ${
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-[11px] font-medium ${
       uploaded ? 'border-k-scheduled/50 text-k-scheduled' : 'border-accent/50 text-accent'}`}>
       <CircleDot className="h-3 w-3" aria-hidden />{uploaded ? 'Uploaded data' : 'Simulated fleet scenario'}
     </span>

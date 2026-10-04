@@ -13,7 +13,7 @@ import { useAircraft, useMeta } from '../lib/queries'
 /** Trailing window for the smoothed sensor line. */
 const SMOOTH_CYCLES = 10
 
-const axis = { tick: { fill: '#6b7b8f', fontSize: 11 }, axisLine: { stroke: '#2d3e52' }, tickLine: false as const }
+const axis = { tick: { fill: '#6e6b66', fontSize: 11 }, axisLine: { stroke: '#3a3936' }, tickLine: false as const }
 
 function RulChart({ e }: { e: EngineDetail }) {
   const h = e.rul_history
@@ -24,18 +24,18 @@ function RulChart({ e }: { e: EngineDetail }) {
     <div className="h-[240px]">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 10, right: 30, bottom: 14, left: -4 }}>
-          <CartesianGrid stroke="#1c2735" vertical={false} />
+          <CartesianGrid stroke="#262523" vertical={false} />
           <XAxis dataKey="cycle" type="number" domain={['dataMin', 'dataMax']} {...axis}
-            label={{ value: 'Operating cycle', position: 'insideBottom', offset: -8, fill: '#6b7b8f', fontSize: 11 }} />
+            label={{ value: 'Operating cycle', position: 'insideBottom', offset: -8, fill: '#6e6b66', fontSize: 11 }} />
           <YAxis domain={[0, Math.ceil(top / 10) * 10]} {...axis} width={44} />
-          <ReferenceLine x={now} stroke="#f5a524" strokeDasharray="3 3" label={{ value: 'Latest', fill: '#f5a524', fontSize: 11, position: 'insideTopRight' }} />
-          <Area dataKey="band" stroke="none" fill="#2bb5a6" fillOpacity={0.2} isAnimationActive={false} />
-          <Line dataKey="p50" stroke="#2bb5a6" strokeWidth={2} dot={false} isAnimationActive={false} />
-          <Tooltip cursor={{ stroke: '#9aa7b6', strokeDasharray: '3 3' }} content={({ active, payload }) => {
+          <ReferenceLine x={now} stroke="#e9a15b" strokeDasharray="3 3" label={{ value: 'Latest', fill: '#e9a15b', fontSize: 11, position: 'insideTopRight' }} />
+          <Area dataKey="band" stroke="none" fill="#3fb7a6" fillOpacity={0.2} isAnimationActive={false} />
+          <Line dataKey="p50" stroke="#3fb7a6" strokeWidth={2} dot={false} isAnimationActive={false} />
+          <Tooltip cursor={{ stroke: '#a7a39c', strokeDasharray: '3 3' }} content={({ active, payload }) => {
             if (!active || !payload?.length) return null
             const r = payload[0].payload as (typeof rows)[number]
             return (
-              <div className="num rounded border border-line2 bg-[#0d131a] px-3 py-2 text-xs">
+              <div className="num rounded-xl border border-line2 bg-[#141413] px-3 py-2 text-xs">
                 <div className="font-semibold text-ink">Cycle {r.cycle}</div>
                 <div className="text-muted">P50 <span className="text-ink">{r.p50}</span> cycles · P10 to P90 <span className="text-ink">{r.band[0]} to {r.band[1]}</span></div>
               </div>
@@ -54,7 +54,7 @@ function SensorTrend({ e, sensor, name }: { e: EngineDetail; sensor: string; nam
     return { cycle: c, v: ys[i], avg: win.reduce((a, b) => a + b, 0) / win.length }
   })
   return (
-    <div className="rounded border border-line bg-panel2/40 p-2">
+    <div className="rounded-xl border border-line bg-panel2/40 p-2">
       <div className="flex items-baseline justify-between gap-2 text-[11px]">
         <span className="truncate text-muted" title={`${sensor}: ${name}`}>{sensor} · {name}</span>
         <span className="num text-ink">{ys[ys.length - 1]}</span>
@@ -63,10 +63,10 @@ function SensorTrend({ e, sensor, name }: { e: EngineDetail; sensor: string; nam
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 4, right: 2, bottom: 0, left: 2 }}>
             <YAxis domain={['auto', 'auto']} hide /><XAxis dataKey="cycle" hide />
-            <Line dataKey="v" stroke="#6b7b8f" strokeWidth={1} dot={false} isAnimationActive={false} />
+            <Line dataKey="v" stroke="#6e6b66" strokeWidth={1} dot={false} isAnimationActive={false} />
             <Line dataKey="avg" stroke="#e6edf3" strokeWidth={1.75} dot={false} isAnimationActive={false} />
-            <Tooltip cursor={{ stroke: '#6b7b8f' }} content={({ active, payload }) => active && payload?.length ? (
-              <div className="num rounded border border-line2 bg-[#0d131a] px-2 py-1 text-[11px]">
+            <Tooltip cursor={{ stroke: '#6e6b66' }} content={({ active, payload }) => active && payload?.length ? (
+              <div className="num rounded-xl border border-line2 bg-[#141413] px-2 py-1 text-[11px]">
                 Cycle {(payload[0].payload as { cycle: number }).cycle}: <span className="text-ink">{String(payload[0].value)}</span>
               </div>) : null} />
           </LineChart>
@@ -90,13 +90,13 @@ function EngineTab({ e, horizon }: { e: EngineDetail; horizon: number }) {
         <RulChart e={e} />
         <div className="mt-2 grid grid-cols-4 gap-2">
           {([['P10', d.p10_days, e.rul_cycles.p10], ['P50', d.p50_days, e.rul_cycles.p50], ['P90', d.p90_days, e.rul_cycles.p90]] as const).map(([k, days, cyc]) => (
-            <div key={k} className="rounded border border-line bg-panel2/40 px-2.5 py-1.5">
+            <div key={k} className="rounded-xl border border-line bg-panel2/40 px-2.5 py-1.5">
               <div className="label-caps">{k}</div>
               <div className={`display num text-xl font-semibold ${k === 'P10' && days < horizon ? 'text-warn' : ''}`}>{days.toFixed(1)}<span className="text-xs text-dim"> days</span></div>
               <div className="num text-[10px] text-dim">{cyc.toFixed(0)} cycles</div>
             </div>
           ))}
-          <div className="rounded border border-dashed border-line2 px-2.5 py-1.5" title="C-MAPSS ground truth for this test engine, shown for validation only; the planner uses the forecast">
+          <div className="rounded-xl border border-dashed border-line2 px-2.5 py-1.5" title="C-MAPSS ground truth for this test engine, shown for validation only; the planner uses the forecast">
             <div className="label-caps">True RUL</div>
             <div className="display num text-xl font-semibold text-muted">{e.true_rul_cycles}<span className="text-xs text-dim"> cycles</span></div>
             <div className="text-[10px] text-dim">Validation only</div>
@@ -149,7 +149,7 @@ function Body({ a }: { a: Detail }) {
         <div>
           <Link to={link('/app/fleet')} className="inline-flex items-center gap-1 text-xs text-muted hover:text-accent"><ArrowLeft className="h-3 w-3" />Fleet</Link>
           <div className="mt-1 flex items-center gap-3">
-            <h2 className="display text-4xl font-bold leading-none">{a.aircraft.id}</h2>
+            <h2 className="display text-4xl font-medium leading-none">{a.aircraft.id}</h2>
             <StatusBadge status={a.status} />
           </div>
           <div className="mt-1.5 text-sm text-muted">{a.aircraft.type} · {a.base.name} ({a.base.id}) · {a.aircraft.sortie_rate} sorties per day</div>
@@ -176,7 +176,7 @@ function Body({ a }: { a: Detail }) {
         <div className="flex gap-1.5" role="tablist">
           {a.engines.map((x, i) => (
             <button key={x.id} role="tab" aria-selected={i === tab} onClick={() => setTab(i)}
-              className={`rounded border px-3 py-1 text-sm ${i === tab ? 'border-accent bg-accent/10 text-accent' : 'border-line2 text-muted hover:text-ink'}`}>
+              className={`rounded-full border px-3 py-1 text-sm ${i === tab ? 'border-accent bg-accent/10 text-accent' : 'border-line2 text-muted hover:text-ink'}`}>
               Engine {x.position} · {x.serial}
             </button>
           ))}
@@ -237,7 +237,7 @@ function Body({ a }: { a: Detail }) {
                 </table>
               )}
               {a.cannibalizations.map((c) => (
-                <div key={c.job_id} className="rounded border border-k-cannibal/40 bg-k-cannibal/[0.06] px-3 py-2 text-sm">
+                <div key={c.job_id} className="rounded-xl border border-k-cannibal/40 bg-k-cannibal/[0.06] px-3 py-2 text-sm">
                   {c.role === 'donor'
                     ? <>Donor: {c.part_name} removed for <Link className="text-accent hover:underline" to={link(`/app/fleet/${c.aircraft_id}`)}>{c.aircraft_id}</Link>, fitted Day {c.day}.</>
                     : <>Receiver: {c.part_name} taken from <Link className="text-accent hover:underline" to={link(`/app/fleet/${c.donor}`)}>{c.donor}</Link>, fitted Day {c.day}.</>}

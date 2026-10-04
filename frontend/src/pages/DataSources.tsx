@@ -21,10 +21,10 @@ function SourceCard({ s }: { s: DataSource }) {
     <section className="panel flex flex-col p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="display text-lg font-semibold uppercase tracking-wider">{s.title}</h3>
+          <h3 className="display text-lg font-semibold">{s.title}</h3>
           <div className="text-xs text-dim">{s.system}</div>
         </div>
-        <span className={`whitespace-nowrap rounded border px-2 py-0.5 text-[11px] font-medium ${originCls}`}>{s.origin}</span>
+        <span className={`whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${originCls}`}>{s.origin}</span>
       </div>
       <dl className="mt-3 grid grid-cols-[110px_1fr] gap-y-1 text-sm">
         <dt className="text-muted">Rows</dt><dd className="num text-ink">{s.rows}</dd>
@@ -47,7 +47,7 @@ function SourceCard({ s }: { s: DataSource }) {
       )}
       <div className="mt-auto flex flex-wrap gap-2 pt-4">
         <a href={`${API_BASE}/data/template/${s.id}`} download={`${s.id}.csv`}
-          className="inline-flex items-center gap-1.5 rounded border border-line2 px-3 py-1.5 text-sm hover:border-accent hover:text-accent">
+          className="inline-flex items-center gap-1.5 rounded-full bg-panel2 px-3.5 py-1.5 text-[13px] font-medium ring-1 ring-white/10 hover:bg-line">
           <Download className="h-3.5 w-3.5" aria-hidden />Download CSV template
         </a>
         <input ref={input} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => pick(e.target.files?.[0])} aria-label={`Upload ${s.title} CSV`} />
@@ -56,7 +56,7 @@ function SourceCard({ s }: { s: DataSource }) {
       {upload.isError && <div className="mt-3"><ErrorBox message={(upload.error as Error).message} /></div>}
       {result?.ok && <p className="mt-3 text-sm text-ok">Accepted {result.rows} rows. The plan was re-run with the uploaded data.</p>}
       {result && !result.ok && (
-        <div className="mt-3 rounded border border-bad/40 bg-bad/10 p-3">
+        <div className="mt-3 rounded-xl border border-bad/40 bg-bad/10 p-3">
           <div className="text-sm font-medium text-ink">File rejected: {result.errors?.length} problem(s). Nothing was changed.</div>
           <div className="mt-2 max-h-56 overflow-y-auto">
             <table className="w-full text-xs">
@@ -114,7 +114,7 @@ export default function DataSources() {
               <button onClick={() => setShowConfig((x) => !x)} className="mt-2 text-xs text-accent hover:underline" aria-expanded={showConfig}>
                 {showConfig ? 'Hide full configuration' : 'Show full configuration'}
               </button>
-              {showConfig && <pre className="mt-2 max-h-[420px] overflow-auto rounded border border-line bg-bg p-3 text-[11px] text-muted">{JSON.stringify(d.config, null, 2)}</pre>}
+              {showConfig && <pre className="mt-2 max-h-[420px] overflow-auto rounded-xl border border-line bg-bg p-3 text-[11px] text-muted">{JSON.stringify(d.config, null, 2)}</pre>}
             </div>
           )}
         </QueryView>

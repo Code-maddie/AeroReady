@@ -177,7 +177,7 @@ export default function Plan() {
                     return (
                       <button key={g.id} aria-pressed={groups.has(g.id)}
                         onClick={() => setGroups((s) => { const x = new Set(s); if (x.has(g.id)) x.delete(g.id); else x.add(g.id); return x })}
-                        className={`rounded border px-2 py-0.5 text-xs font-medium ${g.cls} ${groups.has(g.id) ? 'bg-white/10' : 'opacity-75 hover:opacity-100'}`}>
+                        className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${g.cls} ${groups.has(g.id) ? 'bg-white/10' : 'opacity-75 hover:opacity-100'}`}>
                         {g.label} <span className="num text-dim">{n}</span>
                       </button>
                     )

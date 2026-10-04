@@ -44,7 +44,7 @@ export default function Spares() {
             {d.shortage_timeline.length === 0 ? <EmptyState title="No part shortages" detail="Every part the plan needs is on hand or inbound in time." /> : (
               <div className="space-y-4">
                 {d.shortage_timeline.map((t) => (
-                  <div key={t.part_id} className="rounded border border-line p-3">
+                  <div key={t.part_id} className="rounded-xl border border-line p-3">
                     <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
                       <div className="text-sm"><span className="text-dim">{t.part_id}</span> <span className="font-medium text-ink">{t.name}</span></div>
                       <span className={`text-xs ${t.shortfall ? 'text-bad' : 'text-muted'}`}>Shortfall in optimised plan: {t.shortfall}</span>

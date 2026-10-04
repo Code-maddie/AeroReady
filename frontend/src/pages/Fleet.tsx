@@ -88,7 +88,7 @@ export default function Fleet() {
           </select>
         </label>
         <label className="flex items-center gap-2">
-          <input type="checkbox" checked={shortOnly} onChange={(e) => setShortOnly(e.target.checked)} className="accent-[#f5a524]" />
+          <input type="checkbox" checked={shortOnly} onChange={(e) => setShortOnly(e.target.checked)} className="accent-[#e9a15b]" />
           Has part shortage
         </label>
         <label className="flex items-center gap-2">RUL P10 under

@@ -17,10 +17,10 @@ export function RecommendationCard({ r, compact = false }: { r: Recommendation; 
   const { link } = useConsoleParams()
   const g = groupOf(r.type)
   return (
-    <article className="rounded border border-line bg-panel2/40 p-2.5">
+    <article className="rounded-xl bg-panel2/60 p-3 ring-1 ring-white/[0.04]">
       <div className="flex items-center justify-between gap-2">
-        <span className={`shrink-0 rounded border px-1.5 py-px text-[10px] font-semibold uppercase tracking-wider ${g.cls}`}>{g.label}</span>
-        <span className={`num shrink-0 rounded px-1.5 py-0.5 text-[11px] font-semibold ${r.aircraft_delta > 0 ? 'bg-accent/15 text-accent' : 'bg-panel2 text-dim'}`}
+        <span className={`shrink-0 rounded-full border px-2 py-px text-[11px] font-medium ${g.cls}`}>{g.label}</span>
+        <span className={`num shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${r.aircraft_delta > 0 ? 'bg-accent/15 text-accent' : 'bg-panel2 text-dim'}`}
           title="Mission-ready days for this aircraft: optimised plan minus reactive baseline">
           {signed(r.aircraft_delta)} aircraft-days for {r.aircraft_id}
         </span>

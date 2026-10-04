@@ -10,6 +10,8 @@ spares limits to keep the most aircraft mission-ready. It answers the commander'
 
 ![Landing page](docs/screenshots/landing.png)
 
+The visual design follows the team's reference images: a full-bleed photographic hero with a large wordmark, a floating pill navigation, two-tone headings and rounded charcoal cards. Photos by Samuel Arkwright and Mihai Neagu (Unsplash licence), stored locally in `frontend/public/img`.
+
 ## What is real and what is simulated
 
 | | Source | Status |

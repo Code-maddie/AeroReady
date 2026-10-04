@@ -119,7 +119,7 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
       </div>
 
       {hover && (
-        <div className="pointer-events-none fixed z-50 w-72 rounded border border-line2 bg-[#0d131a] p-3 text-xs shadow-2xl"
+        <div className="pointer-events-none fixed z-50 w-72 rounded-xl border border-line2 bg-[#141413] p-3 text-xs shadow-2xl"
           style={{ left: Math.min(hover.x + 14, window.innerWidth - 300), top: Math.min(hover.y + 14, window.innerHeight - 180) }}>
           <div className="mb-1 flex items-center gap-2">
             <span className={`inline-block h-2.5 w-3 rounded-[2px] ${KIND_META[hover.block.kind].swatch}`} />
