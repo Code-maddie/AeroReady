@@ -7,7 +7,7 @@ import { dateTime } from '../lib/format'
 import { useAssumptions, useDataSources, useResetData, useUpload } from '../lib/queries'
 
 function SourceCard({ s }: { s: DataSource }) {
-  const canUpload = useAuth().can('data')
+  const canUpload = useAuth().user?.role === 'planner'
   const upload = useUpload()
   const input = useRef<HTMLInputElement>(null)
   const [result, setResult] = useState<UploadResult | null>(null)
@@ -82,7 +82,7 @@ function SourceCard({ s }: { s: DataSource }) {
 }
 
 export default function DataSources() {
-  const canReset = useAuth().can('data')
+  const canReset = useAuth().user?.role === 'planner'
   const q = useDataSources()
   const a = useAssumptions()
   const reset = useResetData()

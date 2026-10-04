@@ -4,7 +4,9 @@ export const API_BASE = (import.meta.env.VITE_API_BASE ?? '/api').replace(/\/$/,
 
 export class ApiError extends Error {
   status: number
-  constructor(message: string, status = 0) { super(message); this.status = status }
+  /** Constraint violations returned with a 409 (e.g. a task move). */
+  violations?: string[]
+  constructor(message: string, status = 0, violations?: string[]) { super(message); this.status = status; this.violations = violations }
 }
 
 export const unreachableMessage = () => `Cannot reach the AeroReady service at ${API_BASE}.`
@@ -29,6 +31,10 @@ export async function api<T>(path: string, init?: RequestInit): Promise<T> {
     try { detail = (await res.json()).detail } catch { /* not JSON */ }
     // A proxy in front of a stopped backend answers 5xx with no JSON detail.
     if (detail == null && res.status >= 500) throw new ApiError(unreachableMessage(), res.status)
+    if (detail && typeof detail === 'object' && 'message' in (detail as object)) {
+      const d = detail as { message: string; violations?: string[] }
+      throw new ApiError(d.message, res.status, d.violations)
+    }
     throw new ApiError(typeof detail === 'string' ? detail : `Request failed (${res.status})`, res.status)
   }
   if (res.status === 204) return undefined as T
@@ -48,7 +54,7 @@ export function qs(params: Record<string, string | null | undefined>): string {
 
 // ---- types ---------------------------------------------------------------
 export type FleetStatus = 'ready' | 'scheduled' | 'at_risk' | 'grounded'
-export type BlockKind = 'scheduled' | 'preventive' | 'corrective' | 'awaiting' | 'aog' | 'cannibalization'
+export type BlockKind = 'scheduled' | 'preventive' | 'corrective' | 'awaiting' | 'aog' | 'cannibalization' | 'defect'
 export type RecType = 'cannibalize' | 'predictive' | 'order' | 'bundle' | 'level' | 'defer'
 
 export interface Solver { status: string; wall_time_s: number; objective: number; num_booleans: number; locks_ignored?: string[] }
@@ -59,27 +65,37 @@ export interface Block {
 }
 export interface GanttRow { aircraft_id: string; base_id: string; blocks: Block[]; available_days: number }
 
+export type RecStatus = 'Proposed' | 'Accepted' | 'Modified' | 'Rejected'
 export interface Recommendation {
-  id: string; type: RecType; aircraft_id: string; base_id: string; job_id: string
+  id: string; key: string; type: RecType; aircraft_id: string; base_id: string; job_id: string
   day: number | null; title: string; reason: string; aircraft_delta: number
   start: number | null; donor: string | null; part_id: string | null
-  decision: { id: string; action: 'approve' | 'reject'; by: string; at: string } | null
-  effects: { approve: string; reject: string }
+  status: RecStatus
+  decision: { status: RecStatus; reason: string | null; by: string; at: string } | null
+  effects: { reject: string }
+  /** false when the current schedule no longer produces this recommendation (kept for its decision) */
+  current?: boolean
 }
 
-export interface Decision {
-  id: string; key: string; action: 'approve' | 'reject'; type: RecType; job_id: string; aircraft_id: string
-  base_id: string; title: string; start: number | null; donor: string | null; part_id: string | null
-  effect: string; note: string; by: string; role: string; at: string; in_effect: boolean
+export type PlanStatus = 'Draft' | 'Submitted' | 'Approved' | 'Returned'
+export interface PlanSummary {
+  id: string; version: number; status: PlanStatus; active: boolean; label: string
+  based_on: number | null; created_by: string; created_at: string
+  submitted_by: string | null; submitted_at: string | null; decided_by: string | null; decided_at: string | null
+  superseded_by: number | null
+  comments: { by: string; role: string; at: string; kind: string; text: string }[]
+  locks: Record<string, [number, string | null]>; removed: Record<string, string>; change_notes: Record<string, string>
+  rec_status: Record<string, { status: RecStatus; reason: string | null; by: string; at: string }>
+  solver: { status?: string; wall_time_s?: number; locks_ignored?: string[] }
+  optimized_at: string | null; revision: number
+  aircraft_days?: number; reactive_aircraft_days?: number
 }
-
-export interface Cannibalization { job_id: string; aircraft_id: string; part_id: string; part_name: string; donor: string; day: number }
 
 export interface Job {
   id: string; aircraft_id: string; base_id: string; kind: 'scheduled' | 'preventive' | 'corrective'
   name: string; duration: number; tech_hours_per_day: number; parts: string[]
   earliest: number; latest: number; due: number | null; hard_limit: number | null
-  engine_id: string | null; failure_day: number | null; risk_start: number | null
+  engine_id: string | null; failure_day: number | null; risk_start: number | null; defect_id?: string | null
 }
 
 export interface PartDelay { part_id: string; days: number }
@@ -109,9 +125,11 @@ export interface PlanResult {
   part_orders: { part_id: string; part_name: string; qty: number; order_day: number; arrives_day: number; needed_from_day: number }[]
   capacity: { bays: Record<string, number[]>; tech_hours: Record<string, number[]> }
   jobs: Job[]; forecasts_days: Record<string, { p10_days: number; p50_days: number; p90_days: number }>
-  computed_at: string; elapsed_s: number; decisions: Decision[]
+  computed_at: string; elapsed_s: number; plan?: PlanSummary | null
   scenario_id: string | null; scenario_name: string; data_origin: 'simulated' | 'uploaded'; uploaded_sources: string[]
 }
+
+export interface Cannibalization { job_id: string; aircraft_id: string; part_id: string; part_name: string; donor: string; day: number }
 
 export interface WatchRow {
   aircraft_id: string; engine_id: string; base_id: string; p10_days: number; p50_days: number; p90_days: number
@@ -195,7 +213,8 @@ export interface SparesResponse {
 export interface SavedScenario { id: string; name: string; created_at: string | null; scenario: Scenario }
 
 export interface Meta {
-  start_date: string; horizon_days: number; data_origin: 'simulated' | 'uploaded'; uploaded_sources: string[]
+  start_date: string; horizon_days: number; data_origin: 'simulated' | 'uploaded'
+  defect_systems: string[]; work_order_release_days: number
   bases: { id: string; name: string; region: string; agency_id: string; bays: number; tech_hours_per_day: number }[]
   parts: { id: string; name: string; category: string; lead_time_days: number }[]
   aircraft: { id: string; base_id: string; sortie_rate: number }[]
@@ -223,4 +242,60 @@ export interface ModelPrediction { unit: number; true_rul: number; true_rul_capp
 export interface ModelImportance {
   features: { feature: string; gain_share: number }[]
   sensors: { sensor: string; name: string; gain_share: number }[]
+}
+
+// ---- workflow --------------------------------------------------------------
+export type WorkOrderStatus = 'Released' | 'In progress' | 'Paused' | 'Completed' | 'Cannot complete'
+export interface HistoryEntry { status: string; by: string; role: string; at: string; comment: string | null }
+export interface WorkOrder {
+  id: string; plan_version: number; job_id: string; aircraft_id: string; base_id: string; task: string
+  task_type: 'scheduled' | 'preventive' | 'corrective' | 'defect'; defect_id: string | null
+  planned_day: number; duration_days: number; est_hours: number; bay: number | null
+  parts: { part_id: string; name: string; qty: number; source: string; available_day: number | null }[]
+  reason: string; technician: string; status: WorkOrderStatus; cannot_reason: string | null
+  completion: null | { actual_hours: number; parts_used: { part_id: string; qty: number }[]; findings: string; follow_up_defect: boolean; completed_at: string }
+  history: HistoryEntry[]
+}
+
+export type DefectStatus = 'Reported' | 'Under review' | 'Planned' | 'Closed'
+export interface Defect {
+  id: string; aircraft_id: string; base_id: string; system: string; description: string; suspected_parts: string[]
+  serviceable: boolean; reported_by: string; reported_at: string; status: DefectStatus; job_id: string
+  closed_reason: string | null; history: HistoryEntry[]
+}
+
+export interface Notification { id: string; at: string; kind: string; text: string; link: string; read: boolean }
+export interface AuditEntry {
+  id: string; at: string; user: string; name: string; role: string; action: string
+  object_type: string; object_id: string; comment: string | null; detail: string | null
+}
+
+export interface PlansStatus { active: PlanSummary | null; working: PlanSummary | null; label: string; working_label: string | null }
+
+export interface ReviewChange {
+  job_id: string; aircraft_id: string; base_id: string; task: string; change: 'added' | 'moved' | 'removed'
+  from_day: number | null; to_day: number | null; comment: string | null; locked: boolean
+}
+export interface PlanReview {
+  plan: PlanSummary; reference: string; changes: ReviewChange[]; cannibalizations: Cannibalization[]; deferrals: Recommendation[]
+  risks: { aircraft_id: string; engine_id: string; task: string; start: number; p10_days: number | null; margin_days: number | null; kind: 'after_p10' | 'failure' }[]
+  series: { plan: number[]; reference: number[] }; aircraft_days: { plan: number; reference: number }
+  start_date: string; horizon_days: number; fleet_size: number
+}
+
+export interface BaseReadiness {
+  base_id: string; base_name: string; aircraft: number; mission_ready_today: number
+  avg_available: number; avg_available_reactive: number; aircraft_at_risk: number; part_shortages: string[]
+}
+
+export interface ReadinessReport {
+  plan_label: string; start_date: string; from_day: number; to_day: number; fleet_size: number
+  series: { plan: number[]; reactive: number[] }; by_base: BaseReadiness[]; risks: WatchRow[]
+  shortages: SparesResponse['inventory']; changes: ReviewChange[]
+}
+
+export interface TechAircraft {
+  aircraft: { id: string; type: string; base_id: string }; status: FleetStatus; status_reason: string
+  engines: { engine_id: string; p10_days: number; p50_days: number; p90_days: number }[]
+  open_work_orders: WorkOrder[]; completed_work: WorkOrder[]; open_defects: Defect[]; horizon_days: number
 }

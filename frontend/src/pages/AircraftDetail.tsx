@@ -219,8 +219,8 @@ function Body({ a }: { a: Detail }) {
 
 export default function AircraftDetail() {
   const { tail = '' } = useParams()
-  const { scenario } = useConsoleParams()
-  const q = useAircraft(tail, scenario)
+  useConsoleParams()
+  const q = useAircraft(tail, undefined)
   return (
     <QueryView q={q} skeleton={<div className="space-y-4"><Skeleton h={64} /><Skeleton h={340} /><Skeleton h={200} /></div>}>
       {(a) => <Body key={tail} a={a} />}

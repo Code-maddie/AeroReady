@@ -1,33 +1,36 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Outlet } from 'react-router-dom'
 import { postJson, setAuthToken } from './api'
 
-export type Permission = 'decide' | 'plan' | 'data'
-export interface User { username: string; name: string; role: 'commander' | 'planner' | 'technician'; permissions: Permission[] }
+export type Role = 'commander' | 'planner' | 'technician'
+export interface User { username: string; name: string; role: Role; base_id: string | null }
+interface Session { token: string; user: User; expires_at: string }
 
 interface AuthState {
   user: User | null
-  login: (username: string, password: string) => Promise<void>
+  login: (username: string, password: string) => Promise<User>
   logout: () => void
-  can: (p: Permission) => boolean
 }
 
-const AuthContext = createContext<AuthState>({ user: null, login: async () => {}, logout: () => {}, can: () => false })
+const AuthContext = createContext<AuthState>({ user: null, login: async () => { throw new Error('no provider') }, logout: () => {} })
 const KEY = 'aeroready.session'
 
-function readSession(): { token: string; user: User } | null {
+export const ROLE_LABEL: Record<Role, string> = { commander: 'Commander', planner: 'Planner', technician: 'Technician' }
+export const ROLE_HOME: Record<Role, string> = { commander: '/commander', planner: '/planner', technician: '/technician' }
+
+function readSession(): Session | null {
   try {
     const raw = localStorage.getItem(KEY)
-    return raw ? JSON.parse(raw) : null
+    if (!raw) return null
+    const s = JSON.parse(raw) as Session
+    return new Date(s.expires_at).getTime() > Date.now() ? s : null
   } catch { return null }
 }
 
-export const ROLE_LABEL: Record<User['role'], string> = { commander: 'Commander', planner: 'Planner', technician: 'Technician' }
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const qc = useQueryClient()
-  const [session, setSession] = useState(() => {
+  const [session, setSession] = useState<Session | null>(() => {
     const s = readSession()
     setAuthToken(s?.token ?? null)
     return s
@@ -40,35 +43,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     qc.clear()
   }, [qc])
 
-  // Any 401 from the API (expired or invalid session) signs the user out.
+  // Expired or invalid session from any API call, or the session clock running out.
   useEffect(() => {
     const on = () => logout()
     window.addEventListener('aeroready:unauthorized', on)
     return () => window.removeEventListener('aeroready:unauthorized', on)
   }, [logout])
+  useEffect(() => {
+    if (!session) return
+    const ms = new Date(session.expires_at).getTime() - Date.now()
+    const t = setTimeout(logout, Math.max(0, Math.min(ms, 2 ** 31 - 1)))
+    return () => clearTimeout(t)
+  }, [session, logout])
 
   const login = async (username: string, password: string) => {
-    const r = await postJson<{ token: string; user: User }>('/auth/login', { username, password })
+    const r = await postJson<Session>('/auth/login', { username, password })
     setAuthToken(r.token)
     try { localStorage.setItem(KEY, JSON.stringify(r)) } catch { /* session lasts this tab only */ }
     qc.clear()
     setSession(r)
+    return r.user
   }
 
-  const user = session?.user ?? null
-  return (
-    <AuthContext.Provider value={{ user, login, logout, can: (p) => !!user?.permissions.includes(p) }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ user: session?.user ?? null, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)
 
-/** Console routes: send signed-out users to the sign-in page and back afterwards. */
-export function RequireAuth({ children }: { children: ReactNode }) {
+/** Route guard: signed-out users go to sign-in; other roles go to their own home. */
+export function RequireRole({ roles, children }: { roles: Role[]; children?: ReactNode }) {
   const { user } = useAuth()
   const loc = useLocation()
   if (!user) return <Navigate to={`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />
-  return <>{children}</>
+  if (!roles.includes(user.role)) return <Navigate to={ROLE_HOME[user.role]} replace />
+  return <>{children ?? <Outlet />}</>
 }

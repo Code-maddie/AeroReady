@@ -1,28 +1,26 @@
 import { useSearchParams } from 'react-router-dom'
+import { ROLE_HOME, useAuth } from './auth'
 
-/** Base filter and active scenario live in the URL so views are shareable. */
+/** Base filter lives in the URL so views are shareable; links stay within the user's role area. */
 export function useConsoleParams() {
   const [params, setParams] = useSearchParams()
+  const { user } = useAuth()
   const base = params.get('base')
-  const scenario = params.get('scenario')
-  const set = (key: 'base' | 'scenario', value: string | null) => {
+  const home = user ? ROLE_HOME[user.role] : ''
+  const setBase = (b: string | null) => {
     const next = new URLSearchParams(params)
-    if (value) next.set(key, value)
-    else next.delete(key)
+    if (b) next.set('base', b)
+    else next.delete('base')
     setParams(next, { replace: true })
   }
   return {
     base,
-    scenario,
-    setBase: (b: string | null) => set('base', b),
-    setScenario: (s: string | null) => set('scenario', s === 'baseline' ? null : s),
-    /** Carry base/scenario along when linking to another console page. */
+    setBase,
+    home,
+    /** Path inside the role's area, keeping the base filter. `link('/fleet/A-20')` -> `/planner/fleet/A-20?base=BS`. */
     link: (path: string) => {
-      const keep = new URLSearchParams()
-      if (base) keep.set('base', base)
-      if (scenario) keep.set('scenario', scenario)
-      const q = keep.toString()
-      return q ? `${path}?${q}` : path
+      const full = path.startsWith('/audit') ? path : home + path
+      return base ? `${full}${full.includes('?') ? '&' : '?'}base=${base}` : full
     },
   }
 }

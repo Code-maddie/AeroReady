@@ -51,10 +51,13 @@ body {
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 @layer base {
+  html { color-scheme: dark; }
   input[type=range], input[type=checkbox] { accent-color: var(--color-accent); }
   select, input[type=number], input[type=text], input[type=search], input[type=password] {
     background: var(--color-bg); border: 1px solid var(--color-line2); border-radius: 4px;
     height: 32px; padding: 0 8px; color: var(--color-ink); font-size: 13px;
   }
+  input[type=date] { background: var(--color-bg); border: 1px solid var(--color-line2); border-radius: 4px; height: 32px; padding: 0 8px; color: var(--color-ink); font-size: 13px; color-scheme: dark; }
+  textarea { background: var(--color-bg); border: 1px solid var(--color-line2); border-radius: 4px; padding: 6px 8px; color: var(--color-ink); font-size: 13px; width: 100%; }
   input::placeholder { color: var(--color-dim); }
 }

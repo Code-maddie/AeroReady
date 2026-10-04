@@ -9,8 +9,8 @@ import { useSpares } from '../lib/queries'
 type Inv = SparesResponse['inventory'][number]
 
 export default function Spares() {
-  const { scenario, link } = useConsoleParams()
-  const q = useSpares(scenario)
+  const { link } = useConsoleParams()
+  const q = useSpares(undefined)
 
   const cols: Column<Inv>[] = [
     { key: 'part', label: 'Part', value: (r) => r.part_id, render: (r) => <span><span className="text-dim">{r.part_id}</span> <span className="text-ink">{r.name}</span><div className="text-[11px] text-dim">{r.category}</div></span> },

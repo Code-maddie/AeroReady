@@ -8,9 +8,12 @@ spares limits to keep the most aircraft mission-ready. It answers the commander'
 
 > *How many aircraft can I put in the air each day for the next 30 days, and what should I change to raise that number?*
 
-![Landing page](docs/screenshots/landing.png)
+The optimiser proposes; people decide. A planner reviews and adjusts the proposal, the commander approves it, and
+approved work becomes work orders for technicians, whose completions and defect reports feed the next plan.
 
-The visual design follows the team's reference images: a full-bleed photographic hero with a large wordmark, a floating pill navigation, two-tone headings and rounded charcoal cards. Photos by Samuel Arkwright and Mihai Neagu (Unsplash licence), stored locally in `frontend/public/img`.
+![Commander readiness](docs/screenshots/commander-readiness.png)
+
+The UI follows the project rules in [`CLAUDE.md`](CLAUDE.md): a dense, calm operations console with no decorative imagery.
 
 ## What is real and what is simulated
 
@@ -31,44 +34,67 @@ four sources can be replaced with your own CSV on that page; the label then chan
 The UI shows no hardcoded figures. Every metric, chart point and table row comes from the API. Model metrics are read
 from the saved evaluation of the training run (`backend/data/rul_metrics.json`, `rul_test_predictions.json`).
 
-## Sign-in, roles and decisions
+## Sign-in, roles and workflow
 
-The console requires sign-in; the landing page is public. Three demo accounts are listed on the sign-in page:
+Every page except `/login` requires sign-in. Sessions last 8 hours (JWT, HS256; secret in `backend/data/secret.key`,
+generated on first run, or the `AERO_SECRET` environment variable). Passwords are stored as bcrypt hashes in
+`backend/data/users.json`, which the scenario generator creates: one commander, and per base one planner and three
+technicians. Role checks run on the backend for every endpoint; the UI only hides what a role cannot use.
 
-| Account | Role | Can do |
-|---|---|---|
-| `commander` / `commander-demo` | Commander | View everything; approve or reject recommendations |
-| `planner` / `planner-demo` | Planner | Everything above, plus re-plan, run and save scenarios, upload and reset data |
-| `technician` / `technician-demo` | Technician | View only |
+### Demo accounts
 
-Recommendations can be **approved or rejected**. Each decision re-runs the optimiser for the whole fleet straight away:
+The password for every account is the username followed by `-26249`. These are listed here only, never in the UI.
 
-| Recommendation | Approve | Reject |
-|---|---|---|
-| Engine repair (pull forward) | Locked at that day | No preventive work on that engine; it may fail on its forecast day |
-| Cannibalisation | Locked at that day and donor | The part is not taken from the donor |
-| Inspection timing (bundle, level, defer) | Locked at that day | Not on that day; the optimiser picks another |
-| Part order | Recorded as placed | No new orders of that part inside the horizon |
+| Username | Password | Role | Base |
+|---|---|---|---|
+| `commander` | `commander-26249` | Commander | All |
+| `planner.bn` · `planner.bc` · `planner.bs` | `planner.bn-26249` etc. | Planner | BN · BC · BS |
+| `tech.bn.1` … `tech.bn.3` | `tech.bn.1-26249` etc. | Technician | BN |
+| `tech.bc.1` … `tech.bc.3` | `tech.bc.1-26249` etc. | Technician | BC |
+| `tech.bs.1` … `tech.bs.3` | `tech.bs.1-26249` etc. | Technician | BS |
 
-Decisions apply to every scenario. They are stored in `backend/data/decisions.json` with who made them and when, and can be undone from the Plan page's decision log. If approvals conflict (for example after a scenario closes a bay), the plan is solved without the conflicting locks and the log marks them "Not applied in this scenario". Passwords are stored as PBKDF2 hashes; sessions are HMAC-signed tokens (`backend/data/secret.key`, generated on first run, or the `AERO_SECRET` environment variable). The demo passwords are shown on purpose for judging; remove `demo_password` from `backend/data/users.json` for any real use.
+### Workflow
+
+1. **Planner** runs the optimiser, creating a draft plan (v1, v2, …). Each recommendation is Proposed and can be
+   Accepted (task locked), Modified (moved to another day after a constraint check) or Rejected (reason required; the
+   optimiser re-solves without it). Planners can move, lock or remove tasks at their own base only; a move that breaks
+   a constraint is refused with the specific violation, for example "Base BN has 4 of 4 bays occupied on day 12".
+2. Planner submits the draft. **Commander** reviews it against the approved plan (or the reactive baseline): daily
+   availability, every added, moved or removed task with planner comments, cannibalisations, deferrals and engine work
+   accepted after its P10 forecast. The commander approves it or returns it with a required comment.
+3. On approval the plan becomes the single active plan (the previous one is superseded), and every task starting in
+   the next 7 days becomes a **work order** for a technician at that base.
+4. **Technician** starts, pauses and completes work orders (actual hours, parts used, findings), marks them cannot
+   complete (reason required), or reports a defect. A defect marked not serviceable grounds the aircraft at once.
+5. Defects notify the base planner and the commander and open a re-plan draft. The planner reviews the defect,
+   converts it to a planned task on the earliest feasible day, re-runs the optimiser and submits again.
+
+Status models: plan Draft, Submitted, Approved or Returned; recommendation Proposed, Accepted, Modified or Rejected;
+work order Released, In progress, Paused, Completed or Cannot complete; defect Reported, Under review, Planned or Closed.
+Every action is written to the audit log (who, role, action, object, time, comment), viewable and exportable at `/audit`.
+Workflow state is kept in `backend/data/state/` (delete the folder to start over).
 
 ## Site map
 
 ```
-/                      Landing page: problem, how it works, live availability chart, data and method
-/login                 Sign-in with demo accounts
-/app                   Redirects to /app/overview
-/app/overview          Readiness overview: stat tiles, daily availability, top recommendations, risk watchlist
-/app/fleet             Fleet grid or sortable table, filters, search, CSV export
-/app/fleet/:tail       Aircraft detail: engine RUL and sensors, planned work vs reactive, history, parts
-/app/plan              Gantt (optimised / reactive / compare), task side panel, recommendations, capacity heatmap
-/app/scenarios         What-if builder, run vs baseline, save, compare up to three saved scenarios
-/app/spares            Inventory, shortage timeline, cannibalisation actions with marginal gain
-/app/data              Data sources, CSV templates and uploads with row/column validation, assumptions
-/app/model             Test-set metrics, predicted vs actual, feature importance, method
+/login                         Sign-in
+/commander                     Readiness: pending approval banner, stat tiles, 30-day availability, readiness by base
+/commander/approvals[/:id]     Plan list; plan review with approve or return
+/commander/scenarios           What-if builder, surge target check, saved scenarios
+/commander/fleet[/:tail]       Fleet table and aircraft detail (read only)
+/commander/reports             Date-range readiness report; export PDF (print) and CSV
+/planner                       Planning workspace: draft header, availability vs approved, Gantt with locks, task panel, capacity heatmap
+/planner/recommendations       Recommendation queue: accept, modify, reject with reason, bulk accept
+/planner/defects               Defects: review, convert to planned task, close with reason
+/planner/work-orders           Work orders: status, technician, reassign, re-plan cannot-complete orders
+/planner/spares | scenarios | fleet | data | model
+/technician                    My work orders: Today, Upcoming (next 7 days), Completed
+/technician/work-orders/:id    Work order detail: start, pause, complete, cannot complete, status history
+/technician/defects/new        Report defect
+/technician/aircraft/:tail     Aircraft status, open work orders, completed work, engine RUL band
+/audit                         Audit log with filters and CSV export (commander and planner)
+/dev/ui                        Shared UI components (not linked)
 ```
-
-The base filter and the active scenario are stored in the URL query string (`?base=BS&scenario=...`), so any view can be shared.
 
 ## Headline result (default scenario, deterministic)
 
@@ -132,23 +158,11 @@ flowchart LR
 
 ## API
 
-All routes are under `/api`; interactive docs are at `/docs`.
-
-| Method and path | Purpose |
-|---|---|
-| `GET /health` | Liveness and data version |
-| `POST /auth/login` · `GET /auth/me` · `GET /auth/demo-accounts` | Sign-in (token), current user, demo accounts |
-| `GET /decisions` · `POST /decisions` · `DELETE /decisions/{id}` | Approve or reject a recommendation; undo |
-| `GET /meta` | Bases, parts, aircraft, data origin |
-| `GET /summary?scenario=&base=` | Overview stats, availability series, top recommendations, risk watchlist |
-| `GET /fleet?scenario=&base=` · `GET /aircraft/{tail}?scenario=` | Fleet status; aircraft detail |
-| `GET /plan?scenario=` · `POST /plan` · `POST /plan/rerun?scenario=` | Saved or baseline plan; unsaved what-if; force a re-run |
-| `GET /recommendations?scenario=&base=&type=` | Recommendations sorted by impact |
-| `GET /capacity?scenario=` | Daily bay and technician-hour use per base |
-| `GET /spares?scenario=` | Inventory, shortage timeline, cannibalisation with marginal gain |
-| `GET/POST /scenarios` · `DELETE /scenarios/{id}` | Saved scenarios |
-| `GET /data/sources` · `GET /data/assumptions` · `GET /data/template/{source}` · `POST /data/upload/{source}` · `POST /data/reset` | Data integration |
-| `GET /model/metrics` · `GET /model/predictions` · `GET /model/importance` | Saved training evaluation |
+All routes are under `/api` and need a bearer token except `/health` and `/auth/login`; interactive docs are at `/docs`.
+Main groups: `auth`, `plans` (create, optimise, decide recommendations, check/move/lock/remove tasks, submit, return,
+approve, review), `summary`, `readiness/by-base`, `fleet`, `aircraft`, `capacity`, `spares`, `reports/readiness`,
+`plan` and `scenarios` (what-if), `work-orders`, `defects`, `technician/aircraft`, `notifications`, `audit`, `users`,
+`data`, `model`. Each endpoint declares the roles allowed to call it in `backend/aeroready/api/main.py`.
 
 The frontend reads the API base URL from `VITE_API_BASE` (default `/api`; see `frontend/.env.example`).
 
@@ -181,7 +195,7 @@ cd backend
 .venv/Scripts/python scripts/generate_fleet.py    # simulated fleet from scenario_config.json
 .venv/Scripts/python scripts/train_rul.py         # trains, evaluates, saves metrics and test predictions
 .venv/Scripts/python scripts/run_demo_check.py    # baseline vs optimised; asserts optimised >= baseline
-.venv/Scripts/python -m pytest                    # 18 tests
+.venv/Scripts/python -m pytest                    # 15 tests
 ```
 
 > **Windows note:** with Smart App Control enabled, the newest pandas (3.x) and OR-Tools (9.15) wheels are blocked
@@ -189,15 +203,15 @@ cd backend
 
 ## Screenshots
 
-| Overview | Fleet |
+| Sign-in | Planner workspace |
 |---|---|
-| ![Overview](docs/screenshots/overview.png) | ![Fleet](docs/screenshots/fleet.png) |
-| **Aircraft detail** | **Plan (compare mode with task panel)** |
-| ![Aircraft](docs/screenshots/aircraft.png) | ![Plan](docs/screenshots/plan.png) |
-| **Scenarios** | **Spares** |
-| ![Scenarios](docs/screenshots/scenarios.png) | ![Spares](docs/screenshots/spares.png) |
-| **Data sources** | **Model** |
-| ![Data sources](docs/screenshots/data.png) | ![Model](docs/screenshots/model.png) |
+| ![Sign-in](docs/screenshots/login.png) | ![Workspace](docs/screenshots/planner-workspace.png) |
+| **Plan review (commander)** | **Defect converted to a task** |
+| ![Review](docs/screenshots/plan-review.png) | ![Defect](docs/screenshots/defect-converted.png) |
+| **Technician work orders** | **Completed work order** |
+| ![Technician](docs/screenshots/technician-home.png) | ![Work order](docs/screenshots/work-order.png) |
+| **Audit log** | |
+| ![Audit](docs/screenshots/audit.png) | |
 
 ## Limitations
 
@@ -215,7 +229,7 @@ cd backend
 1. Integration with real systems: health and usage monitoring, maintenance information system, logistics ERP and agency rosters, through the same schemas the upload page validates.
 2. Validation with maintenance engineers: review recommendations against inspection rules and deferral authority, and run the planner in shadow mode against actual schedules.
 3. Calibrated intervals and robustness testing: conformal prediction, and Monte Carlo over the RUL quantiles with chance constraints on failure risk.
-4. Security accreditation before any operational data is used: on-premises deployment, role-based access, audit trail.
+4. Security accreditation before any operational data is used: on-premises deployment, integration with the service identity system in place of the local user file, and tamper-evident audit storage.
 
 ## Repository layout
 
@@ -228,9 +242,13 @@ backend/
     datastore.py    four data sources, CSV templates, validation, uploads, reset
     scenarios.py    saved scenarios (data/scenarios.json)
     service.py      plan cache and derived views (summary, fleet, aircraft, spares, capacity)
+    users.py, auth.py   generated users (bcrypt), JWT sessions, role checks
+    planning.py     versioned plans, recommendation decisions, task moves, submit, return, approve
+    workflow.py     work orders, defects, notifications, audit log
+    opstate.py      JSON state stores (data/state/); folds completed work and defects into planning
     api/main.py     FastAPI routes; serves frontend/dist when built
   scripts/          download_cmapss · generate_fleet · train_rul · run_demo_check
-  tests/            fleet, RUL, optimiser, API (uploads, scenarios, model endpoints)
+  tests/            fleet, RUL, optimiser, API (roles, full plan-to-work-order workflow, uploads, scenarios, model)
 frontend/           React + Vite + TypeScript + Tailwind + Recharts + TanStack Query + lucide-react
 docs/screenshots/
 DEMO.md             3-minute demo script

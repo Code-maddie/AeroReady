@@ -2,12 +2,10 @@ import { useQueries } from '@tanstack/react-query'
 import { Play, Save, Trash2 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import AvailabilityChart, { SERIES_COLORS } from '../components/AvailabilityChart'
-import { Button, EmptyState, ErrorBox, Panel, QueryView, SkeletonBlock } from '../components/ui'
+import { Button, EmptyState, ErrorBox, Panel, QueryView, SkeletonBlock, StatTile } from '../components/ui'
 import { api, qs, EMPTY_SCENARIO, type Meta, type PlanResult, type Scenario } from '../lib/api'
 import { dateTime, signed } from '../lib/format'
-import { useConsoleParams } from '../lib/params'
-import { useAuth } from '../lib/auth'
-import { useDeleteScenario, useMeta, usePlan, useRunScenario, useSaveScenario, useScenarios } from '../lib/queries'
+import { useDeleteScenario, useMeta, useRunScenario, useScenarioPlan, useSaveScenario, useScenarios } from '../lib/queries'
 
 interface Form {
   partOn: boolean; partId: string; partDays: number
@@ -70,7 +68,6 @@ function NumberInput({ value, onChange, min, max, step = 1 }: { value: number; o
 }
 
 function Builder({ meta, onRun, running }: { meta: Meta; onRun: (s: Scenario) => void; running: boolean }) {
-  const { can } = useAuth()
   const [f, setF] = useState<Form>(() => initialForm(meta))
   const set = (p: Partial<Form>) => setF((x) => ({ ...x, ...p }))
   const last = meta.horizon_days - 1
@@ -119,9 +116,8 @@ function Builder({ meta, onRun, running }: { meta: Meta; onRun: (s: Scenario) =>
         <Field label="Sorties per day (engine cycles)"><NumberInput value={f.rate} onChange={(v) => set({ rate: v })} min={0.1} max={6} step={0.1} /></Field>
       </Section>
       <div className="flex items-center gap-3">
-        <Button variant="primary" onClick={() => onRun(sc)} busy={running} disabled={!can('plan')} title={can('plan') ? undefined : 'Planner role required'}
+        <Button variant="primary" onClick={() => onRun(sc)} busy={running}
           icon={<Play className="h-3.5 w-3.5" />}>Run scenario</Button>
-        {!can('plan') && <span className="text-xs text-warn">Planner role required to run scenarios.</span>}
         <span className="text-xs text-dim">{describe(sc)}</span>
       </div>
     </div>
@@ -132,7 +128,6 @@ function Results({ run, base, onSave, saving, saveError }: {
   run: PlanResult; base: PlanResult; onSave: (name: string) => void; saving: boolean; saveError: string | null
 }) {
   const [name, setName] = useState('')
-  const canSave = useAuth().can('plan')
   const delta = run.optimized.aircraft_days - base.optimized.aircraft_days
   // Match recommendations by job and action type; a moved day counts as changed, not added + removed.
   const key = (r: { job_id: string; type: string }) => `${r.job_id}|${r.type}`
@@ -146,17 +141,19 @@ function Results({ run, base, onSave, saving, saveError }: {
     .filter((d) => run.optimized.available_per_day[d] < surge.min_available) : []
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <div className="panel p-3"><div className="label-caps">This scenario</div><div className="display num text-3xl font-semibold text-accent">{run.optimized.aircraft_days}</div><div className="text-xs text-dim">aircraft-days, optimised</div></div>
-        <div className="panel p-3"><div className="label-caps">Change vs baseline scenario</div><div className={`display num text-3xl font-semibold ${delta < 0 ? 'text-bad' : delta > 0 ? 'text-ok' : ''}`}>{signed(delta)}</div><div className="text-xs text-dim">baseline scenario {base.optimized.aircraft_days}</div></div>
-        <div className="panel p-3"><div className="label-caps">Unplanned failures</div><div className="display num text-3xl font-semibold">{run.optimized.unplanned_failures.length}</div><div className="text-xs text-dim">baseline scenario {base.optimized.unplanned_failures.length}</div></div>
-        <div className="panel p-3"><div className="label-caps">Surge target</div>
-          {surge ? (
-            <><div className={`display num text-3xl font-semibold ${missed.length ? 'text-bad' : 'text-ok'}`}>{missed.length ? 'Not met' : 'Met'}</div>
-              <div className="text-xs text-dim">{missed.length ? `Short on Day ${missed.join(', ')}` : `Every day from ${surge.start_day} to ${surge.end_day}`}</div></>
-          ) : <><div className="display text-3xl font-semibold text-dim">None set</div><div className="text-xs text-dim">Add a surge requirement to test it</div></>}
-        </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <StatTile label="Aircraft-days, this scenario" value={run.optimized.aircraft_days} sub={`Baseline scenario ${base.optimized.aircraft_days}`} />
+        <StatTile label="Change against baseline scenario" value={signed(delta)} tone={delta < 0 ? 'bad' : delta > 0 ? 'ok' : 'ink'} sub="Optimised plan in both" />
+        <StatTile label="Unplanned failures" value={run.optimized.unplanned_failures.length} sub={`Baseline scenario ${base.optimized.unplanned_failures.length}`} />
       </div>
+      {surge && (() => {
+        const span = Math.min(run.horizon_days - 1, surge.end_day) - surge.start_day + 1
+        return (
+          <p className={`text-[15px] ${missed.length ? 'text-bad' : 'text-ok'}`}>
+            Surge target met on {span - missed.length} of {span} days.{missed.length > 0 && ` Not met on day${missed.length > 1 ? 's' : ''} ${missed.join(', ')}.`}
+          </p>
+        )
+      })()}
       <AvailabilityChart startDate={run.start_date} maxY={run.fleet_size} surge={surge} animate height={300}
         diff={{ a: 'run', b: 'base', label: 'Change' }}
         series={[
@@ -182,7 +179,7 @@ function Results({ run, base, onSave, saving, saveError }: {
       </div>
       <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); if (name.trim()) onSave(name.trim()) }}>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Scenario name" className="w-64 text-sm" aria-label="Scenario name" />
-        <Button type="submit" disabled={!name.trim() || !canSave} busy={saving} icon={<Save className="h-3.5 w-3.5" />}>Save scenario</Button>
+        <Button type="submit" disabled={!name.trim()} busy={saving} icon={<Save className="h-3.5 w-3.5" />}>Save scenario</Button>
         {saveError && <span className="text-xs text-bad">{saveError}</span>}
       </form>
     </div>
@@ -206,13 +203,11 @@ function Compare({ ids, names, horizonPlan }: { ids: string[]; names: Record<str
 
 export default function Scenarios() {
   const meta = useMeta()
-  const baseline = usePlan(null)
+  const baseline = useScenarioPlan(null)
   const saved = useScenarios()
   const run = useRunScenario()
   const save = useSaveScenario()
   const del = useDeleteScenario()
-  const { setScenario } = useConsoleParams()
-  const canPlan = useAuth().can('plan')
   const [lastRun, setLastRun] = useState<{ sc: Scenario; at: string } | null>(null)
   const [compare, setCompare] = useState<string[]>([])
 
@@ -263,8 +258,7 @@ export default function Scenarios() {
                         <td className="num py-2 pr-3 text-xs text-dim">{s.created_at ? dateTime(s.created_at) : 'Built in'}</td>
                         <td className="py-2 text-right">
                           <div className="flex justify-end gap-2">
-                            <Button onClick={() => setScenario(s.id)}>Make active</Button>
-                            {s.id !== 'baseline' && canPlan && (
+                            {s.id !== 'baseline' && (
                               <Button onClick={() => { setCompare((c) => c.filter((x) => x !== s.id)); del.mutate(s.id) }}
                                 icon={<Trash2 className="h-3.5 w-3.5" />} busy={del.isPending && del.variables === s.id}>Delete</Button>
                             )}

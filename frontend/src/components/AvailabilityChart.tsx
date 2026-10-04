@@ -18,14 +18,16 @@ function Swatch({ s }: { s: Series }) {
   )
 }
 
-export default function AvailabilityChart({ series, startDate, maxY, surge, height = 300, animate = false, diff }: {
+export default function AvailabilityChart({ series, startDate, maxY, surge, height = 300, animate = false, diff, dayOffset = 0 }: {
   series: Series[]; startDate: string; maxY: number; surge?: Surge | null; height?: number; animate?: boolean
+  /** Day number of the first data point (for a slice of the horizon). */
+  dayOffset?: number
   /** Show `a - b` for each day in the tooltip. */
   diff?: { a: string; b: string; label: string }
 }) {
   const horizon = series[0]?.data.length ?? 0
   const rows = Array.from({ length: horizon }, (_, d) => {
-    const r: Record<string, number> = { day: d }
+    const r: Record<string, number> = { day: d + dayOffset }
     for (const s of series) r[s.key] = s.data[d]
     return r
   })
@@ -55,7 +57,7 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
             <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#64748b', fontSize: 11 }}
               axisLine={false} tickLine={false} width={44} />
             {surge && (
-              <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1, surge.end_day)} y1={surge.min_available} y2={maxY}
+              <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1 + dayOffset, surge.end_day)} y1={surge.min_available} y2={maxY}
                 fill="rgba(245,158,11,0.10)" fillOpacity={1} stroke="rgba(245,158,11,0.6)" strokeDasharray="4 3" />
             )}
             <Tooltip

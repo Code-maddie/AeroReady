@@ -1,3 +1,4 @@
+import { Lock } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Block, BlockKind, GanttRow, Job } from '../lib/api'
@@ -9,6 +10,7 @@ export const KIND_META: Record<BlockKind, { label: string; cls: string; swatch: 
   corrective: { label: 'Unplanned failure repair', cls: 'bg-bad text-white', swatch: 'bg-bad' },
   awaiting: { label: 'Grounded, waiting for bay or part', cls: 'border border-dashed border-bad bg-bad/20 text-ink', swatch: 'border border-dashed border-bad bg-bad/20' },
   aog: { label: 'Grounded long-term (fixed)', cls: 'bg-line2 text-muted', swatch: 'bg-line2' },
+  defect: { label: 'Defect rectification', cls: 'border border-bad bg-panel2 text-bad', swatch: 'border border-bad bg-panel2' },
   cannibalization: { label: 'Cannibalisation (part removal)', cls: 'bg-k-cannibal text-white', swatch: 'bg-k-cannibal' },
 }
 
@@ -23,6 +25,7 @@ export function GanttLegend() {
       <span className="inline-flex items-center gap-1.5">
         <span className="inline-block h-2.5 w-4 rounded-sm bg-k-predictive outline outline-2 outline-offset-1 outline-k-cannibal" />Uses a cannibalised part
       </span>
+      <span className="inline-flex items-center gap-1.5"><Lock className="h-3 w-3" />Locked</span>
     </div>
   )
 }
@@ -53,9 +56,11 @@ export interface BlockSelection { block: Block; aircraftId: string; side: Side }
 
 interface Hover { block: Block; line: GanttLine; x: number; y: number }
 
-export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkTo }: {
+export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkTo, locked, selectedJob }: {
   lines: GanttLine[]; horizon: number; startDate: string; jobs?: Record<string, Job>
   onSelect?: (s: BlockSelection) => void; linkTo?: (tail: string) => string
+  /** Job ids the optimiser keeps fixed; shown with a lock icon. */
+  locked?: Set<string>; selectedJob?: string | null
 }) {
   const [hover, setHover] = useState<Hover | null>(null)
   const days = Array.from({ length: horizon }, (_, d) => d)
@@ -103,8 +108,10 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
                       onMouseLeave={() => setHover(null)}
                       aria-label={`${line.aircraftId} ${KIND_META[b.kind].label}: ${b.label}, Day ${b.start} to ${b.end}`}
                       className={`absolute flex items-center overflow-hidden whitespace-nowrap rounded-sm px-1 text-left text-[10px] font-semibold leading-none hover:brightness-125 ${KIND_META[b.kind].cls} ${
-                        b.cannibalized_from ? 'outline outline-2 outline-offset-1 outline-k-cannibal' : ''}`}
+                        b.cannibalized_from ? 'outline outline-2 outline-offset-1 outline-k-cannibal' : ''} ${
+                        selectedJob && b.job_id === selectedJob ? 'ring-2 ring-accent' : ''}`}
                       style={{ left: `calc(${left}% + 1px)`, width: `calc(${width}% - 2px)`, top: 4 + b.lane * laneH, height: laneH - 3 }}>
+                      {b.job_id && locked?.has(b.job_id) && <Lock className="mr-0.5 h-2.5 w-2.5 shrink-0" aria-label="Locked" />}
                       {width > 6 && <span className="truncate">{shortLabel(b.label)}</span>}
                     </button>
                   )

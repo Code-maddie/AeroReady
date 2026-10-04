@@ -1,5 +1,5 @@
 import type { UseQueryResult } from '@tanstack/react-query'
-import { AlertTriangle, ArrowDown, ArrowUp, CheckCircle2, Loader2, RotateCw, Wrench, XOctagon } from 'lucide-react'
+import { AlertTriangle, ArrowDown, ArrowUp, CheckCircle2, Loader2, RotateCw, Wrench, X, XOctagon } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import type { FleetStatus } from '../lib/api'
 import { STATUS_LABEL } from '../lib/format'
@@ -49,6 +49,8 @@ export function SkeletonBlock({ lines = 4, h = 20 }: { lines?: number; h?: numbe
   )
 }
 
+export const ErrorState = (props: { message: string; onRetry?: () => void }) => <ErrorBox {...props} />
+
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div className="flex items-start justify-between gap-4 rounded border border-bad/50 bg-bad/10 p-3" role="alert">
@@ -93,12 +95,14 @@ const VARIANT: Record<Variant, string> = {
 
 export function Button({ children, onClick, variant = 'secondary', disabled = false, icon, type = 'button', title, busy = false, size = 'md' }: {
   children: ReactNode; onClick?: () => void; variant?: Variant; disabled?: boolean; icon?: ReactNode
-  type?: 'button' | 'submit'; title?: string; busy?: boolean; size?: 'sm' | 'md'
+  type?: 'button' | 'submit'; title?: string; busy?: boolean
+  /** lg = 44px touch target (technician pages) */
+  size?: 'sm' | 'md' | 'lg'
 }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled || busy} title={title}
       className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
-        size === 'sm' ? 'h-7 px-2' : 'h-8 px-3'} ${VARIANT[variant]}`}>
+        size === 'sm' ? 'h-7 px-2' : size === 'lg' ? 'h-11 px-4 text-[15px]' : 'h-8 px-3'} ${VARIANT[variant]}`}>
       {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : icon}
       {children}
     </button>
@@ -120,8 +124,58 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   )
 }
 
-export function Field({ label, children }: { label: string; children: ReactNode }) {
-  return <label className="flex flex-col gap-1 text-xs text-muted">{label}{children}</label>
+export function FormField({ label, children, hint, error }: { label: string; children: ReactNode; hint?: string; error?: string | null }) {
+  return (
+    <label className="flex flex-col gap-1 text-xs text-muted">
+      {label}{children}
+      {error ? <span className="text-bad">{error}</span> : hint ? <span className="text-dim">{hint}</span> : null}
+    </label>
+  )
+}
+export const Field = FormField
+
+export function Select({ value, onChange, options, label, placeholder, disabled, large = false }: {
+  value: string; onChange: (v: string) => void; options: { value: string; label: string }[]; label: string
+  placeholder?: string; disabled?: boolean; large?: boolean
+}) {
+  return (
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} disabled={disabled} className={large ? '!h-11 !text-[15px]' : ''}>
+      {placeholder !== undefined && <option value="">{placeholder}</option>}
+      {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  )
+}
+
+export function Tabs<T extends string>({ value, onChange, tabs, large = false }: {
+  value: T; onChange: (v: T) => void; tabs: { value: T; label: ReactNode }[]; large?: boolean
+}) {
+  return (
+    <div className="flex border-b border-line" role="tablist">
+      {tabs.map((t) => (
+        <button key={t.value} role="tab" aria-selected={value === t.value} onClick={() => onChange(t.value)}
+          className={`-mb-px border-b-2 px-4 ${large ? 'h-11 text-[15px]' : 'h-9 text-[13px]'} ${
+            value === t.value ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink'}`}>
+          {t.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/** Right-hand overlay panel for details and edits. */
+export function SidePanel({ title, onClose, children, width = 440 }: { title: ReactNode; onClose: () => void; children: ReactNode; width?: number }) {
+  return (
+    <aside className="fixed bottom-4 right-4 top-16 z-40 flex flex-col overflow-hidden rounded border border-line2 bg-panel shadow-2xl"
+      style={{ width }} aria-label="Detail panel" onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+      <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
+        <div className="display min-w-0 text-[17px] font-semibold">{title}</div>
+        <button onClick={onClose} aria-label="Close panel" className="grid h-7 w-7 shrink-0 place-items-center rounded text-muted hover:bg-panel2 hover:text-ink">
+          <X className="h-4 w-4" />
+        </button>
+      </header>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4">{children}</div>
+    </aside>
+  )
 }
 
 export function Modal({ title, children, onClose, label }: { title: string; children: ReactNode; onClose: () => void; label?: string }) {
@@ -172,6 +226,17 @@ const STATUS: Record<FleetStatus, { tone: Tone; icon: ReactNode }> = {
   grounded: { tone: 'bad', icon: <XOctagon className="h-3 w-3" aria-hidden /> },
 }
 
+/** Status chip for workflow objects: plans, recommendations, work orders, defects. */
+const STATUS_TONE: Record<string, Tone> = {
+  Draft: 'neutral', Submitted: 'warn', Approved: 'ok', Returned: 'bad',
+  Proposed: 'neutral', Accepted: 'ok', Modified: 'scheduled', Rejected: 'bad',
+  Released: 'neutral', 'In progress': 'warn', Paused: 'neutral', Completed: 'ok', 'Cannot complete': 'bad',
+  Reported: 'bad', 'Under review': 'warn', Planned: 'scheduled', Closed: 'ok',
+}
+export function StatusChip({ status }: { status: string }) {
+  return <Badge tone={STATUS_TONE[status] ?? 'neutral'}>{status}</Badge>
+}
+
 export function StatusBadge({ status }: { status: FleetStatus }) {
   return <Badge tone={STATUS[status].tone}>{STATUS[status].icon}{STATUS_LABEL[status]}</Badge>
 }
@@ -198,10 +263,11 @@ export interface Column<T> {
   align?: 'left' | 'right'; width?: string
 }
 
-/** Shared table: 40px rows, optional sorting, row click and highlight. */
-export function SortTable<T>({ rows, columns, rowKey, onRowClick, initialSort, highlight, empty, sortable = true }: {
+/** Shared table: 40px rows (44px with `large`), optional sorting, row click and highlight. */
+export function SortTable<T>({ rows, columns, rowKey, onRowClick, initialSort, highlight, empty, sortable = true, large = false, selected }: {
   rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string; onRowClick?: (r: T) => void
   initialSort?: { key: string; dir: 'asc' | 'desc' }; highlight?: (r: T) => boolean; empty?: ReactNode; sortable?: boolean
+  large?: boolean; selected?: (r: T) => boolean
 }) {
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(initialSort ?? null)
   const sorted = useMemo(() => {
@@ -239,7 +305,8 @@ export function SortTable<T>({ rows, columns, rowKey, onRowClick, initialSort, h
         <tbody>
           {sorted.map((r) => (
             <tr key={rowKey(r)} onClick={onRowClick ? () => onRowClick(r) : undefined}
-              className={`h-10 border-b border-line ${onRowClick ? 'cursor-pointer hover:bg-panel2/60' : ''} ${highlight?.(r) ? 'bg-bad/[0.06]' : ''}`}>
+              className={`${large ? 'h-11 text-[15px]' : 'h-10'} border-b border-line ${onRowClick ? 'cursor-pointer hover:bg-panel2/60' : ''} ${
+                highlight?.(r) ? 'bg-bad/[0.06]' : ''} ${selected?.(r) ? 'bg-panel2' : ''}`}>
               {columns.map((c) => (
                 <td key={c.key} className={`px-3 py-1.5 align-middle ${c.align === 'right' ? 'num text-right' : ''}`}>
                   {c.render ? c.render(r) : (c.value(r) ?? '—')}
@@ -252,3 +319,5 @@ export function SortTable<T>({ rows, columns, rowKey, onRowClick, initialSort, h
     </div>
   )
 }
+
+export const Table = SortTable

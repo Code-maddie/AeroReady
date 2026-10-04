@@ -8,8 +8,8 @@ import { useConsoleParams } from '../lib/params'
 import { useFleet } from '../lib/queries'
 
 export default function Fleet() {
-  const { base, scenario, link } = useConsoleParams()
-  const q = useFleet(scenario, base)
+  const { base, link } = useConsoleParams()
+  const q = useFleet(undefined, base)
   const navigate = useNavigate()
   const [status, setStatus] = useState<FleetStatus | ''>('')
   const [shortOnly, setShortOnly] = useState(false)
