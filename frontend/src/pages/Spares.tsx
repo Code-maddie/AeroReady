@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Spares as SparesData, SparesPart } from '../api'
+import { PageHead } from '../components/Layout'
 import { Empty, ErrorState, Loading } from '../components/States'
 import { useApi } from '../hooks'
 
@@ -36,14 +37,11 @@ export default function Spares() {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-4">
-      <div>
-        <div className="label-caps">Spares &amp; supply · fleet-pooled stores</div>
-        <h1 className="display mt-1 text-3xl font-bold uppercase tracking-wide">Spares</h1>
-      </div>
+      <PageHead title="Spares and supply." sub="What the plan needs and what to order today." />
 
       <div className="grid grid-cols-3 gap-4">
         <section className="panel p-4">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">Day-0 orders</h2>
+          <h2 className="display text-lg font-semibold">Day-0 orders</h2>
           <p className="mb-2 text-xs text-dim">Demand the plan creates beyond stock and inbound. Ordering now beats ordering on failure.</p>
           {part_orders.length === 0 && <Empty text="No orders needed." />}
           <ul className="space-y-1.5">
@@ -56,7 +54,7 @@ export default function Spares() {
           </ul>
         </section>
         <section className="panel p-4">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">Cannibalisation actions</h2>
+          <h2 className="display text-lg font-semibold">Cannibalisation actions</h2>
           <p className="mb-2 text-xs text-dim">Serviceable parts taken from aircraft that are grounded for the whole horizon.</p>
           {cannibalizations.length === 0 && <Empty text="None in this plan." />}
           <ul className="space-y-1.5">
@@ -74,7 +72,7 @@ export default function Spares() {
           </ul>
         </section>
         <section className="panel p-4">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">Shortages</h2>
+          <h2 className="display text-lg font-semibold">Shortages</h2>
           <p className="mb-2 text-xs text-dim">Parts whose planned demand exceeds stock on hand plus inbound.</p>
           {short.length === 0 && <Empty text="No shortages." />}
           <ul className="space-y-1.5">
@@ -91,7 +89,7 @@ export default function Spares() {
 
       <section className="panel p-4">
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">Stock &amp; demand · optimised plan</h2>
+          <h2 className="display text-lg font-semibold">Stock &amp; demand · optimised plan</h2>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted">
             <span><span className="text-ok">▲</span> inbound</span>
             <span><span className="mr-1 inline-block h-3 border-l border-dashed border-accent" />Day-0 order arrives</span>
@@ -116,7 +114,7 @@ export default function Spares() {
             {parts.map((p) => (
               <tr key={p.id} className="border-b border-line/60">
                 <td className="py-2"><span className="num text-dim">{p.id}</span> <span className="text-ink">{p.name}</span>
-                  <div className="text-[10px] uppercase tracking-wider text-dim">{p.category}</div></td>
+                  <div className="text-[10px] text-dim">{p.category}</div></td>
                 <td className={`num text-right ${p.on_hand === 0 ? 'text-bad' : 'text-ink'}`}>{p.on_hand}</td>
                 <td className="num pl-4 text-xs text-muted">{p.inbound.map((a) => `×${a.qty} D${a.day}`).join(', ') || '—'}</td>
                 <td className="num text-right text-muted">{p.lead_time_days} d</td>
@@ -124,10 +122,10 @@ export default function Spares() {
                 <td className="pl-6 pr-2"><SupplyStrip p={p} /></td>
                 <td className="text-right">
                   {p.on_hand === 0 && p.demand.optimized.length > 0 && p.demand.optimized.every((u) => u.source === 'cannibalised') ? (
-                    <span className="rounded border border-k-cannibal/50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-k-cannibal"
+                    <span className="rounded border border-k-cannibal/50 px-1.5 py-0.5 text-[10px] font-semibold text-k-cannibal"
                       title="No stock; demand met by cannibalisation from a grounded aircraft">◆ Donor</span>
                   ) : (
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${
                       p.status === 'short' ? 'border-bad/50 text-bad' : p.status === 'low' ? 'border-warn/50 text-warn' : 'border-ok/40 text-ok'}`}>
                       {p.status === 'short' ? '■ Order' : p.status === 'low' ? '▲ Low' : '● OK'}
                     </span>

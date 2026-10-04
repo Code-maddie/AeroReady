@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { Job, PlanResult, Recommendation } from '../api'
 import Gantt, { GanttLegend } from '../components/Gantt'
+import { PageHead } from '../components/Layout'
 import { Empty, ErrorState, Loading } from '../components/States'
 import { useApi, useBase } from '../hooks'
 
@@ -18,7 +19,7 @@ function Metric({ label, b, o, better = 'lower' }: { label: string; b: number; o
   const good = better === 'lower' ? o < b : o > b
   return (
     <div className="panel px-3 py-2">
-      <div className="label-caps !text-[11px]">{label}</div>
+      <div className="label-caps">{label}</div>
       <div className="mt-0.5 flex items-baseline gap-2">
         <span className={`display num text-2xl font-semibold ${good ? 'text-accent' : 'text-ink'}`}>{o}</span>
         <span className="num text-xs text-dim">reactive {b}</span>
@@ -44,20 +45,16 @@ export default function Plan() {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-4">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <div className="label-caps">Maintenance plan · Day 0–{p.horizon_days - 1}</div>
-          <h1 className="display mt-1 text-3xl font-bold uppercase tracking-wide">Fleet schedule</h1>
-        </div>
-        <div className="flex rounded border border-line2 p-0.5" role="radiogroup" aria-label="Plan">
+      <PageHead title="Fleet schedule, Day 0 to Day 29." sub="Every job placed around bays, technicians and parts.">
+        <div className="mb-1 flex shrink-0 rounded-full bg-panel p-1 ring-1 ring-white/5" role="radiogroup" aria-label="Plan">
           {(['optimized', 'baseline'] as const).map((s) => (
             <button key={s} role="radio" aria-checked={side === s} onClick={() => setSide(s)}
-              className={`display rounded-sm px-4 py-1.5 font-semibold uppercase tracking-wider ${side === s ? (s === 'optimized' ? 'bg-accent text-bg' : 'bg-reactive text-bg') : 'text-muted hover:text-ink'}`}>
-              {s === 'optimized' ? `Optimised · ${p.optimized.aircraft_days} d` : `Reactive · ${p.baseline.aircraft_days} d`}
+              className={`rounded-full px-4 py-1.5 text-[13px] ${side === s ? (s === 'optimized' ? 'bg-accent text-bg' : 'bg-ink text-bg') : 'text-muted hover:text-ink'}`}>
+              {s === 'optimized' ? `Optimised, ${p.optimized.aircraft_days} days` : `Reactive, ${p.baseline.aircraft_days} days`}
             </button>
           ))}
         </div>
-      </div>
+      </PageHead>
 
       <div className="grid grid-cols-5 gap-3">
         <Metric label="Aircraft-days" b={p.baseline.aircraft_days} o={p.optimized.aircraft_days} better="higher" />
@@ -69,7 +66,7 @@ export default function Plan() {
 
       <section className="panel p-4">
         <div className="mb-3 space-y-1.5">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">
+          <h2 className="display text-lg font-semibold">
             {side === 'optimized' ? 'Optimised plan' : 'Reactive baseline'} <span className="text-sm text-dim">· {rows.length} aircraft · hover a block for details</span>
           </h2>
           <GanttLegend />
@@ -79,7 +76,7 @@ export default function Plan() {
 
       <section className="panel p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">
+          <h2 className="display text-lg font-semibold">
             Recommendations <span className="text-sm text-dim">· {recs.length} shown · impact = tail's mission-ready days vs reactive</span>
           </h2>
           <div className="flex flex-wrap gap-1.5">
@@ -96,7 +93,7 @@ export default function Plan() {
           {recs.map((r) => (
             <article key={r.id} className="rounded border border-line bg-panel2/40 p-3">
               <div className="flex items-start gap-2">
-                <span className={`mt-0.5 shrink-0 rounded border px-1.5 py-px text-[10px] font-semibold uppercase tracking-wider ${TYPE_META[r.type].cls}`}>
+                <span className={`mt-0.5 shrink-0 rounded border px-1.5 py-px text-[10px] font-semibold ${TYPE_META[r.type].cls}`}>
                   {TYPE_META[r.type].label}
                 </span>
                 <h3 className="flex-1 text-[13px] font-semibold leading-snug text-ink">{r.title}</h3>
@@ -106,7 +103,7 @@ export default function Plan() {
                 </span>
               </div>
               <p className="mt-1.5 text-xs leading-relaxed text-muted">{r.reason}</p>
-              <Link to={`/aircraft/${r.aircraft_id}`} className="mt-1 inline-block text-[11px] text-dim hover:text-accent">View {r.aircraft_id} →</Link>
+              <Link to={`/aircraft/${r.aircraft_id}`} className="mt-1 inline-block text-[11px] text-dim hover:text-accent">View {r.aircraft_id}</Link>
             </article>
           ))}
         </div>

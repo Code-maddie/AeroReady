@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { DEFAULT_SCENARIO, postPlan, type Meta, type PlanResult, type Scenario } from '../api'
 import AvailabilityChart, { type Series } from '../components/AvailabilityChart'
+import { PageHead } from '../components/Layout'
 import { ErrorState, Loading } from '../components/States'
 import { useApi } from '../hooks'
 
@@ -95,21 +96,19 @@ export default function WhatIf() {
   const sc = current.scenario
 
   return (
-    <div className="mx-auto grid max-w-[1500px] grid-cols-[320px_minmax(0,1fr)] gap-5">
+    <div className="mx-auto max-w-[1500px]">
+    <PageHead title="What if the month doesn't go to plan?" sub="Change a supplier, a hangar or the tempo." />
+    <div className="grid grid-cols-[320px_minmax(0,1fr)] gap-5">
       <aside className="space-y-3">
-        <div>
-          <div className="label-caps">Scenario planning</div>
-          <h1 className="display mt-1 text-3xl font-bold uppercase tracking-wide">What-if</h1>
-        </div>
 
         <div className="panel p-3">
-          <div className="label-caps mb-2 !text-[11px]">Quick scenarios</div>
+          <div className="label-caps mb-2">Quick scenarios</div>
           <div className="grid grid-cols-2 gap-1.5">
             {PRESETS.map((p) => (
               <button key={p.label} title={p.hint} disabled={busy}
                 onClick={() => { const d = { ...EMPTY, ...p.draft }; setDraft(d); replan(d) }}
                 className="rounded border border-line2 px-2 py-1.5 text-left hover:border-accent disabled:opacity-50">
-                <div className="display text-sm font-semibold uppercase tracking-wider text-ink">{p.label}</div>
+                <div className="display text-sm font-semibold text-ink">{p.label}</div>
                 <div className="text-[10px] leading-tight text-dim">{p.hint}</div>
               </button>
             ))}
@@ -117,7 +116,7 @@ export default function WhatIf() {
         </div>
 
         <div className="panel space-y-2.5 p-3">
-          <div className="label-caps !text-[11px]">Spares delay</div>
+          <div className="label-caps">Spares delay</div>
           <Field label="Part">
             <select value={draft.partId} onChange={(e) => set({ partId: e.target.value })} className="w-44 text-xs">
               <option value="">None</option>
@@ -131,7 +130,7 @@ export default function WhatIf() {
         </div>
 
         <div className="panel space-y-2.5 p-3">
-          <div className="label-caps !text-[11px]">Bay closure</div>
+          <div className="label-caps">Bay closure</div>
           <Field label="Base">
             <select value={draft.closeBase} onChange={(e) => set({ closeBase: e.target.value, closeBays: 1 })} className="w-44 text-xs">
               <option value="">None</option>
@@ -149,8 +148,8 @@ export default function WhatIf() {
 
         <div className="panel space-y-2.5 p-3">
           <label className="flex items-center justify-between">
-            <span className="label-caps !text-[11px]">Surge demand</span>
-            <input type="checkbox" checked={draft.surgeOn} onChange={(e) => set({ surgeOn: e.target.checked })} className="h-4 w-4 accent-[#F5A524]" />
+            <span className="label-caps">Surge demand</span>
+            <input type="checkbox" checked={draft.surgeOn} onChange={(e) => set({ surgeOn: e.target.checked })} className="h-4 w-4 accent-[#E9A15B]" />
           </label>
           <Field label={`Min available: ${draft.surgeMin}`}>
             <input type="range" min={12} max={23} value={draft.surgeMin} disabled={!draft.surgeOn} className="w-44"
@@ -162,7 +161,7 @@ export default function WhatIf() {
         </div>
 
         <div className="panel space-y-2.5 p-3">
-          <div className="label-caps !text-[11px]">Operating tempo</div>
+          <div className="label-caps">Operating tempo</div>
           <Field label={`Sortie rate ×${draft.sortie.toFixed(1)}`}>
             <input type="range" min={0.5} max={2} step={0.1} value={draft.sortie} className="w-44"
               onChange={(e) => set({ sortie: Number(e.target.value) })} />
@@ -171,11 +170,11 @@ export default function WhatIf() {
 
         <div className="flex gap-2">
           <button onClick={() => replan()} disabled={busy}
-            className="display flex-1 rounded bg-accent py-2.5 text-lg font-bold uppercase tracking-wider text-bg hover:brightness-110 disabled:opacity-60">
+            className="display flex-1 rounded bg-accent py-2.5 text-lg font-medium text-bg hover:brightness-110 disabled:opacity-60">
             {busy ? 'Optimising…' : 'Re-plan'}
           </button>
           <button onClick={() => { setDraft(EMPTY); replan(EMPTY) }} disabled={busy}
-            className="display rounded border border-line2 px-3 font-semibold uppercase tracking-wider text-muted hover:text-ink">Reset</button>
+            className="display rounded border border-line2 px-3 font-semibold text-muted hover:text-ink">Reset</button>
         </div>
       </aside>
 
@@ -183,7 +182,7 @@ export default function WhatIf() {
         {error && <ErrorState message={error} />}
         <div className="grid grid-cols-4 gap-3">
           <div className="panel p-3">
-            <div className="label-caps !text-[11px]">Optimised aircraft-days</div>
+            <div className="label-caps">Optimised aircraft-days</div>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
               <span className="display num text-4xl font-semibold text-accent">{current.optimized.aircraft_days}</span>
               {delta !== null && (
@@ -195,17 +194,17 @@ export default function WhatIf() {
             <div className="text-[11px] text-dim">vs previous plan</div>
           </div>
           <div className="panel p-3">
-            <div className="label-caps !text-[11px]">Gain over reactive</div>
+            <div className="label-caps">Gain over reactive</div>
             <div className="display num mt-1 text-4xl font-semibold">+{current.gain_aircraft_days}</div>
             <div className="num text-[11px] text-dim">reactive {current.baseline.aircraft_days} aircraft-days</div>
           </div>
           <div className="panel p-3">
-            <div className="label-caps !text-[11px]">Unplanned failures</div>
+            <div className="label-caps">Unplanned failures</div>
             <div className="display num mt-1 text-4xl font-semibold">{current.optimized.unplanned_failures.length}</div>
             <div className="num text-[11px] text-dim">reactive {current.baseline.unplanned_failures.length}</div>
           </div>
           <div className="panel p-3">
-            <div className="label-caps !text-[11px]">{sc.surge ? 'Surge shortfall' : 'Cannibalisations'}</div>
+            <div className="label-caps">{sc.surge ? 'Surge shortfall' : 'Cannibalisations'}</div>
             <div className={`display num mt-1 text-4xl font-semibold ${sc.surge && current.optimized.surge_shortfall > 0 ? 'text-bad' : ''}`}>
               {sc.surge ? current.optimized.surge_shortfall : current.optimized.cannibalizations.length}
             </div>
@@ -217,7 +216,7 @@ export default function WhatIf() {
 
         <section className={`panel p-4 transition-opacity ${busy ? 'opacity-60' : ''}`}>
           <div className="mb-2 flex items-baseline justify-between">
-            <h2 className="display text-lg font-semibold uppercase tracking-wider">Mission-ready aircraft per day</h2>
+            <h2 className="display text-lg font-semibold">Mission-ready aircraft per day</h2>
             <span className="text-xs text-dim">
               {sc.part_delays.length + sc.bay_closures.length + (sc.surge ? 1 : 0) + (sc.sortie_rate_multiplier !== 1 ? 1 : 0) === 0
                 ? 'Default scenario' : 'Scenario: ' + [
@@ -232,14 +231,14 @@ export default function WhatIf() {
         </section>
 
         <section className="panel p-4">
-          <h2 className="display mb-2 text-lg font-semibold uppercase tracking-wider">What changed in the plan</h2>
+          <h2 className="display mb-2 text-lg font-semibold">What changed in the plan</h2>
           {!previous && <p className="text-sm text-dim">Pick a quick scenario or adjust the inputs, then Re-plan. The optimiser re-solves the full fleet in about a second.</p>}
           {newFailures.map((f) => {
             const part = jobByEngine[f.engine_id]?.parts[0]
             const delay = sc.part_delays.find((d) => d.part_id === part)
             return (
               <div key={f.engine_id} className="mb-2 rounded border border-bad/50 bg-bad/10 px-3 py-2 text-sm">
-                <span className="display font-semibold uppercase tracking-wider text-bad">Consequence · </span>
+                <span className="display font-semibold text-bad">Consequence · </span>
                 <span className="text-ink">{f.engine_id} can no longer be repaired before its forecast failure on Day {f.day}</span>
                 <span className="text-muted">
                   {delay ? ` — the ${part} delay (+${delay.days} d) means no part in time.` : '.'}{' '}
@@ -259,6 +258,7 @@ export default function WhatIf() {
           </div>
         </section>
       </div>
+    </div>
     </div>
   )
 }

@@ -1,58 +1,66 @@
 @import "tailwindcss";
 
+/* AeroReady: dusk-over-charcoal. Colour comes from photography; the interface
+   stays neutral and warm. One accent (dusk amber) marks the optimised plan. */
 @theme {
-  --color-bg: #0b0f14;
-  --color-panel: #111821;
-  --color-panel2: #16202b;
-  --color-line: #223041;
-  --color-line2: #2d3e52;
-  --color-ink: #e6edf3;
-  --color-muted: #9aa7b6;
-  --color-dim: #66768a;
-  --color-accent: #f5a524;
-  --color-ok: #3fb950;
+  --color-bg: #0e0e0d;
+  --color-panel: #1a1a19;
+  --color-panel2: #232322;
+  --color-line: #2c2b29;
+  --color-line2: #3a3936;
+  --color-ink: #f1eee8;
+  --color-muted: #8c8984;
+  --color-dim: #6e6b66;
+  --color-accent: #e9a15b;
+  --color-ok: #6cc17a;
   --color-warn: #e3b341;
-  --color-bad: #f85149;
-  --color-reactive: #7c8794;
-  --color-k-scheduled: #5b8def;
-  --color-k-predictive: #2bb5a6;
-  --color-k-cannibal: #a371f7;
-  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
-  --font-sans: "Inter", system-ui, sans-serif;
+  --color-bad: #ef5b4c;
+  --color-reactive: #8c8984;
+  --color-k-scheduled: #6f97e8;
+  --color-k-predictive: #3fb7a6;
+  --color-k-cannibal: #a984f0;
+  --font-display: "Inter Tight", system-ui, sans-serif;
+  --font-sans: "Inter Tight", system-ui, sans-serif;
 }
 
-html, body, #root { height: 100%; }
+html, body, #root { min-height: 100%; }
 body {
   background: var(--color-bg);
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 .num { font-variant-numeric: tabular-nums; }
-.display { font-family: var(--font-display); letter-spacing: 0.02em; }
-.label-caps {
-  font-family: var(--font-display); text-transform: uppercase;
-  letter-spacing: 0.12em; font-size: 12px; font-weight: 600; color: var(--color-muted);
-}
-.panel { background: var(--color-panel); border: 1px solid var(--color-line); border-radius: 6px; }
+.display { font-family: var(--font-display); letter-spacing: -0.015em; }
+/* Small section label: sentence case, quiet grey. */
+.label-caps { font-size: 13px; font-weight: 500; color: var(--color-muted); letter-spacing: 0; }
+.panel { background: var(--color-panel); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 14px; }
 .hatch-red {
-  background-image: repeating-linear-gradient(135deg, rgba(248,81,73,.55) 0 3px, rgba(248,81,73,.15) 3px 7px);
+  background-image: repeating-linear-gradient(135deg, rgba(239,91,76,.55) 0 3px, rgba(239,91,76,.15) 3px 7px);
 }
 .hatch-grey {
-  background-image: repeating-linear-gradient(135deg, #3a4656 0 3px, #222c38 3px 7px);
+  background-image: repeating-linear-gradient(135deg, #3a3936 0 3px, #242422 3px 7px);
 }
-.grid-bg {
-  background-image: linear-gradient(var(--color-line) 1px, transparent 1px);
-  background-size: 100% 28px;
-}
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 6px; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #263445; border-radius: 6px; }
+::-webkit-scrollbar-thumb { background: #2c2b29; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
+
 @keyframes pulse-in { from { transform: scale(.9); opacity: 0 } to { transform: scale(1); opacity: 1 } }
 .chip-in { animation: pulse-in .35s ease-out; }
+
+/* The one orchestrated moment: the landing wordmark settles in. */
+@keyframes rise { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
+.rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.rise-late { animation: rise .9s .25s cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .rise, .rise-late, .chip-in { animation: none; }
+}
+
 input[type=range] { accent-color: var(--color-accent); }
 select, input[type=number] {
-  background: var(--color-panel2); border: 1px solid var(--color-line2); border-radius: 4px;
+  background: var(--color-panel2); border: 1px solid var(--color-line2); border-radius: 8px;
   padding: 4px 8px; color: var(--color-ink);
 }

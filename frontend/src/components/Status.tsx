@@ -11,7 +11,7 @@ export function StatusDot({ status }: { status: Status }) {
 export function StatusBadge({ status }: { status: Status }) {
   const tone = { green: 'text-ok border-ok/40', amber: 'text-warn border-warn/40', red: 'text-bad border-bad/40' }[status]
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded border px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${tone}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded border px-1.5 py-0.5 text-[11px] font-semibold ${tone}`}>
       <span aria-hidden>{ICONS[status]}</span>{LABELS[status]}
     </span>
   )

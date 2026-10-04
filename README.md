@@ -6,6 +6,8 @@
 > All fleet, base, spares and maintenance data in this prototype is **SYNTHETIC**.
 > Engine sensor trajectories are real, from the NASA C-MAPSS turbofan dataset.
 
+![Landing](docs/screenshots/landing.png)
+
 ![Readiness](docs/screenshots/readiness.png)
 
 ## The problem
@@ -76,7 +78,7 @@ flowchart LR
   end
   EV --> API[FastAPI]
   REC --> API
-  API --> UI[React ops-room UI<br/>Readiness · Plan · Aircraft · What-if · Spares]
+  API --> UI[React UI<br/>Landing · Readiness · Plan · Aircraft · What-if · Spares]
 ```
 
 ### 1. Health layer: RUL with uncertainty (`backend/aeroready/rul`)
@@ -239,3 +241,6 @@ frontend/         React + Vite + TypeScript + Tailwind + Recharts
 docs/screenshots/
 DEMO.md           3-minute demo script
 ```
+
+
+Landing photos: Samuel Arkwright and Mihai Neagu, via Unsplash (Unsplash licence).

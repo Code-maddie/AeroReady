@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { availabilityFor, type FleetAircraft, type PlanResult } from '../api'
 import AircraftCard from '../components/AircraftCard'
 import AvailabilityChart from '../components/AvailabilityChart'
+import { PageHead } from '../components/Layout'
 import { StatTile } from '../components/StatTile'
 import { Empty, ErrorState, Loading } from '../components/States'
 import { useApi, useBase } from '../hooks'
@@ -38,22 +39,25 @@ export default function Readiness() {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-5">
-      <div className="flex items-end justify-between gap-6">
+      <PageHead
+        title={<><span className="num">{view.gain >= 0 ? '+' : ''}{view.gain}</span> mission-ready aircraft-days over the next 30 days{base !== 'ALL' ? ` at ${base}` : ''}.</>}
+        sub="Same fleet, same hangars, same spares.">
+        <Link to="/plan" className="mb-1 inline-flex shrink-0 items-center gap-3 rounded-full bg-panel py-1.5 pl-4 pr-1.5 text-[13px] ring-1 ring-white/10 hover:bg-panel2">
+          Open the plan
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-bg" aria-hidden>
+            <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+          </span>
+        </Link>
+      </PageHead>
+      <div>
         <div>
-          <div className="label-caps">Fleet readiness · next 30 days{base !== 'ALL' && ` · base ${base}`}</div>
-          <h1 className="display mt-1 text-[44px] font-bold leading-none">
-            <span className="num text-accent">{view.gain >= 0 ? '+' : ''}{view.gain}</span> aircraft-days gained
-          </h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted">
-            Same fleet, same hangars, same spares. Scheduling maintenance around forecast engine health, bay capacity and parts
+          <p className="-mt-3 max-w-3xl text-sm text-muted">
+            Scheduling maintenance around forecast engine health, bay capacity and parts
             lifts average availability from <span className="num text-ink">{view.avgB.toFixed(1)}</span> to{' '}
             <span className="num text-accent">{view.avgO.toFixed(1)}</span> aircraft per day
             {failuresAvoided > 0 && <> and avoids <span className="num text-ink">{failuresAvoided}</span> unplanned engine failures</>}.
           </p>
         </div>
-        <Link to="/plan" className="display shrink-0 rounded border border-accent/60 px-4 py-2 font-semibold uppercase tracking-wider text-accent hover:bg-accent hover:text-bg">
-          Open plan →
-        </Link>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
@@ -70,7 +74,7 @@ export default function Readiness() {
       <div className="grid grid-cols-[minmax(0,1fr)_340px] gap-4">
         <section className="panel min-w-0 p-4">
           <div className="mb-2 flex items-baseline justify-between">
-            <h2 className="display text-lg font-semibold uppercase tracking-wider">Mission-ready aircraft per day</h2>
+            <h2 className="display text-lg font-semibold">Mission-ready aircraft per day</h2>
             <span className="text-xs text-dim">CP-SAT {p.optimized.solver?.status.toLowerCase()} in {p.optimized.solver?.wall_time_s}s</span>
           </div>
           <AvailabilityChart startDate={p.start_date} maxY={view.n} height={400}
@@ -80,7 +84,7 @@ export default function Readiness() {
             ]} />
         </section>
         <section className="panel flex flex-col p-4">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">Top actions</h2>
+          <h2 className="display text-lg font-semibold">Top actions</h2>
           <div className="mt-2 flex-1 space-y-2.5">
             {top.length === 0 && <Empty text="No actions for this base." />}
             {top.map((r) => (
@@ -95,13 +99,13 @@ export default function Readiness() {
               </Link>
             ))}
           </div>
-          <Link to="/plan" className="mt-3 text-xs text-accent hover:underline">All {p.recommendations.length} recommendations →</Link>
+          <Link to="/plan" className="mt-3 text-xs text-accent hover:underline">All {p.recommendations.length} recommendations</Link>
         </section>
       </div>
 
       <section>
         <div className="mb-2 flex items-baseline justify-between">
-          <h2 className="display text-lg font-semibold uppercase tracking-wider">Fleet status</h2>
+          <h2 className="display text-lg font-semibold">Fleet status</h2>
           <span className="text-xs text-dim">{aircraft.length} aircraft · sorted by risk · bar: RUL P10–P90 (0–60 d), tick = P50, amber line = 30-day horizon</span>
         </div>
         {fleet.error && <ErrorState message={fleet.error} onRetry={fleet.reload} />}

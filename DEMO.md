@@ -2,14 +2,15 @@
 
 **Setup (before the judges arrive)**
 1. `cd backend && .venv/Scripts/python -m uvicorn aeroready.api.main:app --port 8000`
-2. `cd frontend && npm run dev`, then open http://localhost:5173 full-screen (≥ 1280 px wide).
+2. Or simply run `.\start.ps1` from the project root, which builds the UI and serves everything at http://localhost:8000. Open it full-screen (≥ 1280 px wide).
 3. Set the base selector to **All bases**. Optional: run `scripts/run_demo_check.py` once so the numbers below are fresh in your head.
 
 All numbers below come from the deterministic default scenario (seed 26249).
 
 ---
 
-### 0:00–0:35 · The question and the headline (Readiness page)
+### 0:00–0:35 · The question and the headline (landing page, then Readiness)
+Start on the landing page (the Typhoon photo with the AeroReady wordmark). The asterisk is the footnote: fleet data is synthetic and engine data is NASA C-MAPSS. Click **Open fleet readiness**.
 > "Commanders don't ask for a remaining-useful-life number. They ask *how many aircraft can I fly each day for the next month, and what do I change to fly more?* That's what AeroReady answers."
 
 - Point at the headline: **+58 aircraft-days gained** over 30 days, with the same 24 aircraft, the same hangars and the same spares.
@@ -18,7 +19,7 @@ All numbers below come from the deterministic default scenario (seed 26249).
 - Tiles: average 21.2 vs 19.2 aircraft per day, 3 critical aircraft, and 6 unplanned failures avoided.
 
 ### 0:35–1:20 · One recommendation, one cannibalisation (Plan page)
-Click **Open plan**.
+Click **Open the plan**.
 - Read the top recommendation: *"Cannibalise HPC module from A-12 to restore A-20."*
   - A-20's engine is forecast to fail around **Day 5** (P10 3.6 d, P50 5.5 d).
   - The HPC module has **0 in stock and a 21-day lead time**.

@@ -9,7 +9,7 @@ import { StatusBadge, StatusDot } from '../components/Status'
 import { Empty, ErrorState, Loading } from '../components/States'
 import { useApi, useBase } from '../hooks'
 
-const axis = { tick: { fill: '#66768a', fontSize: 11 }, axisLine: { stroke: '#2d3e52' }, tickLine: false as const }
+const axis = { tick: { fill: '#6e6b66', fontSize: 11 }, axisLine: { stroke: '#3a3936' }, tickLine: false as const }
 
 function RulBandChart({ e }: { e: EngineDetail }) {
   const h = e.rul_history
@@ -19,18 +19,18 @@ function RulBandChart({ e }: { e: EngineDetail }) {
     <div className="h-[230px]">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 16, bottom: 0, left: -8 }}>
-          <CartesianGrid stroke="#1c2735" vertical={false} />
+          <CartesianGrid stroke="#262523" vertical={false} />
           <XAxis dataKey="cycle" type="number" domain={['dataMin', 'dataMax']} {...axis} tickFormatter={(c) => `${c}`} />
           <YAxis domain={[0, 130]} {...axis} width={40} />
-          <ReferenceLine x={now} stroke="#F5A524" strokeDasharray="3 3" label={{ value: 'now', fill: '#F5A524', fontSize: 11, position: 'insideTopRight' }} />
-          <Area dataKey="band" stroke="none" fill="#2bb5a6" fillOpacity={0.18} isAnimationActive={false} name="P10–P90" />
-          <Line dataKey="p50" stroke="#2bb5a6" strokeWidth={2} dot={false} isAnimationActive={false} name="P50" />
-          <Tooltip cursor={{ stroke: '#9aa7b6', strokeDasharray: '3 3' }}
+          <ReferenceLine x={now} stroke="#E9A15B" strokeDasharray="3 3" label={{ value: 'now', fill: '#E9A15B', fontSize: 11, position: 'insideTopRight' }} />
+          <Area dataKey="band" stroke="none" fill="#3fb7a6" fillOpacity={0.18} isAnimationActive={false} name="P10–P90" />
+          <Line dataKey="p50" stroke="#3fb7a6" strokeWidth={2} dot={false} isAnimationActive={false} name="P50" />
+          <Tooltip cursor={{ stroke: '#a7a39c', strokeDasharray: '3 3' }}
             content={({ active, payload }) => {
               if (!active || !payload?.length) return null
               const r = payload[0].payload as (typeof rows)[number]
               return (
-                <div className="num rounded border border-line2 bg-[#0d131a]/95 px-3 py-2 text-xs">
+                <div className="num rounded border border-line2 bg-[#141413]/95 px-3 py-2 text-xs">
                   <div className="font-semibold text-ink">Cycle {r.cycle}</div>
                   <div className="text-muted">RUL P50 <span className="text-ink">{r.p50}</span> cycles</div>
                   <div className="text-muted">P10–P90 <span className="text-ink">{r.band[0]}–{r.band[1]}</span></div>
@@ -61,10 +61,10 @@ function SensorTrend({ e, sensor, name }: { e: EngineDetail; sensor: string; nam
           <LineChart data={rows} margin={{ top: 4, right: 2, bottom: 0, left: 2 }}>
             <YAxis domain={['auto', 'auto']} hide />
             <XAxis dataKey="cycle" hide />
-            <Line dataKey="v" stroke="#66768a" strokeWidth={1} dot={false} isAnimationActive={false} />
+            <Line dataKey="v" stroke="#6e6b66" strokeWidth={1} dot={false} isAnimationActive={false} />
             <Line dataKey="avg" stroke="#e6edf3" strokeWidth={1.75} dot={false} isAnimationActive={false} />
-            <Tooltip cursor={{ stroke: '#66768a' }} content={({ active, payload }) => active && payload?.length ? (
-              <div className="num rounded border border-line2 bg-[#0d131a]/95 px-2 py-1 text-[11px]">
+            <Tooltip cursor={{ stroke: '#6e6b66' }} content={({ active, payload }) => active && payload?.length ? (
+              <div className="num rounded border border-line2 bg-[#141413]/95 px-2 py-1 text-[11px]">
                 cycle {(payload[0].payload as { cycle: number }).cycle}: <span className="text-ink">{String(payload[0].value)}</span>
               </div>) : null} />
           </LineChart>
@@ -109,13 +109,13 @@ function EnginePanel({ e }: { e: EngineDetail }) {
         <div className="mt-2 grid grid-cols-4 gap-2">
           {([['P10', d.p10_days, e.rul_cycles.p10], ['P50', d.p50_days, e.rul_cycles.p50], ['P90', d.p90_days, e.rul_cycles.p90]] as const).map(([k, days, cyc]) => (
             <div key={k} className="rounded border border-line bg-panel2/40 px-2.5 py-1.5">
-              <div className="label-caps !text-[10px]">{k}</div>
+              <div className="label-caps">{k}</div>
               <div className="display num text-xl font-semibold">{days.toFixed(1)}<span className="text-xs text-dim"> d</span></div>
               <div className="num text-[10px] text-dim">{cyc.toFixed(0)} cycles</div>
             </div>
           ))}
           <div className="rounded border border-dashed border-line2 px-2.5 py-1.5" title="C-MAPSS ground truth for this test engine; shown for validation only, never used by the planner">
-            <div className="label-caps !text-[10px]">Truth (validation)</div>
+            <div className="label-caps">Truth (validation)</div>
             <div className="display num text-xl font-semibold text-muted">{e.true_rul_cycles}<span className="text-xs text-dim"> cyc</span></div>
             <div className="num text-[10px] text-dim">P50 error {err > 0 ? '+' : ''}{err.toFixed(0)}</div>
           </div>
@@ -155,14 +155,14 @@ function Detail({ id }: { id: string }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="display num text-4xl font-bold leading-none">{a.aircraft.id}</h1>
+            <h1 className="display num text-4xl font-medium leading-none">{a.aircraft.id}</h1>
             <StatusBadge status={a.status} />
           </div>
           <div className="mt-1.5 text-sm text-muted">{a.aircraft.type} · {a.base.name} ({a.base.id}) · {a.aircraft.sortie_rate} sorties/day</div>
           <div className="mt-0.5 text-xs text-dim">{a.status_reason}</div>
         </div>
         <div className="panel px-4 py-2 text-right">
-          <div className="label-caps !text-[11px]">Mission-ready days (30)</div>
+          <div className="label-caps">Mission-ready days (30)</div>
           <div className="display num text-2xl font-semibold">
             <span className="text-accent">{a.timeline.optimized.available_days}</span>
             <span className="text-base text-dim"> vs {a.timeline.baseline.available_days} reactive</span>
@@ -173,7 +173,7 @@ function Detail({ id }: { id: string }) {
 
       {a.aircraft.grounding && (
         <div className="panel hatch-grey border-line2 p-3 text-sm">
-          <span className="display font-semibold uppercase tracking-wider text-ink">Grounded · </span>
+          <span className="display font-semibold text-ink">Grounded · </span>
           <span className="text-ink">{a.aircraft.grounding.reason}</span>
           {Object.keys(a.aircraft.grounding.donor_parts).length > 0 && (
             <span className="text-muted"> · serviceable donor parts: {Object.entries(a.aircraft.grounding.donor_parts).map(([p, q]) => `${p} ×${q}`).join(', ')}</span>
@@ -183,7 +183,7 @@ function Detail({ id }: { id: string }) {
 
       <section className="panel p-4">
         <div className="mb-3 flex items-center gap-2">
-          <h2 className="display mr-2 text-lg font-semibold uppercase tracking-wider">Engine health</h2>
+          <h2 className="display mr-2 text-lg font-semibold">Engine health</h2>
           {a.engines.map((x, i) => (
             <button key={x.id} onClick={() => setEng(i)}
               className={`display rounded border px-3 py-0.5 text-sm font-semibold ${i === eng ? 'border-accent bg-accent/10 text-accent' : 'border-line2 text-muted hover:text-ink'}`}>
@@ -195,11 +195,11 @@ function Detail({ id }: { id: string }) {
       </section>
 
       <section className="panel p-4">
-        <h2 className="display mb-2 text-lg font-semibold uppercase tracking-wider">Timeline</h2>
+        <h2 className="display mb-2 text-lg font-semibold">Timeline</h2>
         <div className="space-y-3">
           {(['baseline', 'optimized'] as const).map((s) => (
             <div key={s}>
-              <div className="label-caps mb-1 !text-[11px]">{s === 'optimized' ? 'Optimised plan' : 'Reactive baseline'}</div>
+              <div className="label-caps mb-1">{s === 'optimized' ? 'Optimised plan' : 'Reactive baseline'}</div>
               <Gantt rows={[a.timeline[s]]} horizon={30} startDate="2026-10-05" jobs={jobs} linkRows={false} />
             </div>
           ))}
@@ -208,7 +208,7 @@ function Detail({ id }: { id: string }) {
 
       <div className="grid grid-cols-2 gap-4">
         <section className="panel p-4">
-          <h2 className="display mb-2 text-lg font-semibold uppercase tracking-wider">Recommendations</h2>
+          <h2 className="display mb-2 text-lg font-semibold">Recommendations</h2>
           {a.recommendations.length === 0 && <Empty text="No changes versus the reactive plan." />}
           <div className="space-y-2">
             {a.recommendations.map((r) => (
@@ -220,14 +220,14 @@ function Detail({ id }: { id: string }) {
           </div>
         </section>
         <section className="panel p-4">
-          <h2 className="display mb-2 text-lg font-semibold uppercase tracking-wider">Maintenance log · last 60 days</h2>
+          <h2 className="display mb-2 text-lg font-semibold">Maintenance log · last 60 days</h2>
           {a.log.length === 0 && <Empty text="No entries." />}
           <table className="w-full text-xs">
             <tbody>
               {[...a.log].reverse().map((l) => (
                 <tr key={l.id} className="border-b border-line/60 align-top">
                   <td className="num w-14 py-1.5 text-dim">D{l.day}</td>
-                  <td className="w-28 py-1.5"><span className="rounded bg-panel2 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-muted">{l.category.replace('_', ' ')}</span></td>
+                  <td className="w-28 py-1.5"><span className="rounded bg-panel2 px-1.5 py-0.5 text-[10px] text-muted">{l.category.replace('_', ' ')}</span></td>
                   <td className="py-1.5 text-ink">{l.description}</td>
                   <td className="num w-12 py-1.5 text-right text-dim">{l.tech_hours}h</td>
                 </tr>

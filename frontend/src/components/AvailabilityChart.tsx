@@ -7,9 +7,9 @@ export type SeriesStyle = 'reactive' | 'optimized' | 'previous'
 export interface Series { key: string; label: string; data: number[]; style: SeriesStyle }
 
 const STYLE: Record<SeriesStyle, { stroke: string; dash?: string; width: number; opacity: number }> = {
-  reactive: { stroke: '#7C8794', dash: '6 4', width: 2, opacity: 1 },
-  optimized: { stroke: '#F5A524', width: 2.5, opacity: 1 },
-  previous: { stroke: '#F5A524', dash: '2 3', width: 1.5, opacity: 0.45 },
+  reactive: { stroke: '#8c8984', dash: '6 4', width: 2, opacity: 1 },
+  optimized: { stroke: '#E9A15B', width: 2.5, opacity: 1 },
+  previous: { stroke: '#E9A15B', dash: '2 3', width: 1.5, opacity: 0.45 },
 }
 
 function LegendSwatch({ style }: { style: SeriesStyle }) {
@@ -52,22 +52,22 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 64, bottom: 4, left: -12 }}>
-            <CartesianGrid stroke="#1c2735" vertical={false} />
-            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#66768a', fontSize: 11 }}
-              axisLine={{ stroke: '#2d3e52' }} tickLine={false} />
-            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#66768a', fontSize: 11 }}
+            <CartesianGrid stroke="#262523" vertical={false} />
+            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#6e6b66', fontSize: 11 }}
+              axisLine={{ stroke: '#3a3936' }} tickLine={false} />
+            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#6e6b66', fontSize: 11 }}
               axisLine={false} tickLine={false} width={44} />
             {surge && (
               <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1, surge.end_day)} y1={surge.min_available} y2={maxY}
-                fill="rgba(245,165,36,0.16)" fillOpacity={1} stroke="rgba(245,165,36,0.45)" strokeDasharray="4 3" ifOverflow="hidden" />
+                fill="rgba(233,161,91,0.16)" fillOpacity={1} stroke="rgba(233,161,91,0.45)" strokeDasharray="4 3" ifOverflow="hidden" />
             )}
             <Tooltip
-              cursor={{ stroke: '#9aa7b6', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={{ stroke: '#a7a39c', strokeWidth: 1, strokeDasharray: '3 3' }}
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null
                 const d = Number(label)
                 return (
-                  <div className="rounded border border-line2 bg-[#0d131a]/95 px-3 py-2 text-xs shadow-xl">
+                  <div className="rounded border border-line2 bg-[#141413]/95 px-3 py-2 text-xs shadow-xl">
                     <div className="display num mb-1 text-sm font-semibold text-ink">Day {d} · {dayDate(startDate, d)}</div>
                     {series.map((s) => (
                       <div key={s.key} className="flex items-center justify-between gap-6">
@@ -87,11 +87,11 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
               return (
                 <Line key={s.key} dataKey={s.key} name={s.label} type="linear" stroke={st.stroke}
                   strokeWidth={st.width} strokeDasharray={st.dash} strokeOpacity={st.opacity} dot={false}
-                  activeDot={s.style === 'previous' ? false : { r: 4, stroke: '#0b0f14', strokeWidth: 2 }}
+                  activeDot={s.style === 'previous' ? false : { r: 4, stroke: '#0e0e0d', strokeWidth: 2 }}
                   isAnimationActive={animate} animationDuration={700} animationEasing="ease-in-out"
                   label={(p: { index?: number; x?: number | string; y?: number | string; value?: unknown }) =>
                     p.index === horizon - 1 && s.style !== 'previous' ? (
-                      <text x={Number(p.x) + 8} y={Number(p.y) + 4} fill="#9aa7b6" fontSize={11} className="num">
+                      <text x={Number(p.x) + 8} y={Number(p.y) + 4} fill="#a7a39c" fontSize={11} className="num">
                         {s.style === 'optimized' ? 'Optimised' : 'Reactive'}
                       </text>
                     ) : <g />}
