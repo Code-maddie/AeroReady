@@ -1,5 +1,11 @@
+import pytest
+
+from aeroready.config import CMAPSS_DIR
 from aeroready.fleet.generator import generate_fleet
 
+
+@pytest.mark.skipif(not (CMAPSS_DIR / "test_FD001.txt").exists(),
+                    reason="raw C-MAPSS not downloaded; run scripts/download_cmapss.py")
 
 def test_fleet_is_deterministic_and_consistent():
     a, b = generate_fleet(), generate_fleet()

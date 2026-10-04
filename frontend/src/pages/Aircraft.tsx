@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import {
   Area, CartesianGrid, ComposedChart, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis,
@@ -143,7 +143,6 @@ function EnginePanel({ e }: { e: EngineDetail }) {
 function Detail({ id }: { id: string }) {
   const det = useApi<AircraftDetail>(`/api/aircraft/${id}`)
   const [eng, setEng] = useState(0)
-  useEffect(() => setEng(0), [id])
   if (det.error) return <ErrorState message={det.error} onRetry={det.reload} />
   if (!det.data) return <Loading label={`Loading ${id}`} />
   const a = det.data
@@ -265,7 +264,7 @@ export default function Aircraft() {
           </Link>
         ))}
       </nav>
-      <Detail id={id} />
+      <Detail key={id} id={id} />
     </div>
   )
 }

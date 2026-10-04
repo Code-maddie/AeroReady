@@ -11,8 +11,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 
-from aeroready.config import RUL_METRICS_PATH
+from aeroready.config import BACKEND_DIR, RUL_METRICS_PATH
 from aeroready.optimizer.plan import load_inputs, run_plan
 from aeroready.optimizer.problem import Scenario
 
@@ -211,3 +212,18 @@ def spares() -> dict:
     return {"synthetic": True, "parts": out,
             "cannibalizations": plan["optimized"]["cannibalizations"],
             "part_orders": plan["part_orders"]}
+
+
+# ------------------------------------------------- built frontend (optional) --
+# After `npm run build`, the whole prototype is served from this one process.
+FRONTEND_DIST = BACKEND_DIR.parent / "frontend" / "dist"
+
+if FRONTEND_DIST.exists():
+    @app.get("/{path:path}", include_in_schema=False)
+    def spa(path: str) -> FileResponse:
+        if path.startswith("api/"):
+            raise HTTPException(404, "Unknown API route")
+        f = (FRONTEND_DIST / path).resolve()
+        if path and f.is_file() and FRONTEND_DIST.resolve() in f.parents:
+            return FileResponse(f)
+        return FileResponse(FRONTEND_DIST / "index.html")   # client-side routes

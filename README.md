@@ -163,7 +163,14 @@ Interactive docs are at http://localhost:8000/docs.
 
 Prerequisites: Python 3.11+ (tested on 3.12), Node 20+ (tested on 22).
 
-**Backend** (first time):
+**Quick start (Windows, one command):**
+```powershell
+.\start.ps1          # sets up venv + npm packages if needed, builds the UI, serves everything at http://localhost:8000
+.\start.ps1 -Dev     # API on :8000 with reload + Vite hot-reload UI on :5173
+```
+When `frontend/dist` exists, the FastAPI process serves the UI too, so the demo needs only one server.
+
+**Manual setup: backend** (first time):
 ```bash
 cd backend
 python -m venv .venv
