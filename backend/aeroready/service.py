@@ -8,34 +8,40 @@ from __future__ import annotations
 import threading
 from collections import OrderedDict
 
-from aeroready import datastore, decisions, scenarios
+from aeroready import datastore, opstate, scenarios
 from aeroready.fleet.models import Fleet
 from aeroready.optimizer.cpsat import solve
 from aeroready.optimizer.evaluate import evaluate
-from aeroready.optimizer.plan import run_plan
-from aeroready.optimizer.problem import UNLIMITED, Problem, Scenario, build_problem
+from aeroready.optimizer.plan import run_plan, state_problem
+from aeroready.optimizer.problem import UNLIMITED, Problem, Scenario
 
 _cache: OrderedDict[tuple[str, str], dict] = OrderedDict()
+_derived: dict[object, dict] = {}       # plan _key -> memoised derived views
 _lock = threading.Lock()
 CACHE_SIZE = 24
-DOWN_KINDS = {"aog", "scheduled", "preventive", "corrective", "awaiting"}
-WORK_KINDS = {"scheduled", "preventive", "corrective"}
+DOWN_KINDS = {"aog", "scheduled", "preventive", "corrective", "awaiting", "defect"}
+WORK_KINDS = {"scheduled", "preventive", "corrective", "defect"}
+
+
+def state_key() -> str:
+    """Inputs that change every plan: uploaded data and operational state."""
+    return datastore.data_version() + opstate.version()
 
 
 # ------------------------------------------------------------------ plans --
 def plan_for(scenario_id: str | None = None, scenario: Scenario | None = None, force: bool = False) -> dict:
+    """What-if plans for saved or unsaved scenarios (no plan edits applied)."""
     if scenario is None:
         sid, name, sc = scenarios.get(scenario_id)
     else:
         sid, name, sc = None, "Unsaved scenario", scenario
-    key = (datastore.data_version() + decisions.version(), sc.model_dump_json())
+    key = (state_key(), sc.model_dump_json())
     with _lock:
         hit = None if force else _cache.get(key)
         if hit:
             _cache.move_to_end(key)
     if hit is None:
-        hit = run_plan(sc, decisions.constraints())
-        _attach_decisions(hit)
+        hit = run_plan(sc)
         hit["_key"] = key
         with _lock:
             _cache[key] = hit
@@ -46,19 +52,6 @@ def plan_for(scenario_id: str | None = None, scenario: Scenario | None = None, f
             "data_origin": "uploaded" if uploaded else "simulated", "uploaded_sources": uploaded}
 
 
-def _attach_decisions(plan: dict) -> None:
-    """Mark each recommendation with its decision; list all decisions with their state."""
-    items = decisions.list_decisions()
-    by_key = {d["key"]: d for d in items}
-    ignored = set(plan["optimized"]["solver"].get("locks_ignored", []))
-    for r in plan["recommendations"]:
-        d = by_key.get(decisions.key(r["type"], r["job_id"], r.get("part_id")))
-        r["decision"] = None if d is None else {"id": d["id"], "action": d["action"], "by": d["by"], "at": d["at"]}
-        r["effects"] = {"approve": decisions.effect_text("approve", r["type"]),
-                        "reject": decisions.effect_text("reject", r["type"])}
-    plan["decisions"] = [{**d, "in_effect": d["id"] not in ignored} for d in items]
-
-
 def public(plan: dict) -> dict:
     return {k: v for k, v in plan.items() if not k.startswith("_")}
 
@@ -66,6 +59,11 @@ def public(plan: dict) -> dict:
 def clear_cache() -> None:
     with _lock:
         _cache.clear()
+        _derived.clear()
+
+
+def _memo(plan: dict) -> dict:
+    return _derived.setdefault(plan.get("_key", id(plan)), {})
 
 
 def _inputs() -> tuple[Fleet, dict]:
@@ -73,8 +71,8 @@ def _inputs() -> tuple[Fleet, dict]:
 
 
 def _problem(plan: dict) -> tuple[Fleet, dict, Problem]:
-    fleet, rul = _inputs()
-    return fleet, rul, build_problem(fleet, rul, Scenario.model_validate(plan["scenario"]))
+    fleet, p = state_problem(Scenario.model_validate(plan["scenario"]))
+    return fleet, {}, p
 
 
 def _rows(plan: dict, side: str, base: str | None) -> list[dict]:
@@ -171,8 +169,8 @@ def _part_ready_days(p: Problem, part: str, starts: list[int]) -> list[int]:
 
 def part_usage(plan: dict) -> dict:
     """Per part: optimised uses with source and part-ready day, shelf, shortfall."""
-    if "_part_usage" in plan:
-        return plan["_part_usage"]
+    if "part_usage" in _memo(plan):
+        return _memo(plan)["part_usage"]
     fleet, _, p = _problem(plan)
     jobs = {j.id: j for j in p.jobs}
     out = {}
@@ -193,21 +191,19 @@ def part_usage(plan: dict) -> dict:
         shelf = sup.on_hand + sum(q for _, q in sup.inbound)
         out[part] = {"uses": uses, "shelf": shelf, "shortfall": max(0, len(stores) - shelf),
                      "on_hand": sup.on_hand, "inbound": sup.inbound, "lead_time": sup.lead_time, "name": sup.name}
-    cache_target = _cache.get(plan.get("_key"))
-    if cache_target is not None:
-        cache_target["_part_usage"] = out
+    _memo(plan)["part_usage"] = out
     return out
 
 
 def _cannibalisation_gain(plan: dict, c: dict) -> int:
     """Aircraft-days the plan loses if this one donor part were not available."""
-    store = _cache.get(plan.get("_key"), plan).setdefault("_cann_gain", {})
+    store = _memo(plan).setdefault("cann_gain", {})
     if c["job_id"] in store:
         return store[c["job_id"]]
     _, _, p = _problem(plan)
     p.donors = {part: [(d, q) for d, q in lst if not (part == c["part_id"] and d == c["donor"])]
                 for part, lst in p.donors.items()}
-    alt, _ = solve(p, decisions=decisions.constraints())
+    alt, _ = solve(p, decisions=plan.get("_constraints"))
     gain = plan["optimized"]["aircraft_days"] - evaluate(p, alt)["aircraft_days"]
     store[c["job_id"]] = gain
     return gain
@@ -281,8 +277,8 @@ def _status(row: dict, worst_p10: float | None, H: int) -> tuple[str, str]:
     if kinds & {"aog", "awaiting", "corrective"}:
         b = next(b for b in today if b["kind"] in {"aog", "awaiting", "corrective"})
         return "grounded", b["label"]
-    if kinds & {"scheduled", "preventive"}:
-        b = next(b for b in today if b["kind"] in {"scheduled", "preventive"})
+    if kinds & {"scheduled", "preventive", "defect"}:
+        b = next(b for b in today if b["kind"] in {"scheduled", "preventive", "defect"})
         return "scheduled", f"In maintenance today: {b['label']}"
     if worst_p10 is not None and worst_p10 < H:
         return "at_risk", f"Engine RUL P10 {worst_p10} days, inside the {H}-day horizon"

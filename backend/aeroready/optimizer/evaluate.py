@@ -41,7 +41,7 @@ def evaluate(p: Problem, plan: Plan) -> dict:
     for a, days in p.fixed_down.items():
         if days:
             blocks[a].append({"kind": "aog", "start": min(days), "end": max(days),
-                              "label": "AOG - fixed grounding", "job_id": None})
+                              "label": p.fixed_labels.get(a, "AOG - fixed grounding"), "job_id": None})
 
     for j in p.jobs:
         asg = plan.get(j.id, Assignment())
@@ -55,16 +55,16 @@ def evaluate(p: Problem, plan: Plan) -> dict:
 
         if s is not None:
             if not (j.earliest <= s <= j.latest):
-                violations.append(f"{j.id}: start {s} outside [{j.earliest},{j.latest}]")
+                violations.append(f"{j.name} on {j.aircraft_id} must start between day {j.earliest} and day {j.latest}")
             if asg.cannibalized_from and s < CANNIBALISE_EARLIEST:
-                violations.append(f"{j.id}: cannibalised part cannot arrive before day {CANNIBALISE_EARLIEST}")
+                violations.append(f"A cannibalised part cannot be fitted before day {CANNIBALISE_EARLIEST}")
             spill_days += max(0, s + j.duration - H)
             for d in range(s, min(H, s + j.duration)):
                 down[j.aircraft_id].add(d)
                 in_work[j.aircraft_id].add(d)
                 hour_use[j.base_id][d] += j.hours
             blocks[j.aircraft_id].append({
-                "kind": j.kind, "start": s, "end": min(H - 1, s + j.duration - 1),
+                "kind": "defect" if j.defect_id else j.kind, "start": s, "locked": False, "end": min(H - 1, s + j.duration - 1),
                 "label": j.name, "job_id": j.id, "cannibalized_from": asg.cannibalized_from,
                 "extends_beyond_horizon": s + j.duration > H})
             if asg.cannibalized_from:
@@ -112,9 +112,9 @@ def evaluate(p: Problem, plan: Plan) -> dict:
     for b in p.bays:
         for d in range(H):
             if bay_use[b][d] > p.bays[b][d]:
-                violations.append(f"{b} day {d}: {bay_use[b][d]} aircraft in {p.bays[b][d]} bays")
+                violations.append(f"Base {b} has {p.bays[b][d]} of {p.bays[b][d]} bays occupied on day {d}")
             if hour_use[b][d] > p.hours[b][d]:
-                violations.append(f"{b} day {d}: {hour_use[b][d]} tech-h > {p.hours[b][d]}")
+                violations.append(f"Base {b} needs {hour_use[b][d]} technician hours on day {d}; {p.hours[b][d]} available")
 
     # Parts: stock-sourced consumption must stay within supply on every day.
     for part, sup in p.supply.items():
@@ -125,7 +125,7 @@ def evaluate(p: Problem, plan: Plan) -> dict:
         for d in range(min(H, sup.lead_time)):
             used = sum(1 for s in starts if s <= d)
             if used > sup.by_day(d):
-                violations.append(f"{part} day {d}: {used} used > {sup.by_day(d)} available")
+                violations.append(f"Part {part} ({sup.name}): {used} needed by day {d}, {sup.by_day(d)} available")
                 break
     donor_use: dict[tuple[str, str], int] = {}
     for c in cannibalizations:
@@ -133,7 +133,7 @@ def evaluate(p: Problem, plan: Plan) -> dict:
     for (donor, part), n in donor_use.items():
         cap = dict(p.donors.get(part, [])).get(donor, 0)
         if n > cap:
-            violations.append(f"donor {donor} gives {n} x {part} > {cap}")
+            violations.append(f"Donor {donor} holds {cap} x {part}, {n} requested")
 
     available = [sum(1 for a in p.aircraft if d not in down[a]) for d in range(H)]
     per_aircraft = {a: H - len(down[a]) for a in p.aircraft}

@@ -6,12 +6,16 @@ from aeroready.config import FLEET_PATH, HORIZON_DAYS
 from aeroready.fleet.generator import generate_fleet
 from aeroready.fleet.store import save_fleet
 from aeroready.rul.cmapss import load_test_rul
+from aeroready.users import USERS_PATH, generate_users, save_users
 
 
 def main() -> None:
     fleet = generate_fleet()
     save_fleet(fleet)
     print(f"[SYNTHETIC] wrote {FLEET_PATH}")
+    users = generate_users(fleet)
+    save_users(users)
+    print(f"  wrote {len(users)} simulated user accounts to {USERS_PATH} (passwords in README)")
     print(f"  aircraft={len(fleet.aircraft)} engines={len(fleet.engines)} parts={len(fleet.parts)} "
           f"tasks={len(fleet.tasks)} log_entries={len(fleet.log)}")
     for ag in fleet.agencies:

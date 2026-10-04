@@ -1,23 +1,93 @@
 [
   {
     "username": "commander",
-    "name": "Demo Commander",
+    "name": "Commander",
     "role": "commander",
-    "password_hash": "aed2c6135c44f8323cd02cd6d89ca11b$4b02508a5fe01636a28b96f6c121858ac506ce639203522aae18c18472f96069",
-    "demo_password": "commander-demo"
+    "base_id": null,
+    "password_hash": "$2b$10$s6BoiEgXk62qccCDVPch4e.gQ6UKNtqRCXUrfFTSk9xNvrO7IKsMy"
   },
   {
-    "username": "planner",
-    "name": "Demo Planner",
+    "username": "planner.bn",
+    "name": "Planner BN",
     "role": "planner",
-    "password_hash": "ecb579afb3953675351f704c285d702e$de3a04db160ac3ed666c41e75dcb534b699335408b2ad1fb86cccb1e33c1ace6",
-    "demo_password": "planner-demo"
+    "base_id": "BN",
+    "password_hash": "$2b$10$C4uIYTC3.Mw4UxmazncOYeO/EITxPa0nvSlDViLYAcrxKCnoqTWAC"
   },
   {
-    "username": "technician",
-    "name": "Demo Technician",
+    "username": "tech.bn.1",
+    "name": "Technician BN-1",
     "role": "technician",
-    "password_hash": "098e0b4d2a5fe1d1dee286ae0c0fc452$d4fab20954e5f9040c21539126168b19c93c67baf564a63f68d640463c3486e4",
-    "demo_password": "technician-demo"
+    "base_id": "BN",
+    "password_hash": "$2b$10$atoXerh2gqiLmBvlyrCvVu4CTBdnaUvTf7Ul4yZ/1YE/c2JvtPz6u"
+  },
+  {
+    "username": "tech.bn.2",
+    "name": "Technician BN-2",
+    "role": "technician",
+    "base_id": "BN",
+    "password_hash": "$2b$10$G0Tso7xcuK8eY8te8mSsh.fC2OIiWxSv7nSZGOAFRgRIL/Of6GNZ6"
+  },
+  {
+    "username": "tech.bn.3",
+    "name": "Technician BN-3",
+    "role": "technician",
+    "base_id": "BN",
+    "password_hash": "$2b$10$zBwZYuSWzQnr74SQrIYJkO8BtrhzPgWrFeMqQQOEm7wsrmv91Ha9i"
+  },
+  {
+    "username": "planner.bc",
+    "name": "Planner BC",
+    "role": "planner",
+    "base_id": "BC",
+    "password_hash": "$2b$10$WaeWVw9n9RfnvtHVWB3ZTe2HDCQ2tnwjeDYxTd0lIc9a3a0hmvXhm"
+  },
+  {
+    "username": "tech.bc.1",
+    "name": "Technician BC-1",
+    "role": "technician",
+    "base_id": "BC",
+    "password_hash": "$2b$10$ptdBRxsrXiMZzOA3t0cVGeQMBZKgr6hfHlWnoFv2Qsb8uRLPE7NNK"
+  },
+  {
+    "username": "tech.bc.2",
+    "name": "Technician BC-2",
+    "role": "technician",
+    "base_id": "BC",
+    "password_hash": "$2b$10$P0IRszSqyM2athMVFh/.deAczmd3/P5JtEnOUrTJ2LNnG3duGsbne"
+  },
+  {
+    "username": "tech.bc.3",
+    "name": "Technician BC-3",
+    "role": "technician",
+    "base_id": "BC",
+    "password_hash": "$2b$10$KgovPpVNEh4gvmUCYzdOG.zbDZfp3GWB9tMt5prsWQO1HMM2yZY3O"
+  },
+  {
+    "username": "planner.bs",
+    "name": "Planner BS",
+    "role": "planner",
+    "base_id": "BS",
+    "password_hash": "$2b$10$G1NcHx6.mS6BcD2PQFayHuqeg.XWuhJ2HAXkxLNdLF5MB1h4ew0VW"
+  },
+  {
+    "username": "tech.bs.1",
+    "name": "Technician BS-1",
+    "role": "technician",
+    "base_id": "BS",
+    "password_hash": "$2b$10$0KT.tDuotamzWTNmkHFCuObLwJtrAUipkE283J1jOZkukwOMDICY2"
+  },
+  {
+    "username": "tech.bs.2",
+    "name": "Technician BS-2",
+    "role": "technician",
+    "base_id": "BS",
+    "password_hash": "$2b$10$JZTDPICOjmd.D4qpo9tI2O4xoH4NTRrDeDW.Eg8WeQkXYk643wmm."
+  },
+  {
+    "username": "tech.bs.3",
+    "name": "Technician BS-3",
+    "role": "technician",
+    "base_id": "BS",
+    "password_hash": "$2b$10$tSxhCXIgbUoRGVygpyyVBu08jJICp06NkrUE.m92kaFBxE0e9sOxu"
   }
 ]

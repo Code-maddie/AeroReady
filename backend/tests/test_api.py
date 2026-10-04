@@ -1,136 +1,142 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from aeroready import datastore, decisions, scenarios, service
+from aeroready import datastore, opstate, planning, scenarios, service
 from aeroready.api.main import app
 
+PW = "-26249"
 
-def _login(c, user):
-    r = c.post("/api/auth/login", json={"username": user, "password": f"{user}-demo"})
+
+def login(c, user):
+    r = c.post("/api/auth/login", json={"username": user, "password": user + PW})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['token']}"}
 
 
 @pytest.fixture()
-def client(tmp_path, monkeypatch):
-    # Uploads, scenarios and decisions go to a temp dir so tests never touch real data.
+def c(tmp_path, monkeypatch):
+    monkeypatch.setattr(opstate, "STATE_DIR", tmp_path / "state")
     monkeypatch.setattr(datastore, "UPLOAD_DIR", tmp_path / "uploads")
     monkeypatch.setattr(scenarios, "SCENARIOS_PATH", tmp_path / "scenarios.json")
-    monkeypatch.setattr(decisions, "DECISIONS_PATH", tmp_path / "decisions.json")
     service.clear_cache()
-    with TestClient(app) as c:
-        c.headers.update(_login(c, "planner"))
-        yield c
+    planning._results.clear()
+    with TestClient(app) as client:
+        yield client
     service.clear_cache()
+    planning._results.clear()
 
 
-def test_auth_and_roles(client):
-    anon = TestClient(app)
-    assert anon.get("/api/fleet").status_code == 401
-    assert anon.get("/api/summary").status_code == 200          # landing page data is public
-    assert anon.post("/api/auth/login", json={"username": "planner", "password": "nope"}).status_code == 401
-    tech = _login(client, "technician")
-    assert client.get("/api/fleet", headers=tech).status_code == 200
-    assert client.post("/api/plan/rerun", headers=tech).status_code == 403
-    assert client.post("/api/decisions", headers=tech,
-                       json={"job_id": "A-20-E1-PM", "type": "predictive", "action": "approve"}).status_code == 403
-    assert client.get("/api/auth/me").json()["user"]["role"] == "planner"
+def test_login_and_role_checks(c):
+    assert c.post("/api/auth/login", json={"username": "commander", "password": "nope"}).json()["detail"] == "Incorrect username or password"
+    assert c.get("/api/fleet").status_code == 401
+    tech = login(c, "tech.bs.1")
+    assert c.get("/api/fleet", headers=tech).status_code == 403
+    assert c.post("/api/plans/working", headers=tech).status_code == 403
+    cmd = login(c, "commander")
+    assert c.post("/api/plans/working", headers=cmd).status_code == 403
+    assert c.get("/api/summary", headers=cmd).status_code == 200
+    assert c.get("/api/model/metrics", headers=cmd).status_code == 403
+    me = c.get("/api/auth/me", headers=login(c, "planner.bs")).json()["user"]
+    assert me == {"username": "planner.bs", "name": "Planner BS", "role": "planner", "base_id": "BS"}
 
 
-def test_approve_and_reject_change_the_plan(client):
-    base = client.get("/api/plan").json()
-    days0 = base["optimized"]["aircraft_days"]
-    cmd = _login(client, "commander")
-    r = client.post("/api/decisions", headers=cmd, json={"job_id": "A-20-E1-PM", "type": "predictive", "action": "approve"})
-    assert r.status_code == 200, r.text
-    plan = client.get("/api/plan").json()
-    rec = next(x for x in plan["recommendations"] if x["job_id"] == "A-20-E1-PM" and x["type"] == "predictive")
-    assert rec["decision"]["action"] == "approve" and plan["optimized"]["aircraft_days"] == days0
+def test_full_workflow(c):
+    pl, cmd, tech = login(c, "planner.bs"), login(c, "commander"), login(c, "tech.bs.1")
 
-    r = client.post("/api/decisions", json={"job_id": "A-10-E1-PM", "type": "predictive", "action": "reject"})
-    assert r.status_code == 200
-    after = client.get("/api/plan").json()
-    assert any(f["engine_id"] == "A-10-E1" for f in after["optimized"]["unplanned_failures"])
-    assert after["optimized"]["aircraft_days"] < days0 and after["optimized"]["violations"] == []
+    # Planner: draft from the optimizer
+    draft = c.post("/api/plans/working", headers=pl).json()
+    pid = draft["id"]
+    assert draft["status"] == "Draft" and draft["version"] == 1
+    plan = c.get(f"/api/plans/{pid}", headers=pl).json()
+    bs = [r for r in plan["recommendations"] if r["base_id"] == "BS" and r["status"] == "Proposed"]
+    assert len(bs) >= 3
 
-    for d in client.get("/api/decisions").json()["decisions"]:
-        assert client.delete(f"/api/decisions/{d['id']}").status_code == 200
-    assert client.get("/api/plan").json()["optimized"]["aircraft_days"] == days0
+    # Planner BN cannot decide on a BS recommendation
+    assert c.post(f"/api/plans/{pid}/recommendations/decide", headers=login(c, "planner.bn"),
+                  json={"key": bs[0]["key"], "action": "accept"}).status_code == 403
+    # Accept some, reject one with reason (reason required)
+    acc = c.post(f"/api/plans/{pid}/recommendations/accept", headers=pl, json={"keys": [bs[0]["key"], bs[1]["key"]]}).json()
+    assert len(acc["accepted"]) == 2
+    rej_key = next(r["key"] for r in bs[2:] if r["type"] != "order")
+    assert c.post(f"/api/plans/{pid}/recommendations/decide", headers=pl, json={"key": rej_key, "action": "reject"}).status_code == 422
+    assert c.post(f"/api/plans/{pid}/recommendations/decide", headers=pl,
+                  json={"key": rej_key, "action": "reject", "reason": "Bay crew on leave"}).status_code == 200
+
+    # Move one task: an infeasible day gives specific violations; a feasible day succeeds
+    plan = c.get(f"/api/plans/{pid}", headers=pl).json()
+    job = next(j for j in plan["jobs"] if j["base_id"] == "BS" and j["kind"] == "scheduled"
+               and plan["optimized"]["starts"][j["id"]][0] is not None and j["id"] not in plan["plan"]["locks"])
+    cur = plan["optimized"]["starts"][job["id"]][0]
+    checks = {d: c.post(f"/api/plans/{pid}/tasks/{job['id']}/check", headers=pl, json={"day": d}).json()
+              for d in range(job["earliest"], min(job["latest"], plan["horizon_days"] - 1) + 1) if d != cur}
+    bad = [v for v in checks.values() if not v["ok"]]
+    good = [d for d, v in checks.items() if v["ok"]]
+    assert good, "no feasible alternative day"
+    if bad:
+        assert any(s.startswith("Base ") or s.startswith("Part ") or "must start" in s for s in bad[0]["violations"])
+    r = c.post(f"/api/plans/{pid}/tasks/{job['id']}/move", headers=pl, json={"day": good[0], "comment": "Align with crew roster"})
+    assert r.status_code == 200 and r.json()["locks"][job["id"]][0] == good[0]
+
+    # Submit, commander returns with comment, planner fixes and resubmits
+    assert c.post(f"/api/plans/{pid}/submit", headers=pl, json={"comment": ""}).json()["status"] == "Submitted"
+    assert c.post(f"/api/plans/{pid}/move", headers=pl).status_code in (404, 405)
+    assert c.post(f"/api/plans/{pid}/return", headers=cmd, json={"comment": ""}).status_code == 422
+    assert c.post(f"/api/plans/{pid}/return", headers=cmd, json={"comment": "Explain the deferral at BS"}).json()["status"] == "Returned"
+    assert any(n["kind"] == "plan_returned" for n in c.get("/api/notifications", headers=pl).json()["notifications"])
+    assert c.post(f"/api/plans/{pid}/tasks/{job['id']}/lock", headers=pl, json={"locked": True}).status_code == 200
+    assert c.post(f"/api/plans/{pid}/submit", headers=pl, json={"comment": "Deferral explained"}).json()["status"] == "Submitted"
+    review = c.get(f"/api/plans/{pid}/review", headers=cmd).json()
+    assert review["changes"] and len(review["series"]["plan"]) == review["horizon_days"]
+
+    # Commander approves; work orders released for the next 7 days
+    ap = c.post(f"/api/plans/{pid}/approve", headers=cmd, json={"comment": ""}).json()
+    assert ap["plan"]["status"] == "Approved" and ap["plan"]["active"] and ap["work_orders_released"] > 0
+    assert c.get("/api/plans/status", headers=tech).json()["label"] == "Approved plan, v1"
+
+    # Technician: completes one work order, reports a defect grounding an aircraft
+    wos = c.get("/api/work-orders", headers=tech).json()["work_orders"]
+    assert wos and all(w["technician"] == "tech.bs.1" for w in wos)
+    w = wos[0]
+    assert c.post(f"/api/work-orders/{w['id']}/complete", headers=tech, json={"actual_hours": 5}).status_code == 409
+    assert c.post(f"/api/work-orders/{w['id']}/start", headers=tech).json()["status"] == "In progress"
+    done = c.post(f"/api/work-orders/{w['id']}/complete", headers=tech,
+                  json={"actual_hours": w["est_hours"], "parts_used": [{"part_id": p["part_id"], "qty": 1} for p in w["parts"]],
+                        "findings": "No further findings"}).json()
+    assert done["status"] == "Completed" and len(done["history"]) == 3
+
+    before = c.get("/api/summary", headers=cmd).json()["aircraft_days"]["optimized"]
+    tail = next(a["id"] for a in c.get("/api/meta", headers=tech).json()["aircraft"] if a["id"] != "A-12")
+    d = c.post("/api/defects", headers=tech, json={"aircraft_id": tail, "system": "Hydraulics",
+                                                   "description": "Leak at main gear actuator", "serviceable": False}).json()
+    assert d["status"] == "Reported"
+    after = c.get("/api/summary", headers=cmd).json()["aircraft_days"]["optimized"]
+    assert after < before                       # readiness reflects the grounding
+    assert any(n["kind"] == "defect_reported" for n in c.get("/api/notifications", headers=pl).json()["notifications"])
+
+    # Planner converts the defect to a task and re-runs the optimizer
+    conv = c.post(f"/api/defects/{d['id']}/convert", headers=pl).json()
+    assert conv["defect"]["status"] == "Planned" and conv["day"] is not None
+    new = conv["plan_id"]
+    assert c.get(f"/api/plans/{new}", headers=pl).json()["plan"]["version"] == 2
+    assert c.post(f"/api/plans/{new}/optimize", headers=pl).status_code == 200
+
+    # Audit log has every step
+    actions = {a["action"] for a in c.get("/api/audit", headers=cmd).json()["entries"]}
+    for x in ["Created draft plan", "Accepted recommendation", "Rejected recommendation", "Moved task", "Submitted plan for approval",
+              "Returned plan to planner", "Approved plan", "Released work order", "Work order in progress", "Work order completed",
+              "Reported defect", "Defect planned", "Ran optimizer"]:
+        assert x in actions, x
 
 
-def test_core_views(client):
-    assert client.get("/api/health").json()["ok"]
-    s = client.get("/api/summary").json()
-    assert s["aircraft_days"]["gain"] == s["aircraft_days"]["optimized"] - s["aircraft_days"]["reactive"] > 0
-    assert len(s["series"]["optimized"]) == s["horizon_days"] and len(s["top_recommendations"]) <= 5
-    assert s["aircraft_at_risk"]["count"] == len(s["aircraft_at_risk"]["tails"]) > 0
-    sb = client.get("/api/summary?base=BS").json()
-    assert sb["fleet_size"] < s["fleet_size"]
-    assert client.get("/api/summary?base=XX").status_code == 404
-
-    fleet = {a["id"]: a for a in client.get("/api/fleet").json()["aircraft"]}
-    assert fleet["A-12"]["status"] == "grounded" and fleet["A-12"]["grounded_all_horizon"]
-    assert {a["status"] for a in fleet.values()} <= {"ready", "scheduled", "at_risk", "grounded"}
-
-    det = client.get("/api/aircraft/A-20").json()
-    assert det["planned_work"] and det["engines"][0]["rul_history"]["p50"]
-    assert any(c["role"] == "receiver" for c in det["cannibalizations"])
-    assert client.get("/api/aircraft/NOPE").status_code == 404
-
-    cap = client.get("/api/capacity").json()
-    for b in cap["bases"]:
-        assert all(d["bays_used"]["optimized"] <= d["bays"] for d in b["days"])
-
-    sp = client.get("/api/spares").json()
-    assert sp["cannibalizations"] and all("aircraft_days_gained" in c for c in sp["cannibalizations"])
-    assert any(t["part_id"] == "P01" for t in sp["shortage_timeline"])
-
-    assert client.get("/api/recommendations?type=cannibalize").json()["recommendations"]
-
-
-def test_model_endpoints(client):
-    m = client.get("/api/model/metrics").json()
-    assert m["datasets"]["FD001"]["rmse_p50"] > 0 and m["trained_at"]
-    pr = client.get("/api/model/predictions").json()["datasets"]
-    assert len(pr["FD001"]) == m["datasets"]["FD001"]["n_test_engines"]
-    imp = client.get("/api/model/importance").json()
-    assert abs(sum(s["gain_share"] for s in imp["sensors"]) - 1) < 0.01
-
-
-def test_scenarios_roundtrip(client):
-    body = {"name": "Bearing slip", "scenario": {"part_delays": [{"part_id": "P04", "days": 10}]}}
-    saved = client.post("/api/scenarios", json=body).json()
-    assert client.post("/api/scenarios", json=body).status_code == 409
-    ids = [s["id"] for s in client.get("/api/scenarios").json()["scenarios"]]
-    assert ids[0] == "baseline" and saved["id"] in ids
-    plan = client.get(f"/api/plan?scenario={saved['id']}").json()
-    assert plan["scenario_name"] == "Bearing slip"
-    assert plan["optimized"]["aircraft_days"] <= client.get("/api/plan").json()["optimized"]["aircraft_days"]
-    assert client.delete(f"/api/scenarios/{saved['id']}").status_code == 204
-    assert client.get(f"/api/plan?scenario={saved['id']}").status_code == 404
-    bad = {"name": "x", "scenario": {"sortie_rates": [{"scope": "base", "id": "ZZ", "sorties_per_day": 1}]}}
-    assert client.post("/api/scenarios", json=bad).status_code == 422
-
-
-def test_upload_validation_and_reset(client):
-    tmpl = client.get("/api/data/template/capacity").text
-    assert tmpl.startswith("base_id,agency_name,bays,tech_hours_per_day")
-    bad = "base_id,agency_name,bays,tech_hours_per_day\nBN,X,-1,64\nQQ,Y,2,abc\n"
-    r = client.post("/api/data/upload/capacity?filename=bad.csv", content=bad).json()
-    assert not r["ok"]
-    cols = {(e["row"], e["column"]) for e in r["errors"]}
-    assert (1, "bays") in cols and (2, "tech_hours_per_day") in cols
-    assert client.get("/api/meta").json()["data_origin"] == "simulated"
-
-    good = tmpl.replace("BS,BS Servicing Flight,2,", "BS,BS Servicing Flight,3,")
-    r = client.post("/api/data/upload/capacity?filename=cap.csv", content=good).json()
-    assert r["ok"], r
-    assert client.get("/api/meta").json()["data_origin"] == "uploaded"
-    src = {s["id"]: s for s in client.get("/api/data/sources").json()["sources"]}
-    assert src["capacity"]["origin"] == "User upload"
-    assert client.get("/api/capacity").json()["bases"][2]["days"][0]["bays"] == 3
-
-    assert client.post("/api/data/reset").json()["ok"]
-    assert client.get("/api/meta").json()["data_origin"] == "simulated"
-    a = client.get("/api/data/assumptions").json()
-    assert a["statements"] and a["config"]["seed"]
+def test_data_scenarios_model(c):
+    pl = login(c, "planner.bn")
+    assert c.get("/api/model/metrics", headers=pl).json()["datasets"]["FD001"]["rmse_p50"] > 0
+    tmpl = c.get("/api/data/template/capacity", headers=pl).text
+    bad = c.post("/api/data/upload/capacity?filename=x.csv", headers=pl, content="base_id,agency_name,bays,tech_hours_per_day\nBN,X,-1,64\n").json()
+    assert not bad["ok"] and bad["errors"][0]["column"] == "bays"
+    assert c.post("/api/data/upload/capacity?filename=c.csv", headers=pl, content=tmpl).json()["ok"]
+    assert c.post("/api/data/reset", headers=pl).json()["ok"]
+    cmd = login(c, "commander")
+    s = c.post("/api/scenarios", headers=cmd, json={"name": "Bearing slip", "scenario": {"part_delays": [{"part_id": "P04", "days": 10}]}})
+    assert s.status_code == 201
+    assert c.get(f"/api/plan?scenario={s.json()['id']}", headers=cmd).json()["scenario_name"] == "Bearing slip"

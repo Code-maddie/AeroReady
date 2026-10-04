@@ -80,6 +80,7 @@ class Job:
     failure_day: Optional[int] = None  # preventive/corrective: forecast failure day (may be >= H)
     risk_start: Optional[int] = None   # preventive: floor(P10 days)
     pair_id: Optional[str] = None      # preventive <-> corrective
+    defect_id: Optional[str] = None    # rectification task created from a reported defect
 
 
 @dataclass
@@ -110,6 +111,7 @@ class Problem:
     surge: Optional[Surge]
     scenario: Scenario
     forecasts: dict[str, dict] = field(default_factory=dict)   # engine -> rul days used
+    fixed_labels: dict[str, str] = field(default_factory=dict)  # aircraft -> reason for fixed grounding
 
     def job(self, job_id: str) -> Job:
         return next(j for j in self.jobs if j.id == job_id)

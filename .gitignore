@@ -20,3 +20,4 @@ backend/data/uploads/
 backend/data/scenarios.json
 backend/data/secret.key
 backend/data/decisions.json
+backend/data/state/
