@@ -9,12 +9,13 @@ import json
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse
 from pydantic import BaseModel
 
-from aeroready import datastore, scenarios, service
+from aeroready import auth, datastore, decisions, scenarios, service
+from aeroready.auth import current_user, require
 from aeroready.config import BACKEND_DIR, RUL_METRICS_PATH, RUL_PATH, RUL_TEST_PREDICTIONS_PATH
 from aeroready.fleet.generator import load_scenario_config
 from aeroready.optimizer.problem import Scenario
@@ -99,14 +100,14 @@ def summary(scenario: Optional[str] = ScenarioQ, base: Optional[str] = BaseQ) ->
     return {**service.summary(p, _check_base(base)), "scenario_id": p["scenario_id"], "scenario_name": p["scenario_name"]}
 
 
-@app.get("/api/fleet")
+@app.get("/api/fleet", dependencies=[Depends(current_user)])
 def fleet(scenario: Optional[str] = ScenarioQ, base: Optional[str] = BaseQ) -> dict:
     p = _plan(scenario)
     return {"horizon_days": p["horizon_days"], "start_date": p["start_date"],
             "aircraft": service.fleet_rows(p, _check_base(base))}
 
 
-@app.get("/api/aircraft/{tail}")
+@app.get("/api/aircraft/{tail}", dependencies=[Depends(current_user)])
 def aircraft(tail: str, scenario: Optional[str] = ScenarioQ) -> dict:
     try:
         return service.aircraft_detail(_plan(scenario), tail)
@@ -114,19 +115,19 @@ def aircraft(tail: str, scenario: Optional[str] = ScenarioQ) -> dict:
         raise HTTPException(404, f"Unknown aircraft '{tail}'")
 
 
-@app.get("/api/plan")
+@app.get("/api/plan", dependencies=[Depends(current_user)])
 def plan_get(scenario: Optional[str] = ScenarioQ) -> dict:
     return service.public(_plan(scenario))
 
 
-@app.post("/api/plan")
+@app.post("/api/plan", dependencies=[Depends(require("plan"))])
 def plan_post(sc: Scenario) -> dict:
     """Run an unsaved scenario."""
     _validate_scenario(sc)
     return service.public(service.plan_for(scenario=sc))
 
 
-@app.post("/api/plan/rerun")
+@app.post("/api/plan/rerun", dependencies=[Depends(require("plan"))])
 def plan_rerun(scenario: Optional[str] = ScenarioQ) -> dict:
     try:
         p = service.plan_for(scenario, force=True)
@@ -135,21 +136,96 @@ def plan_rerun(scenario: Optional[str] = ScenarioQ) -> dict:
     return {"computed_at": p["computed_at"], "solver": p["optimized"]["solver"], "scenario_id": p["scenario_id"]}
 
 
-@app.get("/api/recommendations")
+@app.get("/api/recommendations", dependencies=[Depends(current_user)])
 def recommendations(scenario: Optional[str] = ScenarioQ, base: Optional[str] = BaseQ,
                     type: Optional[str] = Query(None)) -> dict:
     p = _plan(scenario)
     return {"recommendations": service.recommendations(p, _check_base(base), type)}
 
 
-@app.get("/api/capacity")
+@app.get("/api/capacity", dependencies=[Depends(current_user)])
 def capacity(scenario: Optional[str] = ScenarioQ) -> dict:
     return service.capacity(_plan(scenario))
 
 
-@app.get("/api/spares")
+@app.get("/api/spares", dependencies=[Depends(current_user)])
 def spares(scenario: Optional[str] = ScenarioQ) -> dict:
     return service.spares(_plan(scenario))
+
+
+# ------------------------------------------------------------------ auth --
+class LoginBody(BaseModel):
+    username: str
+    password: str
+
+
+@app.post("/api/auth/login")
+def auth_login(body: LoginBody) -> dict:
+    token, user = auth.login(body.username, body.password)
+    return {"token": token, "user": user}
+
+
+@app.get("/api/auth/me")
+def auth_me(user: dict = Depends(current_user)) -> dict:
+    return {"user": user}
+
+
+@app.get("/api/auth/demo-accounts")
+def auth_demo_accounts() -> dict:
+    """Prototype only: lists the demo accounts so judges can sign in."""
+    users = json.loads(auth.USERS_PATH.read_text(encoding="utf-8"))
+    return {"accounts": [{"username": u["username"], "name": u["name"], "role": u["role"],
+                          "password": u.get("demo_password"),
+                          "permissions": auth.public_user(u)["permissions"]} for u in users]}
+
+
+# -------------------------------------------------------------- decisions --
+class DecideBody(BaseModel):
+    job_id: str
+    type: str
+    action: str
+    part_id: Optional[str] = None
+    note: str = ""
+    scenario: Optional[str] = None      # scenario the user was viewing
+
+
+@app.get("/api/decisions", dependencies=[Depends(current_user)])
+def decisions_list() -> dict:
+    p = service.plan_for()
+    return {"decisions": p["decisions"]}
+
+
+@app.post("/api/decisions")
+def decisions_add(body: DecideBody, user: dict = Depends(require("decide"))) -> dict:
+    if body.action not in ("approve", "reject"):
+        raise HTTPException(422, "action must be approve or reject")
+    before = _plan(body.scenario)
+    rec = next((r for r in before["recommendations"] if r["job_id"] == body.job_id and r["type"] == body.type
+                and (body.type != "order" or r.get("part_id") == body.part_id)), None)
+    if rec is None:
+        raise HTTPException(404, "That recommendation is not in the current plan. Refresh and try again.")
+    d = decisions.add(rec, body.action, user, body.note)
+    after = _plan(body.scenario)
+    if d["id"] in after["optimized"]["solver"].get("locks_ignored", []):
+        decisions.remove(d["id"])
+        raise HTTPException(409, "This approval cannot be combined with earlier approvals within bay, technician "
+                                 "and parts limits. Undo an earlier approval first.")
+    return {"decision": d,
+            "aircraft_days": {"before": before["optimized"]["aircraft_days"], "after": after["optimized"]["aircraft_days"]},
+            "unplanned_failures": {"before": len(before["optimized"]["unplanned_failures"]),
+                                   "after": len(after["optimized"]["unplanned_failures"])}}
+
+
+@app.delete("/api/decisions/{decision_id}", dependencies=[Depends(require("decide"))])
+def decisions_remove(decision_id: str) -> dict:
+    before = service.plan_for()
+    try:
+        d = decisions.remove(decision_id)
+    except KeyError:
+        raise HTTPException(404, "Unknown decision")
+    after = service.plan_for()
+    return {"removed": d, "aircraft_days": {"before": before["optimized"]["aircraft_days"],
+                                            "after": after["optimized"]["aircraft_days"]}}
 
 
 # ------------------------------------------------------------- scenarios --
@@ -158,12 +234,12 @@ class SaveScenario(BaseModel):
     scenario: Scenario
 
 
-@app.get("/api/scenarios")
+@app.get("/api/scenarios", dependencies=[Depends(current_user)])
 def scenarios_list() -> dict:
     return {"scenarios": scenarios.list_scenarios()}
 
 
-@app.post("/api/scenarios", status_code=201)
+@app.post("/api/scenarios", status_code=201, dependencies=[Depends(require("plan"))])
 def scenarios_save(body: SaveScenario) -> dict:
     _validate_scenario(body.scenario)
     try:
@@ -172,7 +248,7 @@ def scenarios_save(body: SaveScenario) -> dict:
         raise HTTPException(409, str(e))
 
 
-@app.delete("/api/scenarios/{scenario_id}", status_code=204)
+@app.delete("/api/scenarios/{scenario_id}", status_code=204, dependencies=[Depends(require("plan"))])
 def scenarios_delete(scenario_id: str) -> None:
     try:
         scenarios.delete(scenario_id)
@@ -181,13 +257,13 @@ def scenarios_delete(scenario_id: str) -> None:
 
 
 # ------------------------------------------------------------------ data --
-@app.get("/api/data/sources")
+@app.get("/api/data/sources", dependencies=[Depends(current_user)])
 def data_sources() -> dict:
     return {"sources": datastore.sources_info(),
             "data_origin": "uploaded" if datastore.uploaded_sources() else "simulated"}
 
 
-@app.get("/api/data/assumptions")
+@app.get("/api/data/assumptions", dependencies=[Depends(current_user)])
 def data_assumptions() -> dict:
     cfg = load_scenario_config()
     leads = [p["lead_time_days"] for p in cfg["parts"]]
@@ -213,7 +289,7 @@ def data_assumptions() -> dict:
     return {"statements": statements, "config": cfg, "config_file": "backend/aeroready/fleet/scenario_config.json"}
 
 
-@app.get("/api/data/template/{source}")
+@app.get("/api/data/template/{source}", dependencies=[Depends(current_user)])
 def data_template(source: str) -> PlainTextResponse:
     if source not in datastore.SOURCES:
         raise HTTPException(404, f"Unknown source '{source}'")
@@ -221,7 +297,7 @@ def data_template(source: str) -> PlainTextResponse:
                              headers={"Content-Disposition": f'attachment; filename="{source}.csv"'})
 
 
-@app.post("/api/data/upload/{source}")
+@app.post("/api/data/upload/{source}", dependencies=[Depends(require("data"))])
 async def data_upload(source: str, request: Request, filename: str = Query("upload.csv")) -> dict:
     """Body: raw CSV text. Validated against the source schema; a rejected file changes nothing."""
     if source not in datastore.SOURCES:
@@ -242,7 +318,7 @@ async def data_upload(source: str, request: Request, filename: str = Query("uplo
     return {"ok": True, "rows": len(rows), "computed_at": p["computed_at"], "solver": p["optimized"]["solver"]}
 
 
-@app.post("/api/data/reset")
+@app.post("/api/data/reset", dependencies=[Depends(require("data"))])
 def data_reset() -> dict:
     datastore.reset()
     service.clear_cache()
@@ -261,14 +337,14 @@ def model_metrics() -> dict:
     return m
 
 
-@app.get("/api/model/predictions")
+@app.get("/api/model/predictions", dependencies=[Depends(current_user)])
 def model_predictions() -> dict:
     if not RUL_TEST_PREDICTIONS_PATH.exists():
         raise HTTPException(404, "No saved test predictions. Run scripts/train_rul.py.")
     return {"datasets": json.loads(RUL_TEST_PREDICTIONS_PATH.read_text())}
 
 
-@app.get("/api/model/importance")
+@app.get("/api/model/importance", dependencies=[Depends(current_user)])
 def model_importance() -> dict:
     if not RUL_METRICS_PATH.exists():
         raise HTTPException(404, "No saved training run. Run scripts/train_rul.py.")

@@ -52,7 +52,7 @@ export const useModelImportance = () =>
   useQuery({ queryKey: ['model-importance'], queryFn: () => api<ModelImportance>('/model/importance') })
 
 /** Everything derived from a plan; invalidated after a re-plan or a data change. */
-const PLAN_KEYS = ['summary', 'fleet', 'aircraft', 'plan', 'recommendations', 'capacity', 'spares', 'meta', 'data-sources']
+const PLAN_KEYS = ['summary', 'fleet', 'aircraft', 'plan', 'recommendations', 'capacity', 'spares', 'meta', 'data-sources', 'decisions']
 
 export function useInvalidatePlans() {
   const qc = useQueryClient()
@@ -100,3 +100,28 @@ export function useResetData() {
   const invalidate = useInvalidatePlans()
   return useMutation({ mutationFn: () => api<{ ok: boolean }>('/data/reset', { method: 'POST' }), onSuccess: invalidate })
 }
+
+export interface DecideResult {
+  aircraft_days: { before: number; after: number }
+  unplanned_failures?: { before: number; after: number }
+}
+
+export function useDecide() {
+  const invalidate = useInvalidatePlans()
+  return useMutation({
+    mutationFn: (b: { job_id: string; type: string; action: 'approve' | 'reject'; part_id?: string | null; note?: string; scenario?: string | null }) =>
+      postJson<DecideResult>('/decisions', b),
+    onSuccess: invalidate,
+  })
+}
+
+export function useUndoDecision() {
+  const invalidate = useInvalidatePlans()
+  return useMutation({
+    mutationFn: (id: string) => api<DecideResult>(`/decisions/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+    onSuccess: invalidate,
+  })
+}
+
+export const useDemoAccounts = () =>
+  useQuery({ queryKey: ['demo-accounts'], queryFn: () => api<{ accounts: { username: string; name: string; role: string; password: string; permissions: string[] }[] }>('/auth/demo-accounts') })

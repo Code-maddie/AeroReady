@@ -1,0 +1,23 @@
+[
+  {
+    "username": "commander",
+    "name": "Demo Commander",
+    "role": "commander",
+    "password_hash": "aed2c6135c44f8323cd02cd6d89ca11b$4b02508a5fe01636a28b96f6c121858ac506ce639203522aae18c18472f96069",
+    "demo_password": "commander-demo"
+  },
+  {
+    "username": "planner",
+    "name": "Demo Planner",
+    "role": "planner",
+    "password_hash": "ecb579afb3953675351f704c285d702e$de3a04db160ac3ed666c41e75dcb534b699335408b2ad1fb86cccb1e33c1ace6",
+    "demo_password": "planner-demo"
+  },
+  {
+    "username": "technician",
+    "name": "Demo Technician",
+    "role": "technician",
+    "password_hash": "098e0b4d2a5fe1d1dee286ae0c0fc452$d4fab20954e5f9040c21539126168b19c93c67baf564a63f68d640463c3486e4",
+    "demo_password": "technician-demo"
+  }
+]

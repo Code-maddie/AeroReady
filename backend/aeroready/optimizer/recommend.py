@@ -31,9 +31,13 @@ def recommendations(p: Problem, base: Plan, opt: Plan, eb: dict, eo: dict) -> tu
                 and k.id in started and _overlaps(j, s, k, started[k.id])]
 
     def add(kind: str, j: Job, title: str, reason: str, day: int | None) -> None:
+        asg = opt.get(j.id, Assignment())
         recs.append({"id": f"R{len(recs) + 1}", "type": kind, "aircraft_id": j.aircraft_id,
                      "base_id": j.base_id, "job_id": j.id, "day": day, "title": title,
-                     "reason": reason, "aircraft_delta": delta[j.aircraft_id]})
+                     "reason": reason, "aircraft_delta": delta[j.aircraft_id],
+                     # what an approval locks in: start day, part source, part
+                     "start": asg.start, "donor": asg.cannibalized_from,
+                     "part_id": j.parts[0] if j.parts else None})
 
     for j in p.jobs:
         s = opt.get(j.id, Assignment()).start

@@ -1,7 +1,9 @@
-import { RotateCw, TriangleAlert } from 'lucide-react'
+import { LogOut, RotateCw, TriangleAlert } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import Toaster from '../components/Toaster'
 import { Button, SimulatedLabel } from '../components/ui'
 import { unreachableMessage } from '../lib/api'
+import { ROLE_LABEL, useAuth } from '../lib/auth'
 import { dateTime } from '../lib/format'
 import { useConsoleParams } from '../lib/params'
 import { useHealth, useMeta, usePlan, useReplan, useScenarios } from '../lib/queries'
@@ -50,12 +52,27 @@ function PillNav({ link }: { link: (p: string) => string }) {
   )
 }
 
+function UserChip() {
+  const { user, logout } = useAuth()
+  if (!user) return null
+  return (
+    <div className="flex items-center gap-2 rounded-full bg-panel py-1 pl-3 pr-1 text-[13px] ring-1 ring-white/5">
+      <span className="hidden text-ink sm:inline">{user.name}</span>
+      <span className="rounded-full bg-panel2 px-2 py-0.5 text-[11px] text-muted ring-1 ring-white/10">{ROLE_LABEL[user.role]}</span>
+      <button onClick={logout} title="Sign out" aria-label="Sign out" className="grid h-7 w-7 place-items-center rounded-full text-muted hover:bg-white/10 hover:text-ink">
+        <LogOut className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  )
+}
+
 function Controls() {
   const { base, scenario, setBase, setScenario } = useConsoleParams()
   const meta = useMeta()
   const scenarios = useScenarios()
   const plan = usePlan(scenario)
   const replan = useReplan()
+  const { can } = useAuth()
   const solver = plan.data?.optimized.solver
   return (
     <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-xs">
@@ -79,7 +96,7 @@ function Controls() {
         </div>
       </div>
       <Button onClick={() => replan.mutate(scenario)} busy={replan.isPending} icon={<RotateCw className="h-3.5 w-3.5" />}
-        title="Run the optimiser again for the active scenario">Re-plan</Button>
+        disabled={!can('plan')} title={can('plan') ? 'Run the optimiser again for the active scenario' : 'Planner role required'}>Re-plan</Button>
       {replan.isError && <span className="max-w-[180px] text-bad" role="alert">Re-plan failed: {(replan.error as Error).message}</span>}
       {meta.data && <SimulatedLabel origin={meta.data.data_origin} />}
     </div>
@@ -100,7 +117,7 @@ export default function Shell() {
         <div className="mx-auto flex h-16 max-w-[1480px] items-center gap-6 px-6 lg:px-8">
           <Wordmark />
           <div className="flex min-w-0 flex-1 justify-center"><PillNav link={link} /></div>
-          <div className="hidden w-[110px] xl:block" />
+          <UserChip />
         </div>
       </header>
 
@@ -128,6 +145,7 @@ export default function Shell() {
         <span>* Simulated fleet scenario. Engine sensor data from NASA C-MAPSS.</span>
         <span>Decision support prototype for SIH 2026 problem statement 26249. Not for operational use.</span>
       </footer>
+      <Toaster />
     </div>
   )
 }

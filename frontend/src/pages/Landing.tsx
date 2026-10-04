@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import AvailabilityChart, { SERIES_COLORS } from '../components/AvailabilityChart'
 import { SimulatedLabel, Skeleton } from '../components/ui'
 import { API_BASE } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { pct, signed } from '../lib/format'
 import { useMeta, useModelMetrics, useSummary } from '../lib/queries'
 
@@ -28,6 +29,7 @@ function ArrowCircle() {
 
 /** Floating pill navigation; turns solid once the hero has scrolled past. */
 function Nav() {
+  const { user } = useAuth()
   const [solid, setSolid] = useState(false)
   useEffect(() => {
     const on = () => setSolid(window.scrollY > window.innerHeight * 0.85)
@@ -44,8 +46,8 @@ function Nav() {
         <nav aria-label="Sections" className="hidden items-center gap-0.5 rounded-full bg-black/45 p-1 text-[13px] ring-1 ring-white/10 backdrop-blur-md md:flex">
           {SECTIONS.map((s) => <a key={s.id} href={`#${s.id}`} className="rounded-full px-3.5 py-1.5 text-ink/80 hover:bg-white/10 hover:text-ink">{s.label}</a>)}
         </nav>
-        <Link to="/app/overview" className="inline-flex items-center gap-3 rounded-full bg-black/55 py-1.5 pl-4 pr-1.5 text-[13px] ring-1 ring-white/15 backdrop-blur hover:bg-black/75">
-          Open console <ArrowCircle />
+        <Link to={user ? '/app/overview' : '/login'} className="inline-flex items-center gap-3 rounded-full bg-black/55 py-1.5 pl-4 pr-1.5 text-[13px] ring-1 ring-white/15 backdrop-blur hover:bg-black/75">
+          {user ? 'Open console' : 'Sign in'} <ArrowCircle />
         </Link>
       </div>
     </header>

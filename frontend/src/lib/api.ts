@@ -9,12 +9,20 @@ export class ApiError extends Error {
 
 export const unreachableMessage = () => `Cannot reach the AeroReady service at ${API_BASE}.`
 
+let authToken: string | null = null
+export function setAuthToken(t: string | null) { authToken = t }
+
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response
+  const headers = new Headers(init?.headers)
+  if (authToken) headers.set('authorization', `Bearer ${authToken}`)
   try {
-    res = await fetch(API_BASE + path, init)
+    res = await fetch(API_BASE + path, { ...init, headers })
   } catch {
     throw new ApiError(unreachableMessage())
+  }
+  if (res.status === 401 && authToken && !path.startsWith('/auth/login')) {
+    window.dispatchEvent(new Event('aeroready:unauthorized'))
   }
   if (!res.ok) {
     let detail: unknown = null
@@ -43,7 +51,7 @@ export type FleetStatus = 'ready' | 'scheduled' | 'at_risk' | 'grounded'
 export type BlockKind = 'scheduled' | 'preventive' | 'corrective' | 'awaiting' | 'aog' | 'cannibalization'
 export type RecType = 'cannibalize' | 'predictive' | 'order' | 'bundle' | 'level' | 'defer'
 
-export interface Solver { status: string; wall_time_s: number; objective: number; num_booleans: number }
+export interface Solver { status: string; wall_time_s: number; objective: number; num_booleans: number; locks_ignored?: string[] }
 
 export interface Block {
   kind: BlockKind; start: number; end: number; label: string; job_id: string | null
@@ -54,6 +62,15 @@ export interface GanttRow { aircraft_id: string; base_id: string; blocks: Block[
 export interface Recommendation {
   id: string; type: RecType; aircraft_id: string; base_id: string; job_id: string
   day: number | null; title: string; reason: string; aircraft_delta: number
+  start: number | null; donor: string | null; part_id: string | null
+  decision: { id: string; action: 'approve' | 'reject'; by: string; at: string } | null
+  effects: { approve: string; reject: string }
+}
+
+export interface Decision {
+  id: string; key: string; action: 'approve' | 'reject'; type: RecType; job_id: string; aircraft_id: string
+  base_id: string; title: string; start: number | null; donor: string | null; part_id: string | null
+  effect: string; note: string; by: string; role: string; at: string; in_effect: boolean
 }
 
 export interface Cannibalization { job_id: string; aircraft_id: string; part_id: string; part_name: string; donor: string; day: number }
@@ -92,7 +109,7 @@ export interface PlanResult {
   part_orders: { part_id: string; part_name: string; qty: number; order_day: number; arrives_day: number; needed_from_day: number }[]
   capacity: { bays: Record<string, number[]>; tech_hours: Record<string, number[]> }
   jobs: Job[]; forecasts_days: Record<string, { p10_days: number; p50_days: number; p90_days: number }>
-  computed_at: string; elapsed_s: number
+  computed_at: string; elapsed_s: number; decisions: Decision[]
   scenario_id: string | null; scenario_name: string; data_origin: 'simulated' | 'uploaded'; uploaded_sources: string[]
 }
 

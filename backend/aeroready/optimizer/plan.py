@@ -41,7 +41,7 @@ def _summary(p: Problem, plan, ev: dict) -> dict:
     }
 
 
-def run_plan(scenario: Scenario | None = None) -> dict:
+def run_plan(scenario: Scenario | None = None, decisions: dict | None = None) -> dict:
     fleet, rul = load_inputs()
     sc = scenario or Scenario()
     p = build_problem(fleet, rul, sc)
@@ -49,7 +49,7 @@ def run_plan(scenario: Scenario | None = None) -> dict:
     reactive_log: dict = {}
     base = reactive_plan(p, reactive_log)
     eb = evaluate(p, base)
-    opt, stats = solve(p)
+    opt, stats = solve(p, decisions=decisions)
     eo = evaluate(p, opt)
     if stats["solver_aircraft_days"] != eo["aircraft_days"]:
         raise AssertionError(f"solver ({stats['solver_aircraft_days']}) and evaluator "

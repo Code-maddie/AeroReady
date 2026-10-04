@@ -7,9 +7,56 @@ import { Button, EmptyState, Panel, QueryView, Segmented, Skeleton } from '../co
 import type { CapacityResponse, Job, PlanResult } from '../lib/api'
 import { dayDate, downloadCsv } from '../lib/format'
 import { useConsoleParams } from '../lib/params'
-import { useCapacity, usePlan } from '../lib/queries'
+import { toast } from '../components/Toaster'
+import { useAuth } from '../lib/auth'
+import { dateTime, signed } from '../lib/format'
+import { useCapacity, usePlan, useUndoDecision } from '../lib/queries'
 
 type Mode = 'optimized' | 'baseline' | 'compare'
+
+function DecisionLog({ plan }: { plan: PlanResult }) {
+  const { can } = useAuth()
+  const undo = useUndoDecision()
+  const items = [...plan.decisions].reverse()
+  return (
+    <Panel title="Decision log" actions={<span className="text-xs text-dim">Approved and rejected recommendations apply to every scenario.</span>}>
+      {items.length === 0 ? <EmptyState title="No decisions yet" detail="Approve or reject recommendations above; each one re-runs the fleet plan." /> : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-line text-left">
+              {['Decision', 'Recommendation', 'Effect', 'By', 'When', ''].map((h) => <th key={h} className="label-caps py-2 pr-3 font-normal">{h}</th>)}
+            </tr></thead>
+            <tbody>
+              {items.map((d) => (
+                <tr key={d.id} className="border-b border-line/60 align-top">
+                  <td className="py-2 pr-3">
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${d.action === 'approve' ? 'bg-ok/15 text-ok' : 'bg-bad/15 text-bad'}`}>
+                      {d.action === 'approve' ? 'Approved' : 'Rejected'}
+                    </span>
+                    {!d.in_effect && <div className="mt-1 text-[11px] text-warn">Not applied in this scenario</div>}
+                  </td>
+                  <td className="py-2 pr-3 text-ink">{d.title}{d.note && <div className="mt-0.5 text-xs text-muted">Note: {d.note}</div>}</td>
+                  <td className="max-w-[320px] py-2 pr-3 text-xs text-muted">{d.effect}</td>
+                  <td className="py-2 pr-3 text-xs text-muted">{d.by}</td>
+                  <td className="py-2 pr-3 text-xs text-muted">{dateTime(d.at)}</td>
+                  <td className="py-2 text-right">
+                    {can('decide') && (
+                      <Button busy={undo.isPending && undo.variables === d.id}
+                        onClick={() => undo.mutate(d.id, { onSuccess: (r) => toast(`Decision undone. Plan re-run: ${r.aircraft_days.after} aircraft-days (${signed(r.aircraft_days.after - r.aircraft_days.before)}).`) })}>
+                        Undo
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {undo.isError && <p className="mt-2 text-xs text-bad">{(undo.error as Error).message}</p>}
+    </Panel>
+  )
+}
 
 function DetailPanel({ sel, plan, onClose }: { sel: BlockSelection; plan: PlanResult; onClose: () => void }) {
   const { link } = useConsoleParams()
@@ -186,6 +233,7 @@ export default function Plan() {
                 {recs.length === 0 ? <EmptyState title="No recommendations match these filters" />
                   : <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">{recs.map((r) => <RecommendationCard key={r.id} r={r} />)}</div>}
               </Panel>
+            <DecisionLog plan={p} />
             {sel && <DetailPanel sel={sel} plan={p} onClose={() => setSel(null)} />}
           </div>
         )

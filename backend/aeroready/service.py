@@ -8,7 +8,7 @@ from __future__ import annotations
 import threading
 from collections import OrderedDict
 
-from aeroready import datastore, scenarios
+from aeroready import datastore, decisions, scenarios
 from aeroready.fleet.models import Fleet
 from aeroready.optimizer.cpsat import solve
 from aeroready.optimizer.evaluate import evaluate
@@ -28,13 +28,14 @@ def plan_for(scenario_id: str | None = None, scenario: Scenario | None = None, f
         sid, name, sc = scenarios.get(scenario_id)
     else:
         sid, name, sc = None, "Unsaved scenario", scenario
-    key = (datastore.data_version(), sc.model_dump_json())
+    key = (datastore.data_version() + decisions.version(), sc.model_dump_json())
     with _lock:
         hit = None if force else _cache.get(key)
         if hit:
             _cache.move_to_end(key)
     if hit is None:
-        hit = run_plan(sc)
+        hit = run_plan(sc, decisions.constraints())
+        _attach_decisions(hit)
         hit["_key"] = key
         with _lock:
             _cache[key] = hit
@@ -43,6 +44,19 @@ def plan_for(scenario_id: str | None = None, scenario: Scenario | None = None, f
     uploaded = datastore.uploaded_sources()
     return {**hit, "scenario_id": sid, "scenario_name": name,
             "data_origin": "uploaded" if uploaded else "simulated", "uploaded_sources": uploaded}
+
+
+def _attach_decisions(plan: dict) -> None:
+    """Mark each recommendation with its decision; list all decisions with their state."""
+    items = decisions.list_decisions()
+    by_key = {d["key"]: d for d in items}
+    ignored = set(plan["optimized"]["solver"].get("locks_ignored", []))
+    for r in plan["recommendations"]:
+        d = by_key.get(decisions.key(r["type"], r["job_id"], r.get("part_id")))
+        r["decision"] = None if d is None else {"id": d["id"], "action": d["action"], "by": d["by"], "at": d["at"]}
+        r["effects"] = {"approve": decisions.effect_text("approve", r["type"]),
+                        "reject": decisions.effect_text("reject", r["type"])}
+    plan["decisions"] = [{**d, "in_effect": d["id"] not in ignored} for d in items]
 
 
 def public(plan: dict) -> dict:
@@ -193,7 +207,7 @@ def _cannibalisation_gain(plan: dict, c: dict) -> int:
     _, _, p = _problem(plan)
     p.donors = {part: [(d, q) for d, q in lst if not (part == c["part_id"] and d == c["donor"])]
                 for part, lst in p.donors.items()}
-    alt, _ = solve(p)
+    alt, _ = solve(p, decisions=decisions.constraints())
     gain = plan["optimized"]["aircraft_days"] - evaluate(p, alt)["aircraft_days"]
     store[c["job_id"]] = gain
     return gain

@@ -31,10 +31,32 @@ four sources can be replaced with your own CSV on that page; the label then chan
 The UI shows no hardcoded figures. Every metric, chart point and table row comes from the API. Model metrics are read
 from the saved evaluation of the training run (`backend/data/rul_metrics.json`, `rul_test_predictions.json`).
 
+## Sign-in, roles and decisions
+
+The console requires sign-in; the landing page is public. Three demo accounts are listed on the sign-in page:
+
+| Account | Role | Can do |
+|---|---|---|
+| `commander` / `commander-demo` | Commander | View everything; approve or reject recommendations |
+| `planner` / `planner-demo` | Planner | Everything above, plus re-plan, run and save scenarios, upload and reset data |
+| `technician` / `technician-demo` | Technician | View only |
+
+Recommendations can be **approved or rejected**. Each decision re-runs the optimiser for the whole fleet straight away:
+
+| Recommendation | Approve | Reject |
+|---|---|---|
+| Engine repair (pull forward) | Locked at that day | No preventive work on that engine; it may fail on its forecast day |
+| Cannibalisation | Locked at that day and donor | The part is not taken from the donor |
+| Inspection timing (bundle, level, defer) | Locked at that day | Not on that day; the optimiser picks another |
+| Part order | Recorded as placed | No new orders of that part inside the horizon |
+
+Decisions apply to every scenario. They are stored in `backend/data/decisions.json` with who made them and when, and can be undone from the Plan page's decision log. If approvals conflict (for example after a scenario closes a bay), the plan is solved without the conflicting locks and the log marks them "Not applied in this scenario". Passwords are stored as PBKDF2 hashes; sessions are HMAC-signed tokens (`backend/data/secret.key`, generated on first run, or the `AERO_SECRET` environment variable). The demo passwords are shown on purpose for judging; remove `demo_password` from `backend/data/users.json` for any real use.
+
 ## Site map
 
 ```
 /                      Landing page: problem, how it works, live availability chart, data and method
+/login                 Sign-in with demo accounts
 /app                   Redirects to /app/overview
 /app/overview          Readiness overview: stat tiles, daily availability, top recommendations, risk watchlist
 /app/fleet             Fleet grid or sortable table, filters, search, CSV export
@@ -115,6 +137,8 @@ All routes are under `/api`; interactive docs are at `/docs`.
 | Method and path | Purpose |
 |---|---|
 | `GET /health` | Liveness and data version |
+| `POST /auth/login` · `GET /auth/me` · `GET /auth/demo-accounts` | Sign-in (token), current user, demo accounts |
+| `GET /decisions` · `POST /decisions` · `DELETE /decisions/{id}` | Approve or reject a recommendation; undo |
 | `GET /meta` | Bases, parts, aircraft, data origin |
 | `GET /summary?scenario=&base=` | Overview stats, availability series, top recommendations, risk watchlist |
 | `GET /fleet?scenario=&base=` · `GET /aircraft/{tail}?scenario=` | Fleet status; aircraft detail |
@@ -157,7 +181,7 @@ cd backend
 .venv/Scripts/python scripts/generate_fleet.py    # simulated fleet from scenario_config.json
 .venv/Scripts/python scripts/train_rul.py         # trains, evaluates, saves metrics and test predictions
 .venv/Scripts/python scripts/run_demo_check.py    # baseline vs optimised; asserts optimised >= baseline
-.venv/Scripts/python -m pytest                    # 16 tests
+.venv/Scripts/python -m pytest                    # 18 tests
 ```
 
 > **Windows note:** with Smart App Control enabled, the newest pandas (3.x) and OR-Tools (9.15) wheels are blocked

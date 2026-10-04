@@ -1,19 +1,61 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from aeroready import datastore, scenarios, service
+from aeroready import datastore, decisions, scenarios, service
 from aeroready.api.main import app
+
+
+def _login(c, user):
+    r = c.post("/api/auth/login", json={"username": user, "password": f"{user}-demo"})
+    assert r.status_code == 200, r.text
+    return {"Authorization": f"Bearer {r.json()['token']}"}
 
 
 @pytest.fixture()
 def client(tmp_path, monkeypatch):
-    # Uploads and saved scenarios go to a temp dir so tests never touch real data.
+    # Uploads, scenarios and decisions go to a temp dir so tests never touch real data.
     monkeypatch.setattr(datastore, "UPLOAD_DIR", tmp_path / "uploads")
     monkeypatch.setattr(scenarios, "SCENARIOS_PATH", tmp_path / "scenarios.json")
+    monkeypatch.setattr(decisions, "DECISIONS_PATH", tmp_path / "decisions.json")
     service.clear_cache()
     with TestClient(app) as c:
+        c.headers.update(_login(c, "planner"))
         yield c
     service.clear_cache()
+
+
+def test_auth_and_roles(client):
+    anon = TestClient(app)
+    assert anon.get("/api/fleet").status_code == 401
+    assert anon.get("/api/summary").status_code == 200          # landing page data is public
+    assert anon.post("/api/auth/login", json={"username": "planner", "password": "nope"}).status_code == 401
+    tech = _login(client, "technician")
+    assert client.get("/api/fleet", headers=tech).status_code == 200
+    assert client.post("/api/plan/rerun", headers=tech).status_code == 403
+    assert client.post("/api/decisions", headers=tech,
+                       json={"job_id": "A-20-E1-PM", "type": "predictive", "action": "approve"}).status_code == 403
+    assert client.get("/api/auth/me").json()["user"]["role"] == "planner"
+
+
+def test_approve_and_reject_change_the_plan(client):
+    base = client.get("/api/plan").json()
+    days0 = base["optimized"]["aircraft_days"]
+    cmd = _login(client, "commander")
+    r = client.post("/api/decisions", headers=cmd, json={"job_id": "A-20-E1-PM", "type": "predictive", "action": "approve"})
+    assert r.status_code == 200, r.text
+    plan = client.get("/api/plan").json()
+    rec = next(x for x in plan["recommendations"] if x["job_id"] == "A-20-E1-PM" and x["type"] == "predictive")
+    assert rec["decision"]["action"] == "approve" and plan["optimized"]["aircraft_days"] == days0
+
+    r = client.post("/api/decisions", json={"job_id": "A-10-E1-PM", "type": "predictive", "action": "reject"})
+    assert r.status_code == 200
+    after = client.get("/api/plan").json()
+    assert any(f["engine_id"] == "A-10-E1" for f in after["optimized"]["unplanned_failures"])
+    assert after["optimized"]["aircraft_days"] < days0 and after["optimized"]["violations"] == []
+
+    for d in client.get("/api/decisions").json()["decisions"]:
+        assert client.delete(f"/api/decisions/{d['id']}").status_code == 200
+    assert client.get("/api/plan").json()["optimized"]["aircraft_days"] == days0
 
 
 def test_core_views(client):

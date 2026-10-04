@@ -3,11 +3,13 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import Shell from './console/Shell'
+import { AuthProvider, RequireAuth } from './lib/auth'
 import './index.css'
 import AircraftDetail from './pages/AircraftDetail'
 import DataSources from './pages/DataSources'
 import Fleet from './pages/Fleet'
 import Landing from './pages/Landing'
+import Login from './pages/Login'
 import Model from './pages/Model'
 import Overview from './pages/Overview'
 import Plan from './pages/Plan'
@@ -27,10 +29,12 @@ function ToOverview() {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/app" element={<Shell />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/app" element={<RequireAuth><Shell /></RequireAuth>}>
             <Route index element={<ToOverview />} />
             <Route path="overview" element={<Overview />} />
             <Route path="fleet" element={<Fleet />} />
@@ -45,6 +49,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
 )

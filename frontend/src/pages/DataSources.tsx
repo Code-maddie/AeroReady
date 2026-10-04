@@ -2,10 +2,12 @@ import { Download, RotateCcw, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Button, ErrorBox, Panel, QueryView, SimulatedLabel, SkeletonBlock } from '../components/ui'
 import { API_BASE, type DataSource, type UploadResult } from '../lib/api'
+import { useAuth } from '../lib/auth'
 import { dateTime } from '../lib/format'
 import { useAssumptions, useDataSources, useResetData, useUpload } from '../lib/queries'
 
 function SourceCard({ s }: { s: DataSource }) {
+  const canUpload = useAuth().can('data')
   const upload = useUpload()
   const input = useRef<HTMLInputElement>(null)
   const [result, setResult] = useState<UploadResult | null>(null)
@@ -51,7 +53,8 @@ function SourceCard({ s }: { s: DataSource }) {
           <Download className="h-3.5 w-3.5" aria-hidden />Download CSV template
         </a>
         <input ref={input} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => pick(e.target.files?.[0])} aria-label={`Upload ${s.title} CSV`} />
-        <Button onClick={() => input.current?.click()} busy={upload.isPending} icon={<Upload className="h-3.5 w-3.5" />}>Upload CSV</Button>
+        <Button onClick={() => input.current?.click()} busy={upload.isPending} disabled={!canUpload} title={canUpload ? undefined : 'Planner role required'}
+          icon={<Upload className="h-3.5 w-3.5" />}>Upload CSV</Button>
       </div>
       {upload.isError && <div className="mt-3"><ErrorBox message={(upload.error as Error).message} /></div>}
       {result?.ok && <p className="mt-3 text-sm text-ok">Accepted {result.rows} rows. The plan was re-run with the uploaded data.</p>}
@@ -79,6 +82,7 @@ function SourceCard({ s }: { s: DataSource }) {
 }
 
 export default function DataSources() {
+  const canReset = useAuth().can('data')
   const q = useDataSources()
   const a = useAssumptions()
   const reset = useResetData()
@@ -88,7 +92,7 @@ export default function DataSources() {
       <Panel title="Integrated sources" actions={
         <>
           {q.data && <SimulatedLabel origin={q.data.data_origin as 'simulated' | 'uploaded'} />}
-          <Button onClick={() => reset.mutate()} busy={reset.isPending} disabled={q.data?.data_origin !== 'uploaded'}
+          <Button onClick={() => reset.mutate()} busy={reset.isPending} disabled={q.data?.data_origin !== 'uploaded' || !canReset}
             icon={<RotateCcw className="h-3.5 w-3.5" />} title="Remove all uploads and re-run the plan on the simulated scenario">
             Reset to simulated scenario
           </Button>

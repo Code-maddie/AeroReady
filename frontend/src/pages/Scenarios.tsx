@@ -6,6 +6,7 @@ import { Button, EmptyState, ErrorBox, Panel, QueryView, SkeletonBlock } from '.
 import { api, qs, EMPTY_SCENARIO, type Meta, type PlanResult, type Scenario } from '../lib/api'
 import { dateTime, signed } from '../lib/format'
 import { useConsoleParams } from '../lib/params'
+import { useAuth } from '../lib/auth'
 import { useDeleteScenario, useMeta, usePlan, useRunScenario, useSaveScenario, useScenarios } from '../lib/queries'
 
 interface Form {
@@ -69,6 +70,7 @@ function NumberInput({ value, onChange, min, max, step = 1 }: { value: number; o
 }
 
 function Builder({ meta, onRun, running }: { meta: Meta; onRun: (s: Scenario) => void; running: boolean }) {
+  const { can } = useAuth()
   const [f, setF] = useState<Form>(() => initialForm(meta))
   const set = (p: Partial<Form>) => setF((x) => ({ ...x, ...p }))
   const last = meta.horizon_days - 1
@@ -117,7 +119,9 @@ function Builder({ meta, onRun, running }: { meta: Meta; onRun: (s: Scenario) =>
         <Field label="Sorties per day (engine cycles)"><NumberInput value={f.rate} onChange={(v) => set({ rate: v })} min={0.1} max={6} step={0.1} /></Field>
       </Section>
       <div className="flex items-center gap-3">
-        <Button primary onClick={() => onRun(sc)} busy={running} icon={<Play className="h-3.5 w-3.5" />}>Run scenario</Button>
+        <Button primary onClick={() => onRun(sc)} busy={running} disabled={!can('plan')} title={can('plan') ? undefined : 'Planner role required'}
+          icon={<Play className="h-3.5 w-3.5" />}>Run scenario</Button>
+        {!can('plan') && <span className="text-xs text-warn">Planner role required to run scenarios.</span>}
         <span className="text-xs text-dim">{describe(sc)}</span>
       </div>
     </div>
@@ -128,6 +132,7 @@ function Results({ run, base, onSave, saving, saveError }: {
   run: PlanResult; base: PlanResult; onSave: (name: string) => void; saving: boolean; saveError: string | null
 }) {
   const [name, setName] = useState('')
+  const canSave = useAuth().can('plan')
   const delta = run.optimized.aircraft_days - base.optimized.aircraft_days
   // Match recommendations by job and action type; a moved day counts as changed, not added + removed.
   const key = (r: { job_id: string; type: string }) => `${r.job_id}|${r.type}`
@@ -177,7 +182,7 @@ function Results({ run, base, onSave, saving, saveError }: {
       </div>
       <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); if (name.trim()) onSave(name.trim()) }}>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Scenario name" className="w-64 text-sm" aria-label="Scenario name" />
-        <Button type="submit" disabled={!name.trim()} busy={saving} icon={<Save className="h-3.5 w-3.5" />}>Save scenario</Button>
+        <Button type="submit" disabled={!name.trim() || !canSave} busy={saving} icon={<Save className="h-3.5 w-3.5" />}>Save scenario</Button>
         {saveError && <span className="text-xs text-bad">{saveError}</span>}
       </form>
     </div>
@@ -207,6 +212,7 @@ export default function Scenarios() {
   const save = useSaveScenario()
   const del = useDeleteScenario()
   const { setScenario } = useConsoleParams()
+  const canPlan = useAuth().can('plan')
   const [lastRun, setLastRun] = useState<{ sc: Scenario; at: string } | null>(null)
   const [compare, setCompare] = useState<string[]>([])
 
@@ -258,7 +264,7 @@ export default function Scenarios() {
                         <td className="py-2 text-right">
                           <div className="flex justify-end gap-2">
                             <Button onClick={() => setScenario(s.id)}>Make active</Button>
-                            {s.id !== 'baseline' && (
+                            {s.id !== 'baseline' && canPlan && (
                               <Button onClick={() => { setCompare((c) => c.filter((x) => x !== s.id)); del.mutate(s.id) }}
                                 icon={<Trash2 className="h-3.5 w-3.5" />} busy={del.isPending && del.variables === s.id}>Delete</Button>
                             )}

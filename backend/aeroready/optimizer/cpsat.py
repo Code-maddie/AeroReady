@@ -28,7 +28,23 @@ class Weights:
 
 
 def solve(p: Problem, w: Weights = Weights(), hint: Plan | None = None,
-          time_limit_s: float = SOLVER_TIME_LIMIT_S) -> tuple[Plan, dict]:
+          time_limit_s: float = SOLVER_TIME_LIMIT_S, decisions: dict | None = None) -> tuple[Plan, dict]:
+    """Solve, honouring approve/reject decisions. If approved locks make the
+    model infeasible (e.g. after a scenario change), solve again without the
+    locks and report which ones were ignored."""
+    try:
+        return _solve(p, w, hint, time_limit_s, decisions, use_locks=True)
+    except RuntimeError:
+        if not decisions or not decisions.get("locks"):
+            raise
+        plan, stats = _solve(p, w, hint, time_limit_s, decisions, use_locks=False)
+        stats["locks_ignored"] = sorted({lk[2] for lk in decisions["locks"].values()})
+        stats["locks_ignored_reason"] = "Approved decisions together exceed capacity or parts in this scenario"
+        return plan, stats
+
+
+def _solve(p: Problem, w: Weights, hint: Plan | None, time_limit_s: float,
+           dec: dict | None, use_locks: bool) -> tuple[Plan, dict]:
     H = p.H
     m = cp_model.CpModel()
 
@@ -62,6 +78,30 @@ def solve(p: Problem, w: Weights = Weights(), hint: Plan | None = None,
             # Corrective work only exists if preventive work did not happen.
             m.Add(sum(all_vars(j.id)) + sum(all_vars(prev.id)) <= 1)
             fail_terms.append(1 - sum(all_vars(prev.id)))
+
+    # ---- approve / reject decisions -----------------------------------------
+    stale: list[str] = []
+    no_order: set[str] = set()
+    if dec:
+        no_order = dec.get("no_order_parts", set())
+        for jid in dec.get("forbid_jobs", set()):
+            for v in all_vars(jid) if jid in x else []:
+                m.Add(v == 0)
+        for jid in dec.get("forbid_donor_jobs", set()):
+            for opts in x.get(jid, {}).values():
+                for v, dn in opts:
+                    if dn is not None:
+                        m.Add(v == 0)
+        for jid, s_ in dec.get("forbid_starts", set()):
+            for v, _ in x.get(jid, {}).get(s_, []):
+                m.Add(v == 0)
+        if use_locks:
+            for jid, (s_, donor, did) in dec.get("locks", {}).items():
+                opt = next((v for v, dn in x.get(jid, {}).get(s_, []) if dn == donor), None)
+                if opt is None:
+                    stale.append(did)      # job or option no longer exists in this scenario
+                else:
+                    m.Add(opt == 1)
 
     # ---- aircraft downtime -------------------------------------------------
     down = {}
@@ -111,11 +151,14 @@ def solve(p: Problem, w: Weights = Weights(), hint: Plan | None = None,
         users = [j for j in p.jobs if part in j.parts]
         if not users:
             continue
-        for d in range(min(H, sup.lead_time)):
+        # A rejected Day-0 order: only stock and inbound deliveries for the whole horizon.
+        shelf_only = part in no_order
+        for d in range(H if shelf_only else min(H, sup.lead_time)):
             used = [v for j in users for s, opts in x[j.id].items() if s <= d
                     for v, dn in opts if dn is None]
             if used:
-                m.Add(sum(used) <= sup.by_day(d))
+                limit = sup.on_hand + sum(q for day, q in sup.inbound if day <= d) if shelf_only else sup.by_day(d)
+                m.Add(sum(used) <= limit)
         for donor, qty in p.donors.get(part, []):
             taken = [v for j in users for opts in x[j.id].values() for v, dn in opts if dn == donor]
             if taken:
@@ -195,5 +238,6 @@ def solve(p: Problem, w: Weights = Weights(), hint: Plan | None = None,
         "wall_time_s": round(solver.WallTime(), 2),
         "solver_aircraft_days": int(sum(solver.Value(t) for t in avail_terms)),
         "num_booleans": sum(len(o) for jx in x.values() for o in jx.values()),
+        "locks_ignored": stale,
     }
     return plan, stats

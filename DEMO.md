@@ -8,9 +8,9 @@ Figures below are from the deterministic default scenario; the screen always sho
 ### 0:00–0:30 · The question (landing page)
 > "Commanders don't ask for a remaining-life number. They ask how many aircraft they can fly each day this month, and what to change to fly more."
 
-- Read the headline. Point at the live chart on the right: grey dashed is reactive maintenance, amber is the optimised plan, and the figure above it is the aircraft-days difference.
+- Read the headline. Scroll to the live chart below the hero: grey dashed is reactive maintenance, amber is the optimised plan, and the figure above it is the aircraft-days difference.
 - Scroll once through **The problem** (it cites SIH problem statement 26249) and **How it works** (four steps).
-- Click **Open console**.
+- Click **Sign in**, pick the **Planner** demo account (it can do everything; the Commander can decide but not run scenarios) and sign in.
 
 ### 0:30–1:00 · Overview (/app/overview)
 - Tiles: mission-ready today, 30-day average (optimised vs reactive), aircraft-days gained, aircraft at risk.
@@ -22,7 +22,8 @@ Figures below are from the deterministic default scenario; the screen always sho
 - Switch the Gantt to **Compare**. A-20 shows engine work bundled with two inspections on Days 2–4 in the optimised row; in the reactive row it fails on Day 5 and waits for a part.
 - Click A-20's predictive block. The side panel shows the part source: cannibalised from A-12, which is grounded all horizon. Stock is zero and the lead time is 21 days.
 - Scroll to the **capacity heatmap**. The Southern base bays are the bottleneck.
-- Filter recommendations to **Cannibalise**.
+- Filter recommendations to **Cannibalise** and select **Approve** on the A-20 cannibalisation. The plan re-runs and the card shows who approved it.
+- Select **Reject** on the A-10 engine repair (add a note). The plan re-runs: A-10 now fails and aircraft-days drop. Show the **Decision log** and select **Undo**.
 
 ### 1:40–2:00 · Why trust the forecast (/app/fleet/A-20)
 - RUL band from the NASA C-MAPSS trajectory; true RUL shown for validation only. Contributing sensors (SHAP) and sensor trends.
