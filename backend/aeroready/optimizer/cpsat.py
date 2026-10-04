@@ -136,6 +136,10 @@ def solve(p: Problem, w: Weights = Weights(), hint: Plan | None = None,
     # baseline does it in-horizon, so skipping it would flatter the optimiser.
     carryover = [1 - sum(all_vars(j.id)) for j in p.jobs
                  if j.kind == "scheduled" and j.due < H and x[j.id]]
+    # Likewise a failed engine's repair should start as soon as it can, even if
+    # the aircraft stays down to the horizon either way.
+    carryover += [1 - sum(all_vars(p.job(j.pair_id).id)) - sum(all_vars(j.id))
+                  for j in p.jobs if j.kind == "corrective" and x[j.id]]
     # Downtime pushed past the horizon is still downtime: charge it like an
     # in-horizon aircraft-day so late starts are not a free win.
     spill = [(s + j.duration - H) * v for j in p.jobs for s, opts in x[j.id].items()

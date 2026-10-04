@@ -48,8 +48,9 @@ def recommendations(p: Problem, base: Plan, opt: Plan, eb: dict, eo: dict) -> tu
             if j.failure_day < H:
                 corr = p.job(j.pair_id)
                 cbs = base.get(corr.id, Assignment()).start
-                ret = "never returns within the horizon" if cbs is None else \
-                    f"is back only on Day {min(H, cbs + corr.duration)}"
+                back = None if cbs is None else cbs + corr.duration
+                ret = ("is still down at the end of the horizon" if back is None or back >= H
+                       else f"is back only on Day {back}")
                 reason = (f"Forecast RUL P10 {fc['p10_days']} d, P50 {fc['p50_days']} d. "
                           f"Reactive plan flies {j.engine_id} to failure on Day {j.failure_day}; the aircraft {ret}.")
                 if mates:
