@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import AvailabilityChart, { SERIES_COLORS } from '../components/AvailabilityChart'
@@ -147,14 +147,14 @@ function Question() {
 }
 
 // ------------------------------------------------ why aircraft sit idle --
-/** One aircraft's month, drawn twice. An illustration of the mechanism, not fleet data. */
+/** One aircraft's month, drawn twice on the dark console window. An illustration of the mechanism, not fleet data. */
 function Strip({ label, parts }: { label: string; parts: { w: number; cls: string; text?: string }[] }) {
   return (
     <div>
-      <div className="mb-2 text-[13px] font-medium text-ink">{label}</div>
-      <div className="flex h-11 overflow-hidden rounded-full ring-1 ring-black/[0.06]">
+      <div className="mb-2 text-[13px] font-medium text-white/85">{label}</div>
+      <div className="flex h-10 overflow-hidden rounded-full ring-1 ring-white/10">
         {parts.map((p, i) => (
-          <div key={i} style={{ width: `${p.w}%` }} className={`flex items-center px-3 text-[12px] font-medium ${p.cls}`}>
+          <div key={i} style={{ width: `${p.w}%` }} className={`flex items-center px-2.5 text-[12px] font-medium ${p.cls}`}>
             <span className="truncate">{p.text}</span>
           </div>
         ))}
@@ -164,47 +164,109 @@ function Strip({ label, parts }: { label: string; parts: { w: number; cls: strin
 }
 
 const CAUSES = [
-  ['Data kept apart', 'Health monitoring, technical records, spares and maintenance agencies each hold part of the picture.'],
-  ['Work starts after the fault', 'Repairs are triggered by failures, so bays and parts are found busy or missing at the worst moment.'],
-  ['Waiting, not flying', 'Aircraft sit grounded for a bay or a part while serviceable assets elsewhere are under-used.'],
+  ['Data kept apart', 'Health, records, spares and agencies each hold part of the picture.'],
+  ['Work starts after the fault', 'Bays and parts are found busy or missing at the worst moment.'],
+  ['Waiting, not flying', 'Grounded for a bay or a part while other assets sit under-used.'],
 ]
+
+const FLYING = 'bg-white/[0.09] text-white/75'
+
+function ConsoleWindow() {
+  return (
+    <div className="overflow-hidden rounded-[18px] bg-[#2a201b] shadow-[0_30px_80px_-30px_rgba(20,12,8,0.75)] ring-1 ring-black/20">
+      <div className="flex items-center justify-between gap-4 border-b border-white/10 px-6 py-4">
+        <span className="text-[15px] font-semibold tracking-[-0.02em] text-white">AeroReady<sup className="text-[9px]">*</sup></span>
+        <span className="hidden gap-6 text-[11px] text-white/60 sm:flex"><span>Readiness</span><span>Plan</span><span>Work orders</span></span>
+        <span className="rounded-full px-3 py-1 text-[11px] text-white/80 ring-1 ring-white/30">One aircraft, one month</span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-[minmax(0,4fr)_minmax(0,8fr)]">
+        <div className="relative hidden min-h-[300px] md:block">
+          <img src="/img/canopy-dusk.jpg" alt="" className="absolute inset-0 h-full w-full object-cover object-[40%_50%]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(42,32,27,0.85),transparent_60%)]" />
+          <p className="absolute bottom-5 left-5 right-5 text-[clamp(28px,3vw,44px)] font-semibold leading-[0.95] tracking-[-0.04em] text-white">Same jet.<br />Two months.</p>
+        </div>
+        <div className="space-y-6 p-6 md:p-8">
+          <p className="max-w-[44ch] text-[14px] leading-relaxed text-white/80">
+            Reactive maintenance flies the engine to failure and then waits. A planned repair takes the aircraft out earlier, briefly, when a bay and the part are free.
+          </p>
+          <Strip label="Reactive" parts={[
+            { w: 27, cls: FLYING, text: 'Flying' },
+            { w: 11, cls: 'bg-bad text-white', text: 'Fails' },
+            { w: 33, cls: 'hatch-red text-white', text: 'Waiting for a bay and the part' },
+            { w: 13, cls: 'bg-[#8b6b5e] text-white', text: 'Repair' },
+            { w: 16, cls: FLYING, text: 'Flying' },
+          ]} />
+          <Strip label="Planned" parts={[
+            { w: 22, cls: FLYING, text: 'Flying' },
+            { w: 13, cls: 'bg-[#c9a27e] text-[#2a201b]', text: 'Repair' },
+            { w: 65, cls: FLYING, text: 'Flying for the rest of the month' },
+          ]} />
+          <div className="flex justify-between text-[11px] text-white/45" aria-hidden><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Small white cards floating over the console window, as in the layout reference. */
+function FaultChip({ className = '' }: { className?: string }) {
+  return (
+    <div className={`flex items-center gap-3 rounded-xl bg-white py-2.5 pl-2.5 pr-4 shadow-[0_18px_40px_-18px_rgba(20,12,8,0.55)] ${className}`}>
+      <img src="/img/runway.jpg" alt="" className="h-11 w-11 rounded-lg object-cover object-[30%_40%]" />
+      <div>
+        <div className="text-[13px] font-semibold text-ink">Engine fault on landing</div>
+        <div className="text-[11px] text-muted">Grounded until a bay and the part are free</div>
+      </div>
+      <TriangleAlert className="ml-1 h-4 w-4 text-bad" aria-hidden />
+    </div>
+  )
+}
+
+function CausesCard({ className = '' }: { className?: string }) {
+  return (
+    <div className={`w-[280px] rounded-xl bg-white p-4 shadow-[0_18px_40px_-18px_rgba(20,12,8,0.55)] ${className}`}>
+      <div className="text-[13px] font-semibold text-ink">Why it happens</div>
+      <ul className="mt-3 space-y-2.5">
+        {CAUSES.map(([t, d]) => (
+          <li key={t} className="grid grid-cols-[10px_1fr] gap-2.5">
+            <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+            <div><div className="text-[12px] font-semibold text-ink">{t}</div><div className="text-[11px] leading-snug text-muted">{d}</div></div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
 
 function Idle() {
   return (
-    <section id="idle" className="scroll-mt-16 bg-white">
-      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-16 px-6 py-28 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:px-10">
-        <div>
-          <h2 className="max-w-[14ch] text-[clamp(32px,3.6vw,52px)] font-medium leading-[1.05] tracking-[-0.03em]">Why aircraft sit idle.</h2>
-          <ul className="mt-10 space-y-7">
-            {CAUSES.map(([t, d]) => (
-              <li key={t} className="grid grid-cols-[14px_1fr] gap-4">
-                <span className="mt-2 h-2.5 w-2.5 rounded-full bg-accent" aria-hidden />
-                <div><div className="text-[17px] font-semibold tracking-[-0.01em]">{t}</div><p className="mt-1 text-[14px] leading-relaxed text-muted">{d}</p></div>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-10 text-[12px] text-dim">From SIH 2026 problem statement 26249, Ministry of Defence.</p>
-        </div>
-        <figure className="self-center rounded-[32px] bg-bg p-8 lg:p-10">
-          <figcaption className="mb-8 max-w-[46ch] text-[15px] leading-relaxed text-ink">
-            The same aircraft over one month. Reactive maintenance flies the engine to failure and then waits; a planned repair takes it out earlier, briefly, when a bay and the part are free.
-          </figcaption>
-          <div className="space-y-7">
-            <Strip label="Reactive" parts={[
-              { w: 32, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying' },
-              { w: 9, cls: 'bg-bad text-white', text: 'Fails' },
-              { w: 29, cls: 'hatch-red text-[#7a2f22]', text: 'Waiting for a bay and the part' },
-              { w: 12, cls: 'bg-[#e8d5bf] text-[#6b4a32]', text: 'Repair' },
-              { w: 18, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying' },
-            ]} />
-            <Strip label="Planned" parts={[
-              { w: 22, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying' },
-              { w: 12, cls: 'bg-accent text-white', text: 'Repair' },
-              { w: 66, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying for the rest of the month' },
-            ]} />
+    <section id="idle" className="scroll-mt-16 bg-bg px-3 py-3 lg:px-6 lg:py-6">
+      <div className="relative overflow-hidden rounded-[32px]">
+        <img src="/img/runway.jpg" alt="A fighter jet taxiing past hangars" className="absolute inset-0 h-full w-full object-cover object-[60%_45%]" />
+        <div className="absolute inset-0 bg-[#7b5a4e] opacity-70 mix-blend-multiply" />
+        <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(42,32,27,0.75)_0%,rgba(42,32,27,0.25)_45%,rgba(42,32,27,0.55)_100%)]" />
+
+        <div className="relative px-6 pb-14 pt-12 sm:px-12 lg:pt-14">
+          <h2 className="text-[clamp(34px,4vw,56px)] font-medium leading-[1.02] tracking-[-0.035em] text-white">Why aircraft sit idle.</h2>
+          <p className="mt-4 max-w-[46ch] text-[17px] leading-relaxed text-white/85">
+            Not for lack of aircraft. For lack of a bay, a part or a plan made before the fault.
+          </p>
+
+          <div className="relative mx-auto mt-14 max-w-[980px]">
+            <FaultChip className="absolute -left-[170px] top-28 z-10 hidden xl:flex" />
+            <CausesCard className="absolute -right-[200px] -bottom-10 z-10 hidden xl:block" />
+            <ConsoleWindow />
           </div>
-          <p className="mt-6 text-[12px] text-dim">Illustration of the mechanism, not fleet data.</p>
-        </figure>
+          <div className="mx-auto mt-6 flex max-w-[900px] flex-col gap-4 xl:hidden">
+            <FaultChip />
+            <CausesCard className="w-full" />
+          </div>
+
+          <div className="mx-auto mt-16 flex max-w-[1240px] flex-wrap justify-between gap-3 text-[12px] text-white/60">
+            <span>Causes from SIH 2026 problem statement 26249, Ministry of Defence.</span>
+            <span>Illustration of the mechanism, not fleet data.</span>
+          </div>
+        </div>
       </div>
     </section>
   )
