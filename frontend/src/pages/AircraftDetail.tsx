@@ -12,7 +12,7 @@ import { useAircraft, useMeta } from '../lib/queries'
 
 /** Trailing window for the smoothed sensor line. */
 const SMOOTH_CYCLES = 10
-const axis = { tick: { fill: '#6e6b66', fontSize: 11 }, axisLine: { stroke: '#3a3936' }, tickLine: false as const }
+const axis = { tick: { fill: '#8a9098', fontSize: 11 }, axisLine: { stroke: '#cdcfc7' }, tickLine: false as const }
 const KIND_LABEL: Record<string, string> = { scheduled: 'Scheduled inspection', preventive: 'Predictive maintenance', corrective: 'Unplanned failure repair' }
 
 function RulChart({ e }: { e: EngineDetail }) {
@@ -24,13 +24,13 @@ function RulChart({ e }: { e: EngineDetail }) {
     <div className="h-[220px]">
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} margin={{ top: 8, right: 24, bottom: 0, left: -8 }}>
-          <CartesianGrid stroke="#262523" vertical={false} />
+          <CartesianGrid stroke="#e1e2dc" vertical={false} />
           <XAxis dataKey="cycle" type="number" domain={['dataMin', 'dataMax']} {...axis} />
           <YAxis domain={[0, Math.ceil(top / 10) * 10]} {...axis} width={40} />
-          <ReferenceLine x={now} stroke="#a7a39c" strokeDasharray="3 3" label={{ value: 'Latest', fill: '#a7a39c', fontSize: 11, position: 'insideTopRight' }} />
-          <Area dataKey="band" stroke="none" fill="#3fb7a6" fillOpacity={0.18} isAnimationActive={false} />
-          <Line dataKey="p50" stroke="#3fb7a6" strokeWidth={2} dot={false} isAnimationActive={false} />
-          <Tooltip cursor={{ stroke: '#a7a39c', strokeDasharray: '3 3' }} content={({ active, payload }) => {
+          <ReferenceLine x={now} stroke="#8a9098" strokeDasharray="3 3" label={{ value: 'Latest', fill: '#8a9098', fontSize: 11, position: 'insideTopRight' }} />
+          <Area dataKey="band" stroke="none" fill="#2f8c80" fillOpacity={0.18} isAnimationActive={false} />
+          <Line dataKey="p50" stroke="#2f8c80" strokeWidth={2} dot={false} isAnimationActive={false} />
+          <Tooltip cursor={{ stroke: '#8a9098', strokeDasharray: '3 3' }} content={({ active, payload }) => {
             if (!active || !payload?.length) return null
             const r = payload[0].payload as (typeof rows)[number]
             return (
@@ -62,8 +62,8 @@ function SensorTrend({ e, sensor, name }: { e: EngineDetail; sensor: string; nam
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 4, right: 2, bottom: 0, left: 2 }}>
             <YAxis domain={['auto', 'auto']} hide /><XAxis dataKey="cycle" hide />
-            <Line dataKey="v" stroke="#57554f" strokeWidth={1} dot={false} isAnimationActive={false} />
-            <Line dataKey="avg" stroke="#f1eee8" strokeWidth={1.5} dot={false} isAnimationActive={false} />
+            <Line dataKey="v" stroke="#b9bdb4" strokeWidth={1} dot={false} isAnimationActive={false} />
+            <Line dataKey="avg" stroke="#1d2127" strokeWidth={1.5} dot={false} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

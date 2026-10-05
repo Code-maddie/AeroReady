@@ -13,7 +13,7 @@ approved work becomes work orders for technicians, whose completions and defect 
 
 ![Landing page](docs/screenshots/landing.png)
 
-The visual design follows the team's reference images: a full-bleed photographic hero with a large wordmark, floating pill navigation, two-tone headings and rounded charcoal panels. Photos by Samuel Arkwright and Mihai Neagu (Unsplash licence), stored locally in `frontend/public/img`. Project rules are in [`CLAUDE.md`](CLAUDE.md).
+The visual design is a light theme built around the hero reference: a full-bleed photographic hero with a very large wordmark, a dark GooeyNav pill navigation, SideRays light in the section after the hero, two-tone headings and rounded white panels. Photos by Samuel Arkwright and Mihai Neagu (Unsplash licence), stored locally in `frontend/public/img`. Project rules are in [`CLAUDE.md`](CLAUDE.md).
 
 ## What is real and what is simulated
 

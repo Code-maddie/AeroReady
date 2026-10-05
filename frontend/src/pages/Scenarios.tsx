@@ -50,7 +50,7 @@ function Section({ title, on, setOn, children }: { title: string; on: boolean; s
     <fieldset className={`rounded-xl border p-3 ${on ? 'border-accent/50' : 'border-line'}`}>
       <legend className="px-1">
         <label className="flex items-center gap-2 text-sm font-medium text-ink">
-          <input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} className="accent-[#e9a15b]" />{title}
+          <input type="checkbox" checked={on} onChange={(e) => setOn(e.target.checked)} className="accent-[#c7862c]" />{title}
         </label>
       </legend>
       <div className={`grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-muted ${on ? '' : 'pointer-events-none opacity-40'}`}>{children}</div>
@@ -249,7 +249,7 @@ export default function Scenarios() {
                     {d.scenarios.map((s) => (
                       <tr key={s.id} className="border-b border-line/60">
                         <td className="py-2 pr-3">
-                          <input type="checkbox" className="accent-[#e9a15b]" aria-label={`Compare ${s.name}`}
+                          <input type="checkbox" className="accent-[#c7862c]" aria-label={`Compare ${s.name}`}
                             checked={compare.includes(s.id)} disabled={!compare.includes(s.id) && compare.length >= 3}
                             onChange={(e) => setCompare((c) => e.target.checked ? [...c, s.id] : c.filter((x) => x !== s.id))} />
                         </td>

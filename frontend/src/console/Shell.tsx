@@ -106,12 +106,12 @@ function Notifications() {
   return (
     <div className="relative" ref={ref}>
       <button onClick={() => setOpen((o) => !o)} aria-label={`Notifications, ${unread} unread`} aria-expanded={open}
-        className="relative grid h-10 w-10 place-items-center rounded-full bg-panel text-ink/80 ring-1 ring-white/5 hover:text-ink">
+        className="relative grid h-10 w-10 place-items-center rounded-full bg-panel text-ink/80 ring-1 ring-black/[0.06] hover:text-ink">
         <Bell className="h-4 w-4" />
         {unread > 0 && <span className="num absolute -right-0.5 -top-0.5 min-w-[18px] rounded-full bg-accent px-1 text-center text-[10px] font-semibold leading-[18px] text-bg">{unread}</span>}
       </button>
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-[380px] overflow-hidden rounded-2xl bg-panel shadow-2xl ring-1 ring-white/10">
+        <div className="absolute right-0 top-12 z-50 w-[380px] overflow-hidden rounded-2xl bg-panel shadow-2xl ring-1 ring-black/10">
           <div className="flex items-center justify-between px-4 pb-2 pt-4">
             <span className="text-[15px] font-medium">Notifications</span>
             <Button size="sm" variant="ghost" disabled={!unread} busy={mark.isPending} onClick={() => mark.mutate(null)}>Mark all read</Button>
@@ -145,20 +145,20 @@ function UserMenu() {
   return (
     <div className="relative" ref={ref}>
       <button onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="flex h-10 items-center gap-2 rounded-full bg-panel py-1 pl-4 pr-1.5 text-[13px] ring-1 ring-white/5 hover:bg-panel2">
+        className="flex h-10 items-center gap-2 rounded-full bg-panel py-1 pl-4 pr-1.5 text-[13px] ring-1 ring-black/[0.06] hover:bg-panel2">
         <span className="hidden text-ink sm:inline">{user.name}</span>
-        <span className="rounded-full bg-panel2 px-2.5 py-1 text-[11px] text-muted ring-1 ring-white/10">
+        <span className="rounded-full bg-panel2 px-2.5 py-1 text-[11px] text-muted ring-1 ring-black/10">
           {ROLE_LABEL[user.role]}{user.base_id ? ` · ${user.base_id}` : ''}
         </span>
       </button>
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-60 rounded-2xl bg-panel p-1.5 shadow-2xl ring-1 ring-white/10">
+        <div className="absolute right-0 top-12 z-50 w-60 rounded-2xl bg-panel p-1.5 shadow-2xl ring-1 ring-black/10">
           <div className="px-3 py-2.5 text-[13px]">
             <div className="text-ink">{user.name}</div>
             <div className="text-xs text-muted">{ROLE_LABEL[user.role]}{user.base_id ? `, base ${user.base_id}` : ', all bases'}</div>
             <div className="mt-0.5 text-[11px] text-dim">{user.username}</div>
           </div>
-          <button onClick={logout} className="flex h-9 w-full items-center gap-2 rounded-full px-3 text-[13px] text-ink hover:bg-white/10">
+          <button onClick={logout} className="flex h-9 w-full items-center gap-2 rounded-full px-3 text-[13px] text-ink hover:bg-black/5">
             <LogOut className="h-4 w-4" />Sign out
           </button>
         </div>
@@ -192,7 +192,7 @@ export default function Shell() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 bg-bg/90 backdrop-blur-md print:hidden">
+      <header className="sticky top-0 z-30 bg-bg print:hidden">
         <div className="mx-auto flex h-16 max-w-[1480px] items-center gap-6 px-6 lg:px-8">
           <Wordmark to={NAV[user.role][0].to} />
           <div className="flex min-w-0 flex-1 justify-center overflow-x-auto">

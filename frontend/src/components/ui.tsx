@@ -87,10 +87,10 @@ export function QueryView<T>({ q, children, skeleton }: {
 // ---- controls -------------------------------------------------------------
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-ink text-bg hover:bg-white',
-  secondary: 'bg-panel2 text-ink ring-1 ring-white/10 hover:bg-line',
+  primary: 'bg-ink text-bg hover:bg-black',
+  secondary: 'bg-panel2 text-ink ring-1 ring-black/10 hover:bg-line',
   danger: 'text-bad ring-1 ring-bad/50 hover:bg-bad/10',
-  ghost: 'text-muted hover:text-ink hover:bg-white/5',
+  ghost: 'text-muted hover:text-ink hover:bg-black/[0.04]',
 }
 
 export function Button({ children, onClick, variant = 'secondary', disabled = false, icon, type = 'button', title, busy = false, size = 'md' }: {
@@ -113,7 +113,7 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void; label: string
 }) {
   return (
-    <div className="flex rounded-full bg-panel2 p-1 ring-1 ring-white/5" role="radiogroup" aria-label={label}>
+    <div className="flex rounded-full bg-panel2 p-1 ring-1 ring-black/[0.06]" role="radiogroup" aria-label={label}>
       {options.map((o) => (
         <button key={o.value} role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
           className={`rounded-full px-3 py-1 text-xs font-medium ${value === o.value ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
@@ -150,7 +150,7 @@ export function Tabs<T extends string>({ value, onChange, tabs, large = false }:
   value: T; onChange: (v: T) => void; tabs: { value: T; label: ReactNode }[]; large?: boolean
 }) {
   return (
-    <div className="flex w-fit gap-0.5 rounded-full bg-panel2 p-1 ring-1 ring-white/5" role="tablist">
+    <div className="flex w-fit gap-0.5 rounded-full bg-panel2 p-1 ring-1 ring-black/[0.06]" role="tablist">
       {tabs.map((t) => (
         <button key={t.value} role="tab" aria-selected={value === t.value} onClick={() => onChange(t.value)}
           className={`rounded-full px-4 ${large ? 'h-10 text-[15px]' : 'h-8 text-[13px]'} ${
@@ -165,11 +165,11 @@ export function Tabs<T extends string>({ value, onChange, tabs, large = false }:
 /** Right-hand overlay panel for details and edits. */
 export function SidePanel({ title, onClose, children, width = 440 }: { title: ReactNode; onClose: () => void; children: ReactNode; width?: number }) {
   return (
-    <aside className="fixed bottom-4 right-4 top-20 z-40 flex flex-col overflow-hidden rounded-2xl bg-panel shadow-2xl ring-1 ring-white/10"
+    <aside className="fixed bottom-4 right-4 top-20 z-40 flex flex-col overflow-hidden rounded-2xl bg-panel shadow-2xl ring-1 ring-black/10"
       style={{ width }} aria-label="Detail panel" onKeyDown={(e) => e.key === 'Escape' && onClose()}>
       <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div className="min-w-0 text-[17px] font-medium tracking-[-0.01em]">{title}</div>
-        <button onClick={onClose} aria-label="Close panel" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted hover:bg-white/10 hover:text-ink">
+        <button onClick={onClose} aria-label="Close panel" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted hover:bg-black/5 hover:text-ink">
           <X className="h-4 w-4" />
         </button>
       </header>
@@ -180,9 +180,9 @@ export function SidePanel({ title, onClose, children, width = 440 }: { title: Re
 
 export function Modal({ title, children, onClose, label }: { title: string; children: ReactNode; onClose: () => void; label?: string }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label={label ?? title}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-label={label ?? title}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}>
-      <div className="w-full max-w-md rounded-2xl bg-panel shadow-2xl ring-1 ring-white/10">
+      <div className="w-full max-w-md rounded-2xl bg-panel shadow-2xl ring-1 ring-black/10">
         <h3 className="px-5 pt-5 text-[19px] font-medium tracking-[-0.01em]">{title}</h3>
         <div className="p-5">{children}</div>
       </div>

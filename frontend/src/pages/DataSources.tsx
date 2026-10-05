@@ -49,7 +49,7 @@ function SourceCard({ s }: { s: DataSource }) {
       )}
       <div className="mt-auto flex flex-wrap gap-2 pt-4">
         <a href={`${API_BASE}/data/template/${s.id}`} download={`${s.id}.csv`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-panel2 px-3.5 py-1.5 text-[13px] font-medium ring-1 ring-white/10 hover:bg-line">
+          className="inline-flex items-center gap-1.5 rounded-full bg-panel2 px-3.5 py-1.5 text-[13px] font-medium ring-1 ring-black/10 hover:bg-line">
           <Download className="h-3.5 w-3.5" aria-hidden />Download CSV template
         </a>
         <input ref={input} type="file" accept=".csv,text/csv" className="hidden" onChange={(e) => pick(e.target.files?.[0])} aria-label={`Upload ${s.title} CSV`} />

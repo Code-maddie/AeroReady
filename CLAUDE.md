@@ -16,12 +16,13 @@ AeroReady is a defence maintenance-planning tool for SIH 2026 problem 26249. It 
 - Sentence case everywhere.
 
 ## Visual design
-- Follows the team's reference images (decided 2026-10-05; these rules replace the earlier slate console rules).
-- Landing page and sign-in: full-bleed photographic hero (`frontend/public/img`), large light wordmark "AeroReady*", floating pill navigation. Photos are the only imagery; no illustrations, blobs or glow.
-- Console: sticky header with wordmark, centred GooeyNav pill navigation (React Bits, `src/components/GooeyNav.tsx`) for the role's pages, notification and user pills. The landing page section nav uses the same component. Each page opens with a two-tone heading: what it shows in ink, the context in grey.
-- Palette: warm charcoal background #0e0e0d, panels #1a1a19 / #232322, lines #2c2b29, ink #f1eee8, grey #8c8984. One accent, dusk amber #e9a15b, for the plan series and attention. Green / amber / red only for status.
-- Font: Inter Tight for everything, tabular numerals for all figures.
-- Shapes: panels rounded 16px, inputs 10px, buttons, tabs, badges and filters as pills. Primary buttons are ink on charcoal. Shadows only for overlays; gradients only as the dark scrim over photos.
+- Light theme across the whole site (decided 2026-10-05). The palette is drawn from the hero photograph (`frontend/public/img/hero.jpg`): mist-white ground #f3f4f1, white surfaces, lines #e1e2dc, cloud-shadow ink #1d2127, grey #5f6670. One accent, sunset gold #c7862c, for the plan series and attention; dusk sky blue #4f79a8 as the second series. Green / amber / red only for status.
+- Landing page and sign-in follow the hero reference: full-bleed photograph, very large light wordmark "AeroReady*" bottom-left, short description and pill call-to-action bottom-right, small dark pill navigation top centre. Sections below the hero are light and typographic: no card grids, numbered markers only where the content is a sequence.
+- Navigation everywhere is React Bits GooeyNav (`src/components/GooeyNav.tsx`) as a dark pill on the light page. Headers behind it must be opaque (the gooey blend layer smudges over translucent backgrounds).
+- The section after the hero uses React Bits SideRays (`src/components/SideRays.tsx`, ogl), adapted to output tinted light on a pale background.
+- Console: sticky header with wordmark, GooeyNav for the role's pages, notification and user pills. Each page opens with a two-tone heading: what it shows in ink, the context in grey.
+- Font: Instrument Sans for everything, tabular numerals for all figures.
+- Shapes: panels rounded 16px, inputs 10px, buttons, tabs, badges and filters as pills. Primary buttons are ink with white text. Shadows only for overlays and the nav pill; gradients only as the scrim over photos.
 - Prefer tables over card grids for anything with more than 6 items. Table rows 40px (48px on technician pages).
 - Use shared components from src/components/ui. Do not create one-off styled elements when a shared component exists.
 

@@ -32,10 +32,10 @@ export default function Login() {
         <img src="/img/typhoon-storm.jpg" alt="A fighter jet banking through storm cloud at dusk"
           className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,14,13,0.95)_0%,rgba(14,14,13,0.3)_45%,rgba(14,14,13,0.25)_100%)]" />
-        <Link to="/" className="absolute left-8 top-6 inline-flex items-center gap-2 rounded-full bg-black/45 px-3.5 py-1.5 text-[13px] text-ink/85 ring-1 ring-white/10 backdrop-blur hover:text-ink">
+        <Link to="/" className="absolute left-8 top-6 inline-flex items-center gap-2 rounded-full bg-black/45 px-3.5 py-1.5 text-[13px] text-white/90 ring-1 ring-white/15 backdrop-blur hover:text-white">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />Back to overview
         </Link>
-        <p className="rise absolute bottom-10 left-8 select-none text-[clamp(72px,9vw,150px)] font-light leading-[0.8] tracking-[-0.055em] text-ink" aria-hidden>
+        <p className="rise absolute bottom-10 left-8 select-none text-[clamp(72px,9vw,150px)] font-light leading-[0.8] tracking-[-0.055em] text-[#f6f1e7]" aria-hidden>
           AeroReady<sup className="ml-1 align-[0.9em] text-[0.22em] font-normal">*</sup>
         </p>
       </section>
@@ -44,7 +44,7 @@ export default function Login() {
         <div className="m-auto w-full max-w-[420px]">
           <Link to="/" className="mb-8 inline-flex items-center gap-2 text-[13px] text-muted hover:text-ink lg:hidden"><ArrowLeft className="h-3.5 w-3.5" />Back</Link>
           <h1 className="text-[32px] font-medium leading-[1.15] tracking-[-0.02em]">
-            <span className="text-ink">AeroReady.</span><br /><span className="text-muted">Fleet maintenance planning — SIH 26249</span>
+            <span className="text-ink">AeroReady.</span><br /><span className="text-muted">Fleet maintenance planning, SIH 26249</span>
           </h1>
 
           <form onSubmit={submit} className="mt-8 space-y-3" noValidate>

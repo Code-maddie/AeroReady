@@ -8,7 +8,7 @@ export interface Series {
 }
 
 /** Fixed series colours: reactive is dashed grey, the plan is dusk amber. */
-export const SERIES_COLORS = { reactive: '#8c8984', optimized: '#e9a15b', compare: ['#e9a15b', '#6f97e8', '#3fb7a6'] }
+export const SERIES_COLORS = { reactive: '#8a9098', optimized: '#c7862c', compare: ['#c7862c', '#4f79a8', '#2f8c80'] }
 
 function Swatch({ s }: { s: Series }) {
   return (
@@ -51,17 +51,17 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 16, bottom: 4, left: -12 }}>
-            <CartesianGrid stroke="#262523" vertical={false} />
-            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#6e6b66', fontSize: 11 }}
-              axisLine={{ stroke: '#3a3936' }} tickLine={false} />
-            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#6e6b66', fontSize: 11 }}
+            <CartesianGrid stroke="#e1e2dc" vertical={false} />
+            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#8a9098', fontSize: 11 }}
+              axisLine={{ stroke: '#cdcfc7' }} tickLine={false} />
+            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#8a9098', fontSize: 11 }}
               axisLine={false} tickLine={false} width={44} />
             {surge && (
               <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1 + dayOffset, surge.end_day)} y1={surge.min_available} y2={maxY}
                 fill="rgba(233,161,91,0.10)" fillOpacity={1} stroke="rgba(233,161,91,0.6)" strokeDasharray="4 3" />
             )}
             <Tooltip
-              cursor={{ stroke: '#a7a39c', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={{ stroke: '#8a9098', strokeWidth: 1, strokeDasharray: '3 3' }}
               content={({ active, label }) => {
                 if (!active || label == null) return null
                 const d = Number(label)
@@ -90,7 +90,7 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
             {series.map((s) => (
               <Line key={s.key} dataKey={s.key} name={s.label} type="linear" stroke={s.color}
                 strokeWidth={s.faint ? 1.5 : 2.25} strokeDasharray={s.dashed ? '6 4' : undefined} strokeOpacity={s.faint ? 0.5 : 1}
-                dot={false} activeDot={s.faint ? false : { r: 4, stroke: '#0e0e0d', strokeWidth: 2 }}
+                dot={false} activeDot={s.faint ? false : { r: 4, stroke: '#ffffff', strokeWidth: 2 }}
                 isAnimationActive={animate} animationDuration={600} />
             ))}
           </LineChart>

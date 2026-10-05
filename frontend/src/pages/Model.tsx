@@ -4,8 +4,8 @@ import { Panel, QueryView, Segmented, Skeleton } from '../components/ui'
 import { pct } from '../lib/format'
 import { useModelImportance, useModelMetrics, useModelPredictions } from '../lib/queries'
 
-const COLORS = ['#e9a15b', '#6f97e8']
-const axis = { tick: { fill: '#6e6b66', fontSize: 11 }, axisLine: { stroke: '#3a3936' }, tickLine: false as const }
+const COLORS = ['#c7862c', '#4f79a8']
+const axis = { tick: { fill: '#8a9098', fontSize: 11 }, axisLine: { stroke: '#cdcfc7' }, tickLine: false as const }
 
 export default function Model() {
   const metrics = useModelMetrics()
@@ -67,16 +67,16 @@ export default function Model() {
                   <div className="h-[340px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <ScatterChart margin={{ top: 8, right: 16, bottom: 4, left: -4 }}>
-                        <CartesianGrid stroke="#262523" />
+                        <CartesianGrid stroke="#e1e2dc" />
                         <XAxis type="number" dataKey="true_rul_capped" name="True RUL" domain={[0, Math.ceil(max / 10) * 10]} {...axis} />
                         <YAxis type="number" dataKey="p50" name="Predicted P50" domain={[0, Math.ceil(max / 10) * 10]} {...axis} width={44} />
                         <ZAxis range={[28, 28]} />
-                        <ReferenceLine segment={[{ x: 0, y: 0 }, { x: max, y: max }]} stroke="#a7a39c" strokeDasharray="4 4" />
+                        <ReferenceLine segment={[{ x: 0, y: 0 }, { x: max, y: max }]} stroke="#8a9098" strokeDasharray="4 4" />
                         <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
                           if (!active || !payload?.length) return null
                           const r = payload[0].payload as { unit: number; true_rul_capped: number; p10: number; p50: number; p90: number }
                           return (
-                            <div className="num rounded-xl border border-line2 bg-[#141413] px-3 py-2 text-xs">
+                            <div className="num rounded-xl border border-line2 bg-[#ffffff] px-3 py-2 text-xs">
                               <div className="font-medium text-ink">{payload[0].name} engine {r.unit}</div>
                               <div className="text-muted">True {r.true_rul_capped} · P50 {r.p50} · P10 to P90 {r.p10} to {r.p90}</div>
                             </div>

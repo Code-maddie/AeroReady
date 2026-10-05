@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
-/* Reference look: warm charcoal surfaces, photography carries the colour,
-   one dusk-amber accent for the plan and attention. Rounded panels, pill controls,
-   two-tone headings. Green / amber / red are reserved for status. */
+/* Light theme drawn from the hero photograph: mist-white ground, cloud-shadow ink,
+   sunset gold for the plan and attention, dusk sky blue as the second series.
+   Green / amber / red are reserved for status. */
 @theme {
-  --color-bg: #0e0e0d;
-  --color-panel: #1a1a19;
-  --color-panel2: #232322;
-  --color-line: #2c2b29;
-  --color-line2: #3a3936;
-  --color-ink: #f1eee8;
-  --color-muted: #8c8984;
-  --color-dim: #6e6b66;
-  --color-accent: #e9a15b;
-  --color-ok: #6cc17a;
-  --color-warn: #e3b341;
-  --color-bad: #ef5b4c;
-  --color-neutral: #8c8984;
-  --color-k-scheduled: #6f97e8;
-  --color-k-predictive: #3fb7a6;
-  --color-k-cannibal: #a984f0;
-  --font-display: "Inter Tight", system-ui, sans-serif;
-  --font-sans: "Inter Tight", system-ui, sans-serif;
+  --color-bg: #f3f4f1;
+  --color-panel: #ffffff;
+  --color-panel2: #ecede8;
+  --color-line: #e1e2dc;
+  --color-line2: #cdcfc7;
+  --color-ink: #1d2127;
+  --color-muted: #5f6670;
+  --color-dim: #8a9098;
+  --color-accent: #c7862c;
+  --color-ok: #3e8e55;
+  --color-warn: #b7791f;
+  --color-bad: #c2412d;
+  --color-neutral: #5f6670;
+  --color-k-scheduled: #4f79a8;
+  --color-k-predictive: #2f8c80;
+  --color-k-cannibal: #7e63c4;
+  --font-display: "Instrument Sans", system-ui, sans-serif;
+  --font-sans: "Instrument Sans", system-ui, sans-serif;
 }
 
 html, body, #root { min-height: 100%; }
@@ -37,10 +37,10 @@ body {
 .num { font-variant-numeric: tabular-nums; }
 /* Small section label: sentence case, quiet grey. */
 .label-caps { font-size: 13px; font-weight: 500; color: var(--color-muted); letter-spacing: 0; }
-.panel { background: var(--color-panel); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; }
-.hatch-red { background-image: repeating-linear-gradient(135deg, rgba(239,91,76,.55) 0 3px, rgba(239,91,76,.15) 3px 7px); }
-.hatch-grey { background-image: repeating-linear-gradient(135deg, #3a3936 0 3px, #242422 3px 7px); }
-.skeleton { background: #232322; border-radius: 10px; animation: pulse-bg 1.4s ease-in-out infinite; }
+.panel { background: var(--color-panel); border: 1px solid rgba(29, 33, 39, 0.07); border-radius: 16px; }
+.hatch-red { background-image: repeating-linear-gradient(135deg, rgba(194,65,45,.55) 0 3px, rgba(194,65,45,.12) 3px 7px); }
+.hatch-grey { background-image: repeating-linear-gradient(135deg, #cdcfc7 0 3px, #ecede8 3px 7px); }
+.skeleton { background: #e6e7e1; border-radius: 10px; animation: pulse-bg 1.4s ease-in-out infinite; }
 @keyframes pulse-bg { 50% { opacity: .45 } }
 @keyframes rise { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
 .rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
@@ -48,17 +48,17 @@ body {
 @media (prefers-reduced-motion: reduce) { .skeleton, .rise, .rise-late { animation: none; } }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #2c2b29; border-radius: 6px; }
+::-webkit-scrollbar-thumb { background: #cdcfc7; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 @layer base {
-  html { color-scheme: dark; }
+  html { color-scheme: light; }
   input[type=range], input[type=checkbox], input[type=radio] { accent-color: var(--color-accent); }
   select, input[type=number], input[type=text], input[type=search], input[type=password], input[type=date] {
-    background: var(--color-panel2); border: 1px solid var(--color-line2); border-radius: 10px;
+    background: var(--color-panel); border: 1px solid var(--color-line2); border-radius: 10px;
     height: 34px; padding: 0 10px; color: var(--color-ink); font-size: 13px;
   }
   textarea {
-    background: var(--color-panel2); border: 1px solid var(--color-line2); border-radius: 10px;
+    background: var(--color-panel); border: 1px solid var(--color-line2); border-radius: 10px;
     padding: 8px 10px; color: var(--color-ink); font-size: 13px; width: 100%;
   }
   input::placeholder, textarea::placeholder { color: var(--color-dim); }
