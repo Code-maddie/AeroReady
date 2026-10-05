@@ -189,6 +189,8 @@ export default function Shell() {
   const staff = user.role !== 'technician'
   const head = HEADS.find(([re]) => re.test(pathname))
   const [title, sub] = head ? [head[1], head[2]] : ['AeroReady.', '']
+  // The commander's readiness page opens with its own editorial hero instead of the two-tone heading.
+  const editorial = /^\/commander\/?$/.test(pathname)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -214,11 +216,13 @@ export default function Shell() {
       )}
 
       <main className="mx-auto w-full max-w-[1480px] flex-1 px-6 pb-12 lg:px-8">
-        <div className="mb-7 mt-7 flex flex-wrap items-end justify-between gap-x-8 gap-y-4 print:mt-0">
-          <h1 className="max-w-3xl text-[32px] font-medium leading-[1.15] tracking-[-0.02em]">
-            <span className="text-ink">{title}</span><br /><span className="text-muted">{sub}</span>
-          </h1>
-          <div className="flex flex-wrap items-center justify-end gap-2 print:hidden">
+        <div className={`flex flex-wrap items-end justify-between gap-x-8 gap-y-4 print:mt-0 ${editorial ? 'mt-4' : 'mb-7 mt-7'}`}>
+          {!editorial && (
+            <h1 className="max-w-3xl text-[32px] font-medium leading-[1.15] tracking-[-0.02em]">
+              <span className="text-ink">{title}</span><br /><span className="text-muted">{sub}</span>
+            </h1>
+          )}
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2 print:hidden">
             {staff && (
               <select value={base ?? ''} onChange={(e) => setBase(e.target.value || null)} disabled={!meta.data}
                 className="!rounded-full text-[13px]" aria-label="Base filter">
