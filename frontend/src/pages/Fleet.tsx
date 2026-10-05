@@ -25,7 +25,7 @@ export default function Fleet() {
   const start = q.data?.start_date ?? ''
   const scale = Math.max(H * 2, ...filtered.map((a) => Math.min(a.worst_engine.p90_days, H * 3)))
   const cols: Column<FleetRow>[] = [
-    { key: 'tail', label: 'Tail', value: (r) => r.id, render: (r) => <span className="display text-[15px] font-semibold">{r.id}</span> },
+    { key: 'tail', label: 'Tail', value: (r) => r.id, render: (r) => <span className="display text-[15px] font-medium">{r.id}</span> },
     { key: 'base', label: 'Base', value: (r) => r.base_id },
     { key: 'status', label: 'Status', value: (r) => STATUS_LABEL[r.status], render: (r) => <StatusBadge status={r.status} /> },
     { key: 'engine', label: 'Lowest engine', value: (r) => r.worst_engine.engine_id },

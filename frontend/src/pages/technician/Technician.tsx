@@ -42,16 +42,16 @@ export function TechnicianHome() {
         const rows = tab === 'today' ? today : tab === 'upcoming' ? upcoming : done
         return (
           <Panel flush>
-            <Tabs large value={tab} onChange={setTab} tabs={[
+            <div className="px-5 pb-2 pt-4"><Tabs large value={tab} onChange={setTab} tabs={[
               { value: 'today', label: `Today (${today.length})` },
               { value: 'upcoming', label: `Upcoming${days ? `, next ${days} days` : ''} (${upcoming.length})` },
               { value: 'completed', label: `Completed (${done.length})` },
-            ]} />
+            ]} /></div>
             <SortTable large rows={rows} rowKey={(w) => w.id} sortable={false} onRowClick={(w) => navigate(`/technician/work-orders/${w.id}`)}
               empty={<EmptyState title={tab === 'today' ? 'No work orders for today' : tab === 'upcoming' ? 'No upcoming work orders' : 'No completed work orders'}
                 detail={tab === 'completed' ? undefined : 'Work orders appear when the commander approves a plan.'} />}
               columns={[
-                { key: 'tail', label: 'Aircraft', value: (w) => w.aircraft_id, render: (w) => <span className="display text-[17px] font-semibold">{w.aircraft_id}</span> },
+                { key: 'tail', label: 'Aircraft', value: (w) => w.aircraft_id, render: (w) => <span className="display text-[17px] font-medium">{w.aircraft_id}</span> },
                 { key: 'task', label: 'Task', value: (w) => w.task, render: (w) => <span>{w.task}<span className="block text-xs text-muted">{TYPE_LABEL[w.task_type]}</span></span> },
                 { key: 'bay', label: 'Base, bay', value: (w) => w.bay, render: (w) => `${w.base_id}, ${w.bay != null ? `bay ${w.bay}` : 'bay not assigned'}` },
                 { key: 'day', label: 'Planned start', value: (w) => w.planned_day, render: (w) => dayText(start, w.planned_day) },
@@ -234,7 +234,7 @@ export function ReportDefect() {
         const tails = m.aircraft.filter((a) => a.base_id === user?.base_id)
         const ok = aircraft && system && description.trim() && serviceable
         return (
-          <Panel title={`Report defect, base ${user?.base_id ?? ''}`} className="max-w-2xl">
+          <Panel title={`Defect details, base ${user?.base_id ?? ''}`} className="max-w-2xl">
             <form className="space-y-4 text-[15px]" onSubmit={(e) => {
               e.preventDefault()
               if (!ok) return
@@ -267,7 +267,7 @@ export function ReportDefect() {
                 <legend className="mb-1 text-xs text-muted">Aircraft serviceable</legend>
                 <div className="flex gap-3">
                   {(['yes', 'no'] as const).map((v) => (
-                    <label key={v} className={`flex h-11 min-w-28 cursor-pointer items-center justify-center rounded border px-4 ${serviceable === v ? 'border-accent text-ink' : 'border-line2 text-muted'}`}>
+                    <label key={v} className={`flex h-11 min-w-28 cursor-pointer items-center justify-center rounded-full border px-5 ${serviceable === v ? 'border-accent text-ink' : 'border-line2 text-muted'}`}>
                       <input type="radio" name="serviceable" className="sr-only" checked={serviceable === v} onChange={() => setServiceable(v)} />
                       {v === 'yes' ? 'Serviceable' : 'Not serviceable'}
                     </label>

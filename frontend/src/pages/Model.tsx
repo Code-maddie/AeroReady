@@ -77,7 +77,7 @@ export default function Model() {
                           const r = payload[0].payload as { unit: number; true_rul_capped: number; p10: number; p50: number; p90: number }
                           return (
                             <div className="num rounded-xl border border-line2 bg-[#141413] px-3 py-2 text-xs">
-                              <div className="font-semibold text-ink">{payload[0].name} engine {r.unit}</div>
+                              <div className="font-medium text-ink">{payload[0].name} engine {r.unit}</div>
                               <div className="text-muted">True {r.true_rul_capped} · P50 {r.p50} · P10 to P90 {r.p10} to {r.p90}</div>
                             </div>
                           )

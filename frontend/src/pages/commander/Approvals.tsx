@@ -19,7 +19,7 @@ export function ApprovalsList() {
           <SortTable rows={d.plans} rowKey={(p) => p.id} initialSort={{ key: 'v', dir: 'desc' }} onRowClick={(p) => navigate(`/commander/approvals/${p.id}`)}
             highlight={(p) => p.status === 'Submitted'} empty={<EmptyState title="No plans yet" detail="Plans appear here when a planner creates a draft." />}
             columns={[
-              { key: 'v', label: 'Version', value: (p: PlanSummary) => p.version, render: (p) => <span className="display text-[15px] font-semibold">v{p.version}</span> },
+              { key: 'v', label: 'Version', value: (p: PlanSummary) => p.version, render: (p) => <span className="display text-[15px] font-medium">v{p.version}</span> },
               { key: 's', label: 'Status', value: (p) => p.status, render: (p) => <span className="flex items-center gap-1.5"><StatusChip status={p.status} />{p.active && <span className="text-xs text-ok">Active</span>}{p.superseded_by != null && <span className="text-xs text-dim">Superseded by v{p.superseded_by}</span>}</span> },
               { key: 'by', label: 'Submitted by', value: (p) => p.submitted_by, render: (p) => p.submitted_by ?? <span className="text-dim">Not submitted</span> },
               { key: 'at', label: 'Submitted at', value: (p) => p.submitted_at, render: (p) => p.submitted_at ? <span className="num">{dateTime(p.submitted_at)}</span> : '—' },

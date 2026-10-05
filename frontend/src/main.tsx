@@ -13,6 +13,7 @@ import Reports from './pages/commander/Reports'
 import DataSources from './pages/DataSources'
 import DevUI from './pages/DevUI'
 import Fleet from './pages/Fleet'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Model from './pages/Model'
 import { PlannerDefects, PlannerWorkOrders } from './pages/planner/Operations'
@@ -39,7 +40,7 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dev/ui" element={<DevUI />} />
             <Route element={area(['commander', 'planner', 'technician'], <Shell />)}>

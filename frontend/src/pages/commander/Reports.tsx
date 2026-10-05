@@ -41,7 +41,7 @@ export default function Reports() {
           const days = r.series.plan.length
           return (
             <>
-              <h2 className="display text-[19px] font-semibold">Readiness report, day {r.from_day} to {r.to_day}{start ? ` (${dayDate(start, r.from_day)} to ${dayDate(start, r.to_day)})` : ''}. {r.plan_label}</h2>
+              <h2 className="display text-[19px] font-medium">Readiness report, day {r.from_day} to {r.to_day}{start ? ` (${dayDate(start, r.from_day)} to ${dayDate(start, r.to_day)})` : ''}. {r.plan_label}</h2>
               <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 <StatTile label="Average available per day" value={(sum(r.series.plan) / days).toFixed(1)} sub={`Reactive baseline ${(sum(r.series.reactive) / days).toFixed(1)}`} />
                 <StatTile label="Aircraft-days against reactive" value={signed(sum(r.series.plan) - sum(r.series.reactive))} sub={`${sum(r.series.plan)} plan, ${sum(r.series.reactive)} reactive`} />

@@ -23,7 +23,7 @@ function SourceCard({ s }: { s: DataSource }) {
     <section className="panel flex flex-col p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="display text-lg font-semibold">{s.title}</h3>
+          <h3 className="display text-lg font-medium">{s.title}</h3>
           <div className="text-xs text-dim">{s.system}</div>
         </div>
         <span className={`whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${originCls}`}>{s.origin}</span>

@@ -1,7 +1,7 @@
 import type { CapacityResponse } from '../lib/api'
 import { dayDate } from '../lib/format'
 
-const LEVELS: [string, string][] = [['bg-panel2', 'Idle'], ['bg-slate-700', 'Under 50%'], ['bg-slate-500', '50 to 80%'], ['bg-slate-300', '80 to 99%'], ['bg-accent', 'Full']]
+const LEVELS: [string, string][] = [['bg-panel2', 'Idle'], ['bg-[#3a3936]', 'Under 50%'], ['bg-[#6e6b66]', '50 to 80%'], ['bg-[#b9b5ae]', '80 to 99%'], ['bg-accent', 'Full']]
 
 function cell(used: number, total: number): string {
   if (total === 0) return used > 0 ? 'bg-bad' : 'bg-panel2'

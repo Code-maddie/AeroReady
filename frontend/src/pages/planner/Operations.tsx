@@ -74,7 +74,7 @@ export function PlannerDefects() {
                 <Button variant="danger" onClick={() => { setReason(''); setClosing(x) }}>Close defect</Button>
               </div>
             )}
-            <h4 className="display mt-6 text-[15px] font-semibold">History</h4>
+            <h4 className="display mt-6 text-[15px] font-medium">History</h4>
             <ol className="mt-2 space-y-1.5 text-[13px]">
               {x.history.map((h, i) => <li key={i} className="flex flex-wrap gap-x-2"><StatusChip status={h.status} /><span className="text-muted">{dateTime(h.at)}</span>{h.by}{h.comment && <span className="basis-full text-muted">{h.comment}</span>}</li>)}
             </ol>
@@ -174,7 +174,7 @@ function WorkOrderPanel({ wo, canEdit, onClose, onReplan }: { wo: WorkOrder; can
       {canEdit && wo.status === 'Cannot complete' && (
         <div className="mt-4"><Button variant="primary" onClick={() => onReplan(wo.job_id)}>Re-plan in workspace</Button></div>
       )}
-      <h4 className="display mt-6 text-[15px] font-semibold">History</h4>
+      <h4 className="display mt-6 text-[15px] font-medium">History</h4>
       <ol className="mt-2 space-y-1.5 text-[13px]">
         {wo.history.map((h, i) => <li key={i} className="flex flex-wrap gap-x-2"><StatusChip status={h.status} /><span className="text-muted">{dateTime(h.at)}</span>{h.by}{h.comment && <span className="basis-full text-muted">{h.comment}</span>}</li>)}
       </ol>

@@ -16,12 +16,13 @@ AeroReady is a defence maintenance-planning tool for SIH 2026 problem 26249. It 
 - Sentence case everywhere.
 
 ## Visual design
-- Dense, calm, functional: closer to an operations console than a SaaS landing page.
-- Background slate-950, surfaces slate-900, borders slate-800. One accent: amber-500, used only for primary actions and attention. Status colours green/amber/red only for status.
-- Fonts: Barlow Condensed for headings and numbers, Inter for body, tabular numerals for all figures.
-- Radius 4px max. No shadows except for overlays. No gradients, glow, glassmorphism, blobs, or decorative illustrations.
-- Prefer tables over card grids for anything with more than 6 items. Table rows 40px.
-- Spacing on a 4px scale. Page padding 24px.
+- Follows the team's reference images (decided 2026-10-05; these rules replace the earlier slate console rules).
+- Landing page and sign-in: full-bleed photographic hero (`frontend/public/img`), large light wordmark "AeroReady*", floating pill navigation. Photos are the only imagery; no illustrations, blobs or glow.
+- Console: sticky header with wordmark, centred pill navigation for the role's pages, notification and user pills. Each page opens with a two-tone heading: what it shows in ink, the context in grey.
+- Palette: warm charcoal background #0e0e0d, panels #1a1a19 / #232322, lines #2c2b29, ink #f1eee8, grey #8c8984. One accent, dusk amber #e9a15b, for the plan series and attention. Green / amber / red only for status.
+- Font: Inter Tight for everything, tabular numerals for all figures.
+- Shapes: panels rounded 16px, inputs 10px, buttons, tabs, badges and filters as pills. Primary buttons are ink on charcoal. Shadows only for overlays; gradients only as the dark scrim over photos.
+- Prefer tables over card grids for anything with more than 6 items. Table rows 40px (48px on technician pages).
 - Use shared components from src/components/ui. Do not create one-off styled elements when a shared component exists.
 
 ## Process

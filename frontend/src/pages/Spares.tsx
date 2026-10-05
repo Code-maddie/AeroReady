@@ -21,7 +21,7 @@ export default function Spares() {
     { key: 'demand', label: 'Demand in horizon', value: (r) => r.demand, align: 'right',
       render: (r) => <span>{r.demand}{r.demand_cannibalised > 0 && <span className="text-xs text-k-cannibal"> ({r.demand_cannibalised} cannibalised)</span>}</span> },
     { key: 'short', label: 'Shortfall', value: (r) => r.shortfall, align: 'right',
-      render: (r) => <span className={r.shortfall ? 'font-semibold text-bad' : 'text-dim'}>{r.shortfall}</span> },
+      render: (r) => <span className={r.shortfall ? 'font-medium text-bad' : 'text-dim'}>{r.shortfall}</span> },
     { key: 'order', label: 'Day 0 order', value: (r) => r.day0_order?.qty ?? null,
       render: (r) => r.day0_order ? <span className="text-xs">{r.day0_order.qty} {r.day0_order.qty === 1 ? "unit" : "units"}, arrives Day {r.day0_order.arrives_day}</span> : <span className="text-dim">None</span> },
   ]
@@ -100,8 +100,8 @@ export default function Spares() {
                 <tbody>
                   {d.cannibalizations.map((c) => (
                     <tr key={c.job_id} className="border-b border-line/60 align-top">
-                      <td className="py-2 pr-3"><Link to={link(`/app/fleet/${c.donor}`)} className="display text-[15px] font-semibold hover:text-accent">{c.donor}</Link></td>
-                      <td className="py-2 pr-3"><Link to={link(`/app/fleet/${c.aircraft_id}`)} className="display text-[15px] font-semibold hover:text-accent">{c.aircraft_id}</Link></td>
+                      <td className="py-2 pr-3"><Link to={link(`/app/fleet/${c.donor}`)} className="display text-[15px] font-medium hover:text-accent">{c.donor}</Link></td>
+                      <td className="py-2 pr-3"><Link to={link(`/app/fleet/${c.aircraft_id}`)} className="display text-[15px] font-medium hover:text-accent">{c.aircraft_id}</Link></td>
                       <td className="py-2 pr-3"><span className="text-dim">{c.part_id}</span> {c.part_name}</td>
                       <td className="num py-2 pr-3">Day {c.removal_day}</td>
                       <td className="num py-2 pr-3">Day {c.day}</td>

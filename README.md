@@ -11,9 +11,9 @@ spares limits to keep the most aircraft mission-ready. It answers the commander'
 The optimiser proposes; people decide. A planner reviews and adjusts the proposal, the commander approves it, and
 approved work becomes work orders for technicians, whose completions and defect reports feed the next plan.
 
-![Commander readiness](docs/screenshots/commander-readiness.png)
+![Landing page](docs/screenshots/landing.png)
 
-The UI follows the project rules in [`CLAUDE.md`](CLAUDE.md): a dense, calm operations console with no decorative imagery.
+The visual design follows the team's reference images: a full-bleed photographic hero with a large wordmark, floating pill navigation, two-tone headings and rounded charcoal panels. Photos by Samuel Arkwright and Mihai Neagu (Unsplash licence), stored locally in `frontend/public/img`. Project rules are in [`CLAUDE.md`](CLAUDE.md).
 
 ## What is real and what is simulated
 
@@ -77,6 +77,7 @@ Workflow state is kept in `backend/data/state/` (delete the folder to start over
 ## Site map
 
 ```
+/                              Landing page: problem, how it works, roles, data and method
 /login                         Sign-in
 /commander                     Readiness: pending approval banner, stat tiles, 30-day availability, readiness by base
 /commander/approvals[/:id]     Plan list; plan review with approve or return
@@ -203,12 +204,14 @@ cd backend
 
 ## Screenshots
 
-| Sign-in | Planner workspace |
+| Landing page | Sign-in |
 |---|---|
-| ![Sign-in](docs/screenshots/login.png) | ![Workspace](docs/screenshots/planner-workspace.png) |
-| **Plan review (commander)** | **Defect converted to a task** |
-| ![Review](docs/screenshots/plan-review.png) | ![Defect](docs/screenshots/defect-converted.png) |
-| **Technician work orders** | **Completed work order** |
+| ![Landing](docs/screenshots/landing.png) | ![Sign-in](docs/screenshots/login.png) |
+| **Commander readiness** | **Plan review** |
+| ![Readiness](docs/screenshots/commander-readiness.png) | ![Review](docs/screenshots/plan-review.png) |
+| **Fleet status** | **Aircraft detail** |
+| ![Fleet](docs/screenshots/fleet.png) | ![Aircraft](docs/screenshots/aircraft.png) |
+| **Technician work orders** | **Work order** |
 | ![Technician](docs/screenshots/technician-home.png) | ![Work order](docs/screenshots/work-order.png) |
 | **Audit log** | |
 | ![Audit](docs/screenshots/audit.png) | |

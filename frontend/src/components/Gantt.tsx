@@ -6,7 +6,7 @@ import { dayDate } from '../lib/format'
 
 export const KIND_META: Record<BlockKind, { label: string; cls: string; swatch: string }> = {
   scheduled: { label: 'Scheduled inspection', cls: 'bg-k-scheduled text-white', swatch: 'bg-k-scheduled' },
-  preventive: { label: 'Predictive maintenance', cls: 'bg-k-predictive text-slate-950', swatch: 'bg-k-predictive' },
+  preventive: { label: 'Predictive maintenance', cls: 'bg-k-predictive text-bg', swatch: 'bg-k-predictive' },
   corrective: { label: 'Unplanned failure repair', cls: 'bg-bad text-white', swatch: 'bg-bad' },
   awaiting: { label: 'Grounded, waiting for bay or part', cls: 'border border-dashed border-bad bg-bad/20 text-ink', swatch: 'border border-dashed border-bad bg-bad/20' },
   aog: { label: 'Grounded long-term (fixed)', cls: 'bg-line2 text-muted', swatch: 'bg-line2' },
@@ -88,8 +88,8 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
                 ) : null}
                 {(!line.caption || line.side === 'optimized') && (
                   linkTo
-                    ? <Link to={linkTo(line.aircraftId)} className="display num text-[15px] font-semibold hover:text-accent">{line.aircraftId}</Link>
-                    : <span className="display num text-[15px] font-semibold">{line.aircraftId}</span>
+                    ? <Link to={linkTo(line.aircraftId)} className="display num text-[15px] font-medium hover:text-accent">{line.aircraftId}</Link>
+                    : <span className="display num text-[15px] font-medium">{line.aircraftId}</span>
                 )}
                 {!line.caption && <span className="text-[10px] text-dim">{line.baseId}</span>}
               </div>
@@ -107,7 +107,7 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
                       onMouseMove={(e) => setHover((hv) => hv && { ...hv, x: e.clientX, y: e.clientY })}
                       onMouseLeave={() => setHover(null)}
                       aria-label={`${line.aircraftId} ${KIND_META[b.kind].label}: ${b.label}, Day ${b.start} to ${b.end}`}
-                      className={`absolute flex items-center overflow-hidden whitespace-nowrap rounded-sm px-1 text-left text-[10px] font-semibold leading-none hover:brightness-125 ${KIND_META[b.kind].cls} ${
+                      className={`absolute flex items-center overflow-hidden whitespace-nowrap rounded-sm px-1 text-left text-[10px] font-medium leading-none hover:brightness-125 ${KIND_META[b.kind].cls} ${
                         b.cannibalized_from ? 'outline outline-2 outline-offset-1 outline-k-cannibal' : ''} ${
                         selectedJob && b.job_id === selectedJob ? 'ring-2 ring-accent' : ''}`}
                       style={{ left: `calc(${left}% + 1px)`, width: `calc(${width}% - 2px)`, top: 4 + b.lane * laneH, height: laneH - 3 }}>
@@ -132,7 +132,7 @@ export default function Gantt({ lines, horizon, startDate, jobs, onSelect, linkT
             <span className={`inline-block h-2.5 w-3 rounded-sm ${KIND_META[hover.block.kind].swatch}`} />
             <span className="label-caps">{KIND_META[hover.block.kind].label}</span>
           </div>
-          <div className="font-semibold text-ink">{hover.line.aircraftId} · {hover.block.label}</div>
+          <div className="font-medium text-ink">{hover.line.aircraftId} · {hover.block.label}</div>
           <div className="num mt-1 text-muted">
             Day {hover.block.start} to {hover.block.end}{hover.block.extends_beyond_horizon ? ' (continues past the horizon)' : ''} · {dayDate(startDate, hover.block.start)} to {dayDate(startDate, hover.block.end)}
           </div>

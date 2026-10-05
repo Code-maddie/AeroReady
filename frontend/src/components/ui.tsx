@@ -13,12 +13,12 @@ export function Panel({ title, actions, children, className = '', flush = false 
   return (
     <section className={`panel min-w-0 ${className}`}>
       {(title || actions) && (
-        <header className="flex min-h-10 flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line px-4 py-2">
-          {title && <h2 className="display text-[17px] font-semibold text-ink">{title}</h2>}
+        <header className="flex min-h-12 flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 pb-1 pt-4">
+          {title && <h2 className="text-[17px] font-medium tracking-[-0.01em] text-ink">{title}</h2>}
           {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={flush ? '' : 'p-4'}>{children}</div>
+      <div className={flush ? 'pb-2' : 'px-5 pb-5 pt-3'}>{children}</div>
     </section>
   )
 }
@@ -53,7 +53,7 @@ export const ErrorState = (props: { message: string; onRetry?: () => void }) => 
 
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded border border-bad/50 bg-bad/10 p-3" role="alert">
+    <div className="flex items-start justify-between gap-4 rounded-xl border border-bad/40 bg-bad/10 p-3" role="alert">
       <div className="flex gap-2">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-bad" aria-hidden />
         <div>
@@ -87,10 +87,10 @@ export function QueryView<T>({ q, children, skeleton }: {
 // ---- controls -------------------------------------------------------------
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-accent text-bg hover:bg-amber-400 font-semibold',
-  secondary: 'border border-line2 text-ink hover:bg-panel2',
-  danger: 'border border-bad/60 text-bad hover:bg-bad/10',
-  ghost: 'text-muted hover:text-ink hover:bg-panel2',
+  primary: 'bg-ink text-bg hover:bg-white',
+  secondary: 'bg-panel2 text-ink ring-1 ring-white/10 hover:bg-line',
+  danger: 'text-bad ring-1 ring-bad/50 hover:bg-bad/10',
+  ghost: 'text-muted hover:text-ink hover:bg-white/5',
 }
 
 export function Button({ children, onClick, variant = 'secondary', disabled = false, icon, type = 'button', title, busy = false, size = 'md' }: {
@@ -101,8 +101,8 @@ export function Button({ children, onClick, variant = 'secondary', disabled = fa
 }) {
   return (
     <button type={type} onClick={onClick} disabled={disabled || busy} title={title}
-      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded text-[13px] transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
-        size === 'sm' ? 'h-7 px-2' : size === 'lg' ? 'h-11 px-4 text-[15px]' : 'h-8 px-3'} ${VARIANT[variant]}`}>
+      className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-45 ${
+        size === 'sm' ? 'h-7 px-3' : size === 'lg' ? 'h-11 px-5 text-[15px]' : 'h-8 px-3.5'} ${VARIANT[variant]}`}>
       {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : icon}
       {children}
     </button>
@@ -113,10 +113,10 @@ export function Segmented<T extends string>({ value, options, onChange, label }:
   value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void; label: string
 }) {
   return (
-    <div className="flex h-8 rounded border border-line2" role="radiogroup" aria-label={label}>
-      {options.map((o, i) => (
+    <div className="flex rounded-full bg-panel2 p-1 ring-1 ring-white/5" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
         <button key={o.value} role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
-          className={`px-3 text-[13px] ${i > 0 ? 'border-l border-line2' : ''} ${value === o.value ? 'bg-panel2 text-ink' : 'text-muted hover:text-ink'}`}>
+          className={`rounded-full px-3 py-1 text-xs font-medium ${value === o.value ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
           {o.label}
         </button>
       ))}
@@ -139,7 +139,7 @@ export function Select({ value, onChange, options, label, placeholder, disabled,
   placeholder?: string; disabled?: boolean; large?: boolean
 }) {
   return (
-    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} disabled={disabled} className={large ? '!h-11 !text-[15px]' : ''}>
+    <select value={value} onChange={(e) => onChange(e.target.value)} aria-label={label} disabled={disabled} className={large ? '!h-11 !text-[15px]' : '!rounded-full'}>
       {placeholder !== undefined && <option value="">{placeholder}</option>}
       {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -150,11 +150,11 @@ export function Tabs<T extends string>({ value, onChange, tabs, large = false }:
   value: T; onChange: (v: T) => void; tabs: { value: T; label: ReactNode }[]; large?: boolean
 }) {
   return (
-    <div className="flex border-b border-line" role="tablist">
+    <div className="flex w-fit gap-0.5 rounded-full bg-panel2 p-1 ring-1 ring-white/5" role="tablist">
       {tabs.map((t) => (
         <button key={t.value} role="tab" aria-selected={value === t.value} onClick={() => onChange(t.value)}
-          className={`-mb-px border-b-2 px-4 ${large ? 'h-11 text-[15px]' : 'h-9 text-[13px]'} ${
-            value === t.value ? 'border-accent text-ink' : 'border-transparent text-muted hover:text-ink'}`}>
+          className={`rounded-full px-4 ${large ? 'h-10 text-[15px]' : 'h-8 text-[13px]'} ${
+            value === t.value ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
           {t.label}
         </button>
       ))}
@@ -165,15 +165,15 @@ export function Tabs<T extends string>({ value, onChange, tabs, large = false }:
 /** Right-hand overlay panel for details and edits. */
 export function SidePanel({ title, onClose, children, width = 440 }: { title: ReactNode; onClose: () => void; children: ReactNode; width?: number }) {
   return (
-    <aside className="fixed bottom-4 right-4 top-16 z-40 flex flex-col overflow-hidden rounded border border-line2 bg-panel shadow-2xl"
+    <aside className="fixed bottom-4 right-4 top-20 z-40 flex flex-col overflow-hidden rounded-2xl bg-panel shadow-2xl ring-1 ring-white/10"
       style={{ width }} aria-label="Detail panel" onKeyDown={(e) => e.key === 'Escape' && onClose()}>
-      <header className="flex items-start justify-between gap-3 border-b border-line px-4 py-3">
-        <div className="display min-w-0 text-[17px] font-semibold">{title}</div>
-        <button onClick={onClose} aria-label="Close panel" className="grid h-7 w-7 shrink-0 place-items-center rounded text-muted hover:bg-panel2 hover:text-ink">
+      <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
+        <div className="min-w-0 text-[17px] font-medium tracking-[-0.01em]">{title}</div>
+        <button onClick={onClose} aria-label="Close panel" className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-muted hover:bg-white/10 hover:text-ink">
           <X className="h-4 w-4" />
         </button>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">{children}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
     </aside>
   )
 }
@@ -182,9 +182,9 @@ export function Modal({ title, children, onClose, label }: { title: string; chil
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true" aria-label={label ?? title}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}>
-      <div className="w-full max-w-md rounded border border-line2 bg-panel shadow-2xl">
-        <h3 className="display border-b border-line px-4 py-2.5 text-[17px] font-semibold">{title}</h3>
-        <div className="p-4">{children}</div>
+      <div className="w-full max-w-md rounded-2xl bg-panel shadow-2xl ring-1 ring-white/10">
+        <h3 className="px-5 pt-5 text-[19px] font-medium tracking-[-0.01em]">{title}</h3>
+        <div className="p-5">{children}</div>
       </div>
     </div>
   )
@@ -196,10 +196,10 @@ export function StatTile({ label, value, sub, tone = 'ink' }: {
 }) {
   const color = { ink: 'text-ink', accent: 'text-accent', bad: 'text-bad', ok: 'text-ok' }[tone]
   return (
-    <div className="panel min-w-0 px-4 py-3">
+    <div className={`panel flex min-w-0 flex-col p-5 ${tone === 'accent' ? 'ring-1 ring-accent/40' : ''}`}>
       <div className="label-caps">{label}</div>
-      <div className={`display num mt-1 text-[32px] font-semibold leading-none ${color}`}>{value}</div>
-      {sub && <div className="mt-1.5 text-xs text-muted">{sub}</div>}
+      <div className={`display num mt-2 text-[40px] font-medium leading-none ${color}`}>{value}</div>
+      {sub && <div className="mt-2 text-xs text-muted">{sub}</div>}
     </div>
   )
 }
@@ -213,7 +213,7 @@ const TONE: Record<Tone, string> = {
 
 export function Badge({ tone = 'neutral', children, title }: { tone?: Tone; children: ReactNode; title?: string }) {
   return (
-    <span title={title} className={`inline-flex h-5 items-center gap-1 whitespace-nowrap rounded-sm border px-1.5 text-[11px] font-medium ${TONE[tone]}`}>
+    <span title={title} className={`inline-flex h-5 items-center gap-1 whitespace-nowrap rounded-full border px-2 text-[11px] font-medium ${TONE[tone]}`}>
       {children}
     </span>
   )
@@ -242,17 +242,17 @@ export function StatusBadge({ status }: { status: FleetStatus }) {
 }
 
 export function SimulatedLabel({ origin }: { origin: 'simulated' | 'uploaded' }) {
-  return <Badge tone="neutral">{origin === 'uploaded' ? 'Uploaded data' : 'Simulated fleet scenario'}</Badge>
+  return <Badge tone={origin === 'uploaded' ? 'scheduled' : 'accent'}>{origin === 'uploaded' ? 'Uploaded data' : 'Simulated fleet scenario'}</Badge>
 }
 
 /** P10-P90 range bar with a P50 tick, scaled to `scale` days; horizon marked. */
 export function RulBar({ p10, p50, p90, scale, horizon }: { p10: number; p50: number; p90: number; scale: number; horizon: number }) {
   const pc = (v: number) => `${Math.min(100, (v / scale) * 100)}%`
   return (
-    <div className="relative h-1.5 w-full rounded-sm bg-panel2" role="img" aria-label={`RUL P10 ${p10}, P50 ${p50}, P90 ${p90} days`}>
-      <div className="absolute top-0 h-1.5 bg-muted/40" style={{ left: pc(p10), width: `calc(${pc(p90)} - ${pc(p10)})` }} />
+    <div className="relative h-1.5 w-full rounded-full bg-line" role="img" aria-label={`RUL P10 ${p10}, P50 ${p50}, P90 ${p90} days`}>
+      <div className="absolute top-0 h-1.5 rounded-full bg-muted/35" style={{ left: pc(p10), width: `calc(${pc(p90)} - ${pc(p10)})` }} />
       <div className={`absolute -top-[3px] h-3 w-[2px] ${p10 < horizon ? 'bg-warn' : 'bg-ok'}`} style={{ left: pc(p50) }} />
-      <div className="absolute -top-[3px] h-3 w-px bg-ink/50" style={{ left: pc(horizon) }} title="End of planning horizon" />
+      <div className="absolute -top-[3px] h-3 w-px bg-accent/70" style={{ left: pc(horizon) }} title="End of planning horizon" />
     </div>
   )
 }
@@ -287,9 +287,9 @@ export function SortTable<T>({ rows, columns, rowKey, onRowClick, initialSort, h
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-[13px]">
         <thead>
-          <tr className="h-9 border-b border-line">
+          <tr className="h-10 border-b border-line">
             {columns.map((c) => (
-              <th key={c.key} style={{ width: c.width }} className={`px-3 font-normal ${c.align === 'right' ? 'text-right' : 'text-left'}`}
+              <th key={c.key} style={{ width: c.width }} className={`px-3 font-normal first:pl-5 last:pr-5 ${c.align === 'right' ? 'text-right' : 'text-left'}`}
                 aria-sort={sort?.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
                 {sortable ? (
                   <button className="label-caps inline-flex items-center gap-1 hover:text-ink"
@@ -305,10 +305,10 @@ export function SortTable<T>({ rows, columns, rowKey, onRowClick, initialSort, h
         <tbody>
           {sorted.map((r) => (
             <tr key={rowKey(r)} onClick={onRowClick ? () => onRowClick(r) : undefined}
-              className={`${large ? 'h-11 text-[15px]' : 'h-10'} border-b border-line ${onRowClick ? 'cursor-pointer hover:bg-panel2/60' : ''} ${
+              className={`${large ? 'h-12 text-[15px]' : 'h-10'} border-b border-line/60 ${onRowClick ? 'cursor-pointer hover:bg-panel2' : ''} ${
                 highlight?.(r) ? 'bg-bad/[0.06]' : ''} ${selected?.(r) ? 'bg-panel2' : ''}`}>
               {columns.map((c) => (
-                <td key={c.key} className={`px-3 py-1.5 align-middle ${c.align === 'right' ? 'num text-right' : ''}`}>
+                <td key={c.key} className={`px-3 py-1.5 align-middle first:pl-5 last:pr-5 ${c.align === 'right' ? 'num text-right' : ''}`}>
                   {c.render ? c.render(r) : (c.value(r) ?? '—')}
                 </td>
               ))}
