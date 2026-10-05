@@ -74,7 +74,7 @@ export const useAuth = () => useContext(AuthContext)
 export function RequireRole({ roles, children }: { roles: Role[]; children?: ReactNode }) {
   const { user } = useAuth()
   const loc = useLocation()
-  if (!user) return <Navigate to={`/login?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />
+  if (!user) return <Navigate to={`/?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />
   if (!roles.includes(user.role)) return <Navigate to={ROLE_HOME[user.role]} replace />
   return <>{children ?? <Outlet />}</>
 }

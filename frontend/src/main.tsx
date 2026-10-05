@@ -29,7 +29,7 @@ const queryClient = new QueryClient({
 
 function Home() {
   const { user } = useAuth()
-  return <Navigate to={user ? ROLE_HOME[user.role] : '/login'} replace />
+  return <Navigate to={user ? ROLE_HOME[user.role] : '/'} replace />
 }
 
 const area = (roles: Role[], children?: ReactNode) => <RequireRole roles={roles}>{children}</RequireRole>

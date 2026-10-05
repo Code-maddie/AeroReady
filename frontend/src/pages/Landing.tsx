@@ -1,6 +1,6 @@
 import { ArrowUpRight, Check, ClipboardCheck, TriangleAlert, Wrench, CalendarRange } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import AvailabilityChart, { SERIES_COLORS } from '../components/AvailabilityChart'
 import { SimulatedLabel, Skeleton } from '../components/ui'
 import { API_BASE } from '../lib/api'
@@ -24,8 +24,15 @@ function ArrowCircle() {
 }
 
 /** Floating pill navigation; turns solid once the hero has scrolled past. */
+/** Sign-in link that keeps the page the visitor was trying to open. */
+function useSignIn() {
+  const { search } = useLocation()
+  return '/login' + search
+}
+
 function Nav() {
   const { user } = useAuth()
+  const signIn = useSignIn()
   const [solid, setSolid] = useState(false)
   useEffect(() => {
     const on = () => setSolid(window.scrollY > window.innerHeight * 0.85)
@@ -42,7 +49,7 @@ function Nav() {
         <nav aria-label="Sections" className="hidden items-center gap-0.5 rounded-full bg-black/45 p-1 text-[13px] ring-1 ring-white/10 backdrop-blur-md md:flex">
           {SECTIONS.map((s) => <a key={s.id} href={`#${s.id}`} className="rounded-full px-3.5 py-1.5 text-ink/80 hover:bg-white/10 hover:text-ink">{s.label}</a>)}
         </nav>
-        <Link to={user ? ROLE_HOME[user.role] : '/login'} className="inline-flex items-center gap-3 rounded-full bg-black/55 py-1.5 pl-4 pr-1.5 text-[13px] ring-1 ring-white/15 backdrop-blur hover:bg-black/75">
+        <Link to={user ? ROLE_HOME[user.role] : signIn} className="inline-flex items-center gap-3 rounded-full bg-black/55 py-1.5 pl-4 pr-1.5 text-[13px] ring-1 ring-white/15 backdrop-blur hover:bg-black/75">
           {user ? 'Open console' : 'Sign in'} <ArrowCircle />
         </Link>
       </div>
@@ -52,6 +59,7 @@ function Nav() {
 
 function Hero() {
   const { user } = useAuth()
+  const signIn = useSignIn()
   return (
     <section className="relative h-screen min-h-[660px] overflow-hidden">
       <img src="/img/typhoon-storm.jpg" alt="A fighter jet banking through storm cloud at dusk"
@@ -67,7 +75,7 @@ function Hero() {
             AeroReady predicts component life, then schedules maintenance for the whole fleet within hangar, technician and spares limits to keep the most aircraft mission-ready.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            <Link to={user ? ROLE_HOME[user.role] : '/login'} className="inline-flex items-center gap-3 rounded-full bg-ink py-1.5 pl-4 pr-1.5 text-[13px] font-medium text-bg hover:bg-white">
+            <Link to={user ? ROLE_HOME[user.role] : signIn} className="inline-flex items-center gap-3 rounded-full bg-ink py-1.5 pl-4 pr-1.5 text-[13px] font-medium text-bg hover:bg-white">
               {user ? 'Open console' : 'Sign in'} <span className="grid h-7 w-7 place-items-center rounded-full bg-bg text-ink"><ArrowUpRight className="h-3.5 w-3.5" /></span>
             </Link>
             <a href="#how" className="inline-flex items-center rounded-full bg-black/55 px-4 py-1.5 text-[13px] text-ink ring-1 ring-white/15 backdrop-blur hover:bg-black/75">How it works</a>
