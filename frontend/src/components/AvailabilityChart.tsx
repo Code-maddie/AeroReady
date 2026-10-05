@@ -8,7 +8,7 @@ export interface Series {
 }
 
 /** Fixed series colours: reactive is dashed grey, the plan is dusk amber. */
-export const SERIES_COLORS = { reactive: '#8a9098', optimized: '#c7862c', compare: ['#c7862c', '#4f79a8', '#2f8c80'] }
+export const SERIES_COLORS = { reactive: '#9b9088', optimized: '#7b5a4e', compare: ['#7b5a4e', '#6d7f93', '#5e8a7c'] }
 
 function Swatch({ s }: { s: Series }) {
   return (
@@ -51,17 +51,17 @@ export default function AvailabilityChart({ series, startDate, maxY, surge, heig
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 8, right: 16, bottom: 4, left: -12 }}>
-            <CartesianGrid stroke="#e1e2dc" vertical={false} />
-            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#8a9098', fontSize: 11 }}
-              axisLine={{ stroke: '#cdcfc7' }} tickLine={false} />
-            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#8a9098', fontSize: 11 }}
+            <CartesianGrid stroke="#e3dcd2" vertical={false} />
+            <XAxis dataKey="day" tickFormatter={(d) => `D${d}`} interval={2} tick={{ fill: '#9b9088', fontSize: 11 }}
+              axisLine={{ stroke: '#cfc5b8' }} tickLine={false} />
+            <YAxis domain={[minY, maxY]} ticks={ticks} allowDecimals={false} tick={{ fill: '#9b9088', fontSize: 11 }}
               axisLine={false} tickLine={false} width={44} />
             {surge && (
               <ReferenceArea x1={surge.start_day} x2={Math.min(horizon - 1 + dayOffset, surge.end_day)} y1={surge.min_available} y2={maxY}
-                fill="rgba(233,161,91,0.10)" fillOpacity={1} stroke="rgba(233,161,91,0.6)" strokeDasharray="4 3" />
+                fill="rgba(123,90,78,0.10)" fillOpacity={1} stroke="rgba(123,90,78,0.6)" strokeDasharray="4 3" />
             )}
             <Tooltip
-              cursor={{ stroke: '#8a9098', strokeWidth: 1, strokeDasharray: '3 3' }}
+              cursor={{ stroke: '#9b9088', strokeWidth: 1, strokeDasharray: '3 3' }}
               content={({ active, label }) => {
                 if (!active || label == null) return null
                 const d = Number(label)

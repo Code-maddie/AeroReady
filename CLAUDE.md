@@ -16,7 +16,7 @@ AeroReady is a defence maintenance-planning tool for SIH 2026 problem 26249. It 
 - Sentence case everywhere.
 
 ## Visual design
-- Light theme across the whole site (decided 2026-10-05). The palette is drawn from the hero photograph (`frontend/public/img/hero.jpg`): mist-white ground #f3f4f1, white surfaces, lines #e1e2dc, cloud-shadow ink #1d2127, grey #5f6670. One accent, sunset gold #c7862c, for the plan series and attention; dusk sky blue #4f79a8 as the second series. Green / amber / red only for status.
+- Light theme across the whole site (decided 2026-10-05). Colours follow the user's colour reference (spa site mock-up, mocha and espresso): linen-stone ground #f3efe9, white surfaces, panel tint #ebe5dd, lines #e3dcd2, espresso ink #2a201b (also primary buttons and the nav pill), warm grey #6e625a. One accent, mocha brown #7b5a4e, for the plan series and attention; candle tan #c9a27e as a warm highlight. Status colours are muted earth tones: green #4e7d4f, amber #b07a2a, red #a9452f, and only for status.
 - Landing page and sign-in follow the hero reference: full-bleed photograph, very large light wordmark "AeroReady*" bottom-left, short description and pill call-to-action bottom-right, small dark pill navigation top centre. Sections below the hero are light and typographic: no card grids, numbered markers only where the content is a sequence.
 - Navigation everywhere is React Bits GooeyNav (`src/components/GooeyNav.tsx`) as a dark pill on the light page. Headers behind it must be opaque (the gooey blend layer smudges over translucent backgrounds).
 - The section after the hero uses React Bits SideRays (`src/components/SideRays.tsx`, ogl), adapted to output tinted light on a pale background.

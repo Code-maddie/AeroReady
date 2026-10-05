@@ -4,8 +4,8 @@ import { Panel, QueryView, Segmented, Skeleton } from '../components/ui'
 import { pct } from '../lib/format'
 import { useModelImportance, useModelMetrics, useModelPredictions } from '../lib/queries'
 
-const COLORS = ['#c7862c', '#4f79a8']
-const axis = { tick: { fill: '#8a9098', fontSize: 11 }, axisLine: { stroke: '#cdcfc7' }, tickLine: false as const }
+const COLORS = ['#7b5a4e', '#6d7f93']
+const axis = { tick: { fill: '#9b9088', fontSize: 11 }, axisLine: { stroke: '#cfc5b8' }, tickLine: false as const }
 
 export default function Model() {
   const metrics = useModelMetrics()
@@ -67,11 +67,11 @@ export default function Model() {
                   <div className="h-[340px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <ScatterChart margin={{ top: 8, right: 16, bottom: 4, left: -4 }}>
-                        <CartesianGrid stroke="#e1e2dc" />
+                        <CartesianGrid stroke="#e3dcd2" />
                         <XAxis type="number" dataKey="true_rul_capped" name="True RUL" domain={[0, Math.ceil(max / 10) * 10]} {...axis} />
                         <YAxis type="number" dataKey="p50" name="Predicted P50" domain={[0, Math.ceil(max / 10) * 10]} {...axis} width={44} />
                         <ZAxis range={[28, 28]} />
-                        <ReferenceLine segment={[{ x: 0, y: 0 }, { x: max, y: max }]} stroke="#8a9098" strokeDasharray="4 4" />
+                        <ReferenceLine segment={[{ x: 0, y: 0 }, { x: max, y: max }]} stroke="#9b9088" strokeDasharray="4 4" />
                         <Tooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
                           if (!active || !payload?.length) return null
                           const r = payload[0].payload as { unit: number; true_rul_capped: number; p10: number; p50: number; p90: number }

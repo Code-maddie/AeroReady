@@ -72,9 +72,9 @@ function Hero() {
     <section className="relative h-screen min-h-[680px] overflow-hidden bg-ink">
       <img src="/img/hero.jpg" alt="A fighter jet banking through storm cloud at dusk"
         className="absolute inset-0 h-full w-full object-cover object-[50%_48%]" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(16,18,22,0.92)_0%,rgba(16,18,22,0.55)_22%,rgba(16,18,22,0.05)_55%,rgba(16,18,22,0.25)_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(30,22,18,0.92)_0%,rgba(30,22,18,0.55)_22%,rgba(30,22,18,0.05)_55%,rgba(30,22,18,0.25)_100%)]" />
       <div className="absolute inset-x-0 bottom-0 mx-auto flex max-w-[1440px] flex-col items-start gap-8 px-6 pb-12 lg:flex-row lg:items-end lg:justify-between lg:px-10">
-        <p className="rise select-none text-[clamp(84px,12.5vw,230px)] font-normal leading-[0.78] tracking-[-0.06em] text-[#f6f1e7]" aria-hidden>
+        <p className="rise select-none text-[clamp(84px,12.5vw,230px)] font-normal leading-[0.78] tracking-[-0.06em] text-[#f4ede3]" aria-hidden>
           AeroReady<sup className="ml-2 align-[0.95em] text-[0.2em] font-normal">*</sup>
         </p>
         <div className="rise-late mb-3 max-w-[320px] shrink-0 text-white">
@@ -123,7 +123,7 @@ function Question() {
   return (
     <section id="question" className="relative scroll-mt-16 overflow-hidden">
       <div className="absolute inset-0">
-        <SideRays rayColor1="#e39a3b" rayColor2="#6f9cc9" intensity={3} spread={2.2} speed={1.6} saturation={1.3} blend={0.5} falloff={0.9} opacity={0.85} />
+        <SideRays rayColor1="#c9a27e" rayColor2="#8b6b5e" intensity={3} spread={2.2} speed={1.6} saturation={1.3} blend={0.5} falloff={0.9} opacity={0.85} />
       </div>
       <div className="relative z-[4] mx-auto max-w-[1440px] px-6 py-28 lg:px-10 lg:py-36">
         <h2 className="max-w-[17ch] text-[clamp(40px,5.4vw,76px)] font-medium leading-[1.02] tracking-[-0.035em] text-ink">
@@ -191,16 +191,16 @@ function Idle() {
           </figcaption>
           <div className="space-y-7">
             <Strip label="Reactive" parts={[
-              { w: 32, cls: 'bg-[#dfe7ef] text-[#36506b]', text: 'Flying' },
+              { w: 32, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying' },
               { w: 9, cls: 'bg-bad text-white', text: 'Fails' },
-              { w: 29, cls: 'hatch-red text-[#7a2a1d]', text: 'Waiting for a bay and the part' },
-              { w: 12, cls: 'bg-[#e9d9c2] text-[#6b4a1d]', text: 'Repair' },
-              { w: 18, cls: 'bg-[#dfe7ef] text-[#36506b]', text: 'Flying' },
+              { w: 29, cls: 'hatch-red text-[#7a2f22]', text: 'Waiting for a bay and the part' },
+              { w: 12, cls: 'bg-[#e8d5bf] text-[#6b4a32]', text: 'Repair' },
+              { w: 18, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying' },
             ]} />
             <Strip label="Planned" parts={[
-              { w: 22, cls: 'bg-[#dfe7ef] text-[#36506b]', text: 'Flying' },
+              { w: 22, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying' },
               { w: 12, cls: 'bg-accent text-white', text: 'Repair' },
-              { w: 66, cls: 'bg-[#dfe7ef] text-[#36506b]', text: 'Flying for the rest of the month' },
+              { w: 66, cls: 'bg-[#e6dfd5] text-[#5a4a40]', text: 'Flying for the rest of the month' },
             ]} />
           </div>
           <p className="mt-6 text-[12px] text-dim">Illustration of the mechanism, not fleet data.</p>
@@ -227,7 +227,7 @@ function How() {
         <div className="mt-14 grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <figure className="relative min-h-[460px] overflow-hidden rounded-[32px]">
             <img src="/img/canopy-dusk.jpg" alt="Fighter jet canopy against a dusk sky" className="absolute inset-0 h-full w-full object-cover object-[38%_50%]" />
-            <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(16,18,22,0.75),transparent_55%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(30,22,18,0.75),transparent_55%)]" />
             <figcaption className="absolute bottom-7 left-7 right-7 text-[22px] font-medium leading-tight tracking-[-0.02em] text-white">One plan for the whole fleet, not one alert per engine.</figcaption>
           </figure>
           <ol className="relative self-center">

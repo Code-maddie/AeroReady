@@ -1,25 +1,25 @@
 @import "tailwindcss";
 
-/* Light theme drawn from the hero photograph: mist-white ground, cloud-shadow ink,
-   sunset gold for the plan and attention, dusk sky blue as the second series.
+/* Light theme from the colour reference: linen-stone ground, espresso ink,
+   mocha brown for the plan and attention, candle tan and warm grey as supporting tones.
    Green / amber / red are reserved for status. */
 @theme {
-  --color-bg: #f3f4f1;
+  --color-bg: #f3efe9;
   --color-panel: #ffffff;
-  --color-panel2: #ecede8;
-  --color-line: #e1e2dc;
-  --color-line2: #cdcfc7;
-  --color-ink: #1d2127;
-  --color-muted: #5f6670;
-  --color-dim: #8a9098;
-  --color-accent: #c7862c;
-  --color-ok: #3e8e55;
-  --color-warn: #b7791f;
-  --color-bad: #c2412d;
-  --color-neutral: #5f6670;
-  --color-k-scheduled: #4f79a8;
-  --color-k-predictive: #2f8c80;
-  --color-k-cannibal: #7e63c4;
+  --color-panel2: #ebe5dd;
+  --color-line: #e3dcd2;
+  --color-line2: #cfc5b8;
+  --color-ink: #2a201b;
+  --color-muted: #6e625a;
+  --color-dim: #9b9088;
+  --color-accent: #7b5a4e;
+  --color-ok: #4e7d4f;
+  --color-warn: #b07a2a;
+  --color-bad: #a9452f;
+  --color-neutral: #6e625a;
+  --color-k-scheduled: #6d7f93;
+  --color-k-predictive: #5e8a7c;
+  --color-k-cannibal: #8b6f9c;
   --font-display: "Instrument Sans", system-ui, sans-serif;
   --font-sans: "Instrument Sans", system-ui, sans-serif;
 }
@@ -37,10 +37,10 @@ body {
 .num { font-variant-numeric: tabular-nums; }
 /* Small section label: sentence case, quiet grey. */
 .label-caps { font-size: 13px; font-weight: 500; color: var(--color-muted); letter-spacing: 0; }
-.panel { background: var(--color-panel); border: 1px solid rgba(29, 33, 39, 0.07); border-radius: 16px; }
-.hatch-red { background-image: repeating-linear-gradient(135deg, rgba(194,65,45,.55) 0 3px, rgba(194,65,45,.12) 3px 7px); }
-.hatch-grey { background-image: repeating-linear-gradient(135deg, #cdcfc7 0 3px, #ecede8 3px 7px); }
-.skeleton { background: #e6e7e1; border-radius: 10px; animation: pulse-bg 1.4s ease-in-out infinite; }
+.panel { background: var(--color-panel); border: 1px solid rgba(42, 32, 27, 0.07); border-radius: 16px; }
+.hatch-red { background-image: repeating-linear-gradient(135deg, rgba(169,69,47,.55) 0 3px, rgba(169,69,47,.12) 3px 7px); }
+.hatch-grey { background-image: repeating-linear-gradient(135deg, #cfc5b8 0 3px, #ebe5dd 3px 7px); }
+.skeleton { background: #e7e0d7; border-radius: 10px; animation: pulse-bg 1.4s ease-in-out infinite; }
 @keyframes pulse-bg { 50% { opacity: .45 } }
 @keyframes rise { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
 .rise { animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
@@ -48,7 +48,7 @@ body {
 @media (prefers-reduced-motion: reduce) { .skeleton, .rise, .rise-late { animation: none; } }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #cdcfc7; border-radius: 6px; }
+::-webkit-scrollbar-thumb { background: #cfc5b8; border-radius: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 @layer base {
   html { color-scheme: light; }

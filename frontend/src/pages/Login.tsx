@@ -31,11 +31,11 @@ export default function Login() {
       <section className="relative hidden overflow-hidden lg:block">
         <img src="/img/typhoon-storm.jpg" alt="A fighter jet banking through storm cloud at dusk"
           className="absolute inset-0 h-full w-full object-cover object-[50%_45%]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(14,14,13,0.95)_0%,rgba(14,14,13,0.3)_45%,rgba(14,14,13,0.25)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(30,22,18,0.95)_0%,rgba(30,22,18,0.3)_45%,rgba(30,22,18,0.25)_100%)]" />
         <Link to="/" className="absolute left-8 top-6 inline-flex items-center gap-2 rounded-full bg-black/45 px-3.5 py-1.5 text-[13px] text-white/90 ring-1 ring-white/15 backdrop-blur hover:text-white">
           <ArrowLeft className="h-3.5 w-3.5" aria-hidden />Back to overview
         </Link>
-        <p className="rise absolute bottom-10 left-8 select-none text-[clamp(72px,9vw,150px)] font-light leading-[0.8] tracking-[-0.055em] text-[#f6f1e7]" aria-hidden>
+        <p className="rise absolute bottom-10 left-8 select-none text-[clamp(72px,9vw,150px)] font-light leading-[0.8] tracking-[-0.055em] text-[#f4ede3]" aria-hidden>
           AeroReady<sup className="ml-1 align-[0.9em] text-[0.22em] font-normal">*</sup>
         </p>
       </section>

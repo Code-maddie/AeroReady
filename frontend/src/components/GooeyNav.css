@@ -5,12 +5,12 @@
 .gooey-nav-container {
   position: relative;
   --gooey-1: #ffffff;
-  --gooey-2: #f6f1e7;
+  --gooey-2: #f4ede3;
   --gooey-3: #ffffff;
-  --gooey-4: #f6f1e7;
+  --gooey-4: #f4ede3;
   border-radius: 9999px;
-  background: #1d2127;
-  box-shadow: 0 8px 24px -12px rgba(29, 33, 39, 0.45);
+  background: #2a201b;
+  box-shadow: 0 8px 24px -12px rgba(42, 32, 27, 0.45);
   padding: 4px;
   max-width: 100%;
 }
@@ -72,7 +72,7 @@
 }
 
 .gooey-nav-container nav ul li.active {
-  color: #1d2127;
+  color: #2a201b;
 }
 
 .gooey-nav-container nav ul li.active::after {
@@ -103,7 +103,7 @@
 }
 
 .gooey-nav-container .effect.text.active {
-  color: #1d2127;
+  color: #2a201b;
 }
 
 .gooey-nav-container .effect.filter {
