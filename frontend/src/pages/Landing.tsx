@@ -2,6 +2,7 @@ import { ArrowUpRight, Check, ClipboardCheck, TriangleAlert, Wrench, CalendarRan
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import AvailabilityChart, { SERIES_COLORS } from '../components/AvailabilityChart'
+import GooeyNav from '../components/GooeyNav'
 import { SimulatedLabel, Skeleton } from '../components/ui'
 import { API_BASE } from '../lib/api'
 import { ROLE_HOME, useAuth } from '../lib/auth'
@@ -46,9 +47,9 @@ function Nav() {
         <a href="#top" className={`text-[19px] font-medium tracking-[-0.03em] transition-opacity ${solid ? 'opacity-100' : 'opacity-0'}`}>
           AeroReady<sup className="ml-px text-[12px] text-ink/70">*</sup>
         </a>
-        <nav aria-label="Sections" className="hidden items-center gap-0.5 rounded-full bg-black/45 p-1 text-[13px] ring-1 ring-white/10 backdrop-blur-md md:flex">
-          {SECTIONS.map((s) => <a key={s.id} href={`#${s.id}`} className="rounded-full px-3.5 py-1.5 text-ink/80 hover:bg-white/10 hover:text-ink">{s.label}</a>)}
-        </nav>
+        <div className="hidden md:block">
+          <GooeyNav label="Sections" initialActiveIndex={-1} items={SECTIONS.map((s) => ({ label: s.label, href: `#${s.id}` }))} />
+        </div>
         <Link to={user ? ROLE_HOME[user.role] : signIn} className="inline-flex items-center gap-3 rounded-full bg-black/55 py-1.5 pl-4 pr-1.5 text-[13px] ring-1 ring-white/15 backdrop-blur hover:bg-black/75">
           {user ? 'Open console' : 'Sign in'} <ArrowCircle />
         </Link>

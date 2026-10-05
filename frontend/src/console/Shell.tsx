@@ -1,6 +1,7 @@
 import { Bell, LogOut, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import GooeyNav from '../components/GooeyNav'
 import Toaster from '../components/Toaster'
 import { Badge, Button, EmptyState, SimulatedLabel } from '../components/ui'
 import { unreachableMessage } from '../lib/api'
@@ -76,17 +77,21 @@ function useOutside(ref: React.RefObject<HTMLElement | null>, onOut: () => void)
   }, [ref, onOut])
 }
 
+/** Index of the nav item for the current path: exact match for `end` items, otherwise the longest prefix. */
+function activeFor(items: Item[], pathname: string) {
+  let best = -1, len = -1
+  items.forEach((n, i) => {
+    const hit = n.end ? pathname === n.to || pathname === n.to + '/' : pathname === n.to || pathname.startsWith(n.to + '/')
+    if (hit && n.to.length > len) { best = i; len = n.to.length }
+  })
+  return best
+}
+
 function PillNav({ items, suffix, large }: { items: Item[]; suffix: string; large: boolean }) {
+  const { pathname } = useLocation()
   return (
-    <nav aria-label="Pages" className="flex items-center gap-0.5 overflow-x-auto rounded-full bg-panel p-1 text-[13px] ring-1 ring-white/5">
-      {items.map((n) => (
-        <NavLink key={n.to} to={n.to + suffix} end={n.end}
-          className={({ isActive }) => `whitespace-nowrap rounded-full px-3.5 transition-colors ${large ? 'py-2.5 text-[15px]' : 'py-1.5'} ${
-            isActive ? 'bg-ink text-bg' : 'text-ink/75 hover:bg-white/10 hover:text-ink'}`}>
-          {n.label}
-        </NavLink>
-      ))}
-    </nav>
+    <GooeyNav label="Pages" large={large} activeIndex={activeFor(items, pathname)}
+      items={items.map((n) => ({ label: n.label, to: n.to + suffix }))} />
   )
 }
 
@@ -190,7 +195,7 @@ export default function Shell() {
       <header className="sticky top-0 z-30 bg-bg/90 backdrop-blur-md print:hidden">
         <div className="mx-auto flex h-16 max-w-[1480px] items-center gap-6 px-6 lg:px-8">
           <Wordmark to={NAV[user.role][0].to} />
-          <div className="flex min-w-0 flex-1 justify-center">
+          <div className="flex min-w-0 flex-1 justify-center overflow-x-auto">
             <PillNav items={NAV[user.role]} suffix={base && staff ? `?base=${base}` : ''} large={!staff} />
           </div>
           <div className="flex shrink-0 items-center gap-2">
